@@ -20,6 +20,39 @@ import {
 } from "@/components/ui/dialog";
 import { useRouter } from "next/navigation";
 
+// Custom hook for responsive breakpoints
+const useResponsiveLayout = () => {
+  const [layout, setLayout] = useState({
+    tablesPerPage: 12,
+    isMobile: false,
+    isTablet: false,
+  });
+
+  useEffect(() => {
+    const handleResize = () => {
+      const width = window.innerWidth;
+      if (width < 768) {
+        setLayout({ tablesPerPage: 4, isMobile: true, isTablet: false });
+      } else if (width < 1024) {
+        setLayout({ tablesPerPage: 8, isMobile: false, isTablet: true });
+      } else {
+        setLayout({ tablesPerPage: 12, isMobile: false, isTablet: false });
+      }
+    };
+
+    // Initial check
+    handleResize();
+
+    // Add event listener
+    window.addEventListener('resize', handleResize);
+
+    // Cleanup
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  return layout;
+};
+
 const SeatBooking = () => {
   const { seats: initialSeats } = useSeats();
   const [tables, setTables] = useState<TableData[]>([]);
@@ -32,6 +65,7 @@ const SeatBooking = () => {
   const [currentSection, setCurrentSection] = useState(0);
   const pdfExportRef = useRef<{ generatePDF: () => void } | null>(null);
   const router = useRouter();
+  const { tablesPerPage } = useResponsiveLayout();
 
   useEffect(() => {
     if (initialSeats.length > 0) {
@@ -58,6 +92,18 @@ const SeatBooking = () => {
     }
   }, [initialSeats]);
 
+  const getVisibleTables = () => {
+    return tables.slice(
+      currentSection * tablesPerPage,
+      currentSection * tablesPerPage + tablesPerPage
+    );
+  };
+
+  const maxSections = () => {
+    return Math.ceil(tables.length / tablesPerPage);
+  };
+
+  // Rest of your component logic remains the same
   const handleSeatClick = (seat: Seat) => {
     if (!seat.isBooked) {
       setSelectedSeat(seat);
@@ -192,30 +238,6 @@ const SeatBooking = () => {
         description: "Your PDF has been generated and is ready for download.",
       });
     }
-  };
-
-  const getVisibleTables = () => {
-    const isMobile = window.innerWidth < 768;
-    const isTablet = window.innerWidth < 1024;
-
-    if (isMobile) {
-      return tables.slice(currentSection * 4, currentSection * 4 + 4);
-    } else if (isTablet) {
-      return tables.slice(currentSection * 8, currentSection * 8 + 8);
-    }
-    return tables.slice(currentSection * 12, currentSection * 12 + 12);
-  };
-
-  const maxSections = () => {
-    const isMobile = window.innerWidth < 768;
-    const isTablet = window.innerWidth < 1024;
-
-    if (isMobile) {
-      return Math.ceil(tables.length / 4);
-    } else if (isTablet) {
-      return Math.ceil(tables.length / 8);
-    }
-    return Math.ceil(tables.length / 12);
   };
 
   return (

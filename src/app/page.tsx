@@ -1,3 +1,5 @@
+'use client'
+
 import SeatBooking from "@/components/seat-booking";
 
 export default function Page() {
