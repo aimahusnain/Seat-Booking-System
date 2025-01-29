@@ -20,7 +20,7 @@ import {
 } from "@/components/ui/dialog";
 import { useRouter } from "next/navigation";
 
-export function SeatBooking() {
+const SeatBooking = () => {
   const { seats: initialSeats } = useSeats();
   const [tables, setTables] = useState<TableData[]>([]);
   const [selectedSeat, setSelectedSeat] = useState<Seat | null>(null);
@@ -366,3 +366,5 @@ export function SeatBooking() {
     </div>
   );
 }
+
+export default SeatBooking
