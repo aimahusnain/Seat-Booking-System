@@ -7,7 +7,15 @@ import { PDFExport } from "./pdf-export";
 import { useSeats } from "../hooks/useSeats";
 import type { Person, Seat, TableData } from "../types/booking";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { RefreshCw, Users, ChevronLeft, ChevronRight } from "lucide-react";
+import {
+  RefreshCw,
+  Users,
+  ChevronLeft,
+  ChevronRight,
+  Info,
+  Sparkles,
+  Clock,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import {
@@ -18,7 +26,14 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { useRouter } from "next/navigation";
+import { motion } from "framer-motion";
 
 const useResponsiveLayout = () => {
   const [layout, setLayout] = useState({
@@ -39,13 +54,8 @@ const useResponsiveLayout = () => {
       }
     };
 
-    // Initial check
     handleResize();
-
-    // Add event listener
     window.addEventListener("resize", handleResize);
-
-    // Cleanup
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
@@ -62,6 +72,7 @@ const SeatBooking = () => {
   const [isConfirmationOpen, setIsConfirmationOpen] = useState(false);
   const [personToBook, setPersonToBook] = useState<Person | null>(null);
   const [currentSection, setCurrentSection] = useState(0);
+  const [hoveredSeat, setHoveredSeat] = useState<string | null>(null);
   const pdfExportRef = useRef<{ generatePDF: () => void } | null>(null);
   const router = useRouter();
   const { tablesPerPage } = useResponsiveLayout();
@@ -79,12 +90,12 @@ const SeatBooking = () => {
         {}
       );
 
-      const formattedTables: TableData[] = Object.entries(groupedSeats).map(
-        ([tableNumber, seats]) => ({
+      const formattedTables: TableData[] = Object.entries(groupedSeats)
+        .map(([tableNumber, seats]) => ({
           tableNumber: Number.parseInt(tableNumber),
           seats: seats.sort((a, b) => a.seatNumber - b.seatNumber),
-        })
-      );
+        }))
+        .sort((a, b) => a.tableNumber - b.tableNumber);
 
       setTables(formattedTables);
       setBookedSeats(initialSeats.filter((seat) => seat.isBooked));
@@ -102,7 +113,6 @@ const SeatBooking = () => {
     return Math.ceil(tables.length / tablesPerPage);
   };
 
-  // Rest of your component logic remains the same
   const handleSeatClick = (seat: Seat) => {
     if (!seat.isBooked) {
       setSelectedSeat(seat);
@@ -123,7 +133,7 @@ const SeatBooking = () => {
       setIsConfirmationOpen(false);
 
       try {
-        toast.loading("Booking seat...");
+        const toastId = toast.loading("Booking seat...");
 
         const response = await fetch("/api/update-seat", {
           method: "PUT",
@@ -172,11 +182,19 @@ const SeatBooking = () => {
             },
           ]);
 
-          toast.success("Seat booked successfully", {
-            description: `${personToBook.firstName} ${personToBook.lastName} is assigned to Table ${selectedSeat.tableNumber}, Seat ${selectedSeat.seatNumber}`,
-          });
+          toast.success(
+            <div className="flex flex-col gap-1">
+              <div className="font-semibold">Booking Confirmed! ✨</div>
+              <div className="text-sm opacity-90">
+                {personToBook.firstName} {personToBook.lastName} is assigned to
+                Table {selectedSeat.tableNumber}, Seat {selectedSeat.seatNumber}
+              </div>
+            </div>,
+            { id: toastId, duration: 4000 }
+          );
         } else {
           toast.error("Booking failed", {
+            id: toastId,
             description: result.message || "Unable to book the seat",
           });
         }
@@ -194,6 +212,8 @@ const SeatBooking = () => {
 
   const handleDeleteBooking = async (seatId: string) => {
     try {
+      const toastId = toast.loading("Deleting booking...");
+
       const response = await fetch("/api/delete-booking", {
         method: "PUT",
         headers: {
@@ -223,11 +243,19 @@ const SeatBooking = () => {
 
         setTables(updatedTables);
         setBookedSeats(bookedSeats.filter((seat) => seat.id !== seatId));
-        toast.success("Booking Deleted", {
-          description: "The booking has been successfully deleted.",
-        });
+
+        toast.success(
+          <div className="flex flex-col gap-1">
+            <div className="font-semibold">Booking Deleted</div>
+            <div className="text-sm opacity-90">
+              The seat has been successfully freed up
+            </div>
+          </div>,
+          { id: toastId }
+        );
       } else {
         toast.error("Delete Failed", {
+          id: toastId,
           description: "There was an error deleting the booking.",
         });
       }
@@ -241,47 +269,96 @@ const SeatBooking = () => {
   const handleExportPDF = () => {
     if (pdfExportRef.current) {
       pdfExportRef.current.generatePDF();
-      toast.success("PDF Generated", {
-        description: "Your PDF has been generated and is ready for download.",
-      });
+      toast.success(
+        <div className="flex flex-col gap-1">
+          <div className="font-semibold">PDF Generated Successfully</div>
+          <div className="text-sm opacity-90">
+            Your booking details are ready for download
+          </div>
+        </div>
+      );
     }
   };
 
+  const getBookingStats = () => {
+    const total = tables.reduce((acc, table) => acc + table.seats.length, 0);
+    const booked = bookedSeats.length;
+    const available = total - booked;
+    const percentageBooked = Math.round((booked / total) * 100);
+
+    return { total, booked, available, percentageBooked };
+  };
+
   return (
-    <div className="min-h-screen bg-gray-50 py-4 md:py-8">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-zinc-50 py-4 md:py-8">
       <div className="container mx-auto px-2 md:px-4">
-        <Card className="mb-4 md:mb-8">
+        <Card className="mb-4 md:mb-8 border-none shadow-lg bg-white/80 backdrop-blur-sm">
           <CardHeader className="flex flex-col md:flex-row items-start md:items-center justify-between space-y-4 md:space-y-0">
             <div>
-              <CardTitle className="text-xl md:text-2xl font-bold">
+              <CardTitle className="text-xl md:text-4xl font-bold text-black">
                 Seat Booking System
               </CardTitle>
-              <p className="text-sm text-muted-foreground mt-1">
+              <p className="text-sm text-muted-foreground mt-1 flex items-center gap-2">
+                <Info className="h-4 w-4" />
                 Click on any available seat to make a booking
               </p>
             </div>
             <div className="flex gap-2 w-full md:w-auto">
-              <Button
-                variant="outline"
-                className="flex items-center gap-2 flex-1 md:flex-none justify-center"
-                onClick={() => setIsSidebarOpen(true)}
-              >
-                <Users className="h-4 w-4" />
-                <span className="hidden md:inline">View Bookings</span>
-              </Button>
-              <Button
-                variant="outline"
-                onClick={() => router.refresh()}
-                className="flex-1 md:flex-none"
-              >
-                <RefreshCw className="h-4 w-4" />
-              </Button>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className="flex items-center gap-2 flex-1 md:flex-none justify-center hover:bg-zinc-50/50"
+                      onClick={() => setIsSidebarOpen(true)}
+                    >
+                      <Users className="h-4 w-4" />
+                      <span className="hidden md:inline">View Bookings</span>
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>View all current bookings</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="outline"
+                      onClick={() => router.refresh()}
+                      className="flex-1 md:flex-none hover:bg-zinc-50/50"
+                    >
+                      <RefreshCw className="h-4 w-4" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Refresh booking data</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
             </div>
           </CardHeader>
+
           <CardContent>
+            {/* Booking Stats */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+              {Object.entries(getBookingStats()).map(([key, value]) => (
+                <Card key={key} className="bg-white/50 border border-zinc-100">
+                  <CardContent className="p-4">
+                    <p className="text-sm text-muted-foreground capitalize">
+                      {key.replace(/([A-Z])/g, " $1").trim()}
+                    </p>
+                    <p className="text-2xl font-bold text-zinc-600">{value}</p>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+
             <div className="grid gap-4 md:gap-8">
-              <div className="overflow-x-auto rounded-lg border bg-white">
-                <div className="flex justify-between items-center p-2 bg-gray-50 border-b">
+              <div className="overflow-hidden rounded-xl border bg-white shadow-sm">
+                <div className="flex justify-between items-center p-3 bg-gradient-to-r from-zinc-50 to-zinc-50 border-b">
                   <Button
                     variant="outline"
                     size="sm"
@@ -289,6 +366,7 @@ const SeatBooking = () => {
                       setCurrentSection((prev) => Math.max(0, prev - 1))
                     }
                     disabled={currentSection === 0}
+                    className="hover:bg-zinc-100/50"
                   >
                     <ChevronLeft className="h-4 w-4" />
                   </Button>
@@ -304,48 +382,118 @@ const SeatBooking = () => {
                       )
                     }
                     disabled={currentSection === maxSections() - 1}
+                    className="hover:bg-zinc-100/50"
                   >
                     <ChevronRight className="h-4 w-4" />
                   </Button>
                 </div>
+
                 <div className="overflow-x-auto">
                   <table className="w-full border-collapse">
                     <thead>
-                      <tr className="bg-gray-50">
+                      <tr className="bg-gradient-to-r from-zinc-50 to-zinc-50">
                         {getVisibleTables().map((table) => (
                           <th
                             key={table.tableNumber}
-                            className="p-2 md:p-3 border-b text-center font-semibold text-sm md:text-base"
+                            className="p-3 border-b text-center font-semibold text-sm md:text-base"
                           >
-                            Table {table.tableNumber}
+                            <span className="flex items-center justify-center gap-2">
+                              <Sparkles className="h-4 w-4 text-zinc-500" />
+                              Table {table.tableNumber}
+                            </span>
                           </th>
                         ))}
                       </tr>
                     </thead>
                     <tbody>
                       {Array.from({ length: 10 }).map((_, rowIndex) => (
-                        <tr key={rowIndex}>
+                        <motion.tr key={rowIndex}>
                           {getVisibleTables().map((table) => {
                             const seat = table.seats[rowIndex];
                             return (
-                              <td
+                              <motion.td
                                 key={seat.id}
-                                className={`p-2 md:p-3 text-center transition-colors text-sm md:text-base ${
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                transition={{ delay: rowIndex * 0.05 }}
+                                className={`relative p-3 text-center border-b transition-all duration-200 ${
                                   seat.isBooked
-                                    ? "bg-red-50 text-red-500 font-semibold"
-                                    : "hover:bg-blue-50 cursor-pointer"
+                                    ? "bg-red-50"
+                                    : hoveredSeat === seat.id
+                                    ? "bg-zinc-50"
+                                    : "hover:bg-zinc-50/50"
                                 }`}
+                                onMouseEnter={() => setHoveredSeat(seat.id)}
+                                onMouseLeave={() => setHoveredSeat(null)}
                                 onClick={() => handleSeatClick(seat)}
                               >
-                                {seat.isBooked ? "X" : seat.seatNumber}
-                              </td>
+                                <TooltipProvider>
+                                  <Tooltip>
+                                    <TooltipTrigger asChild>
+                                      <div
+                                        className={`
+                                          w-full h-full cursor-pointer rounded-md p-2
+                                          ${
+                                            seat.isBooked
+                                              ? "text-red-500 font-semibold"
+                                              : "text-zinc-600 hover:text-zinc-700"
+                                          }
+                                        `}
+                                      >
+                                        {seat.isBooked ? (
+                                          <div className="flex items-center justify-center gap-1">
+                                            <Clock className="h-4 w-4" />
+                                            <span>Booked</span>
+                                          </div>
+                                        ) : (
+                                          <span className="font-medium">
+                                            Seat {seat.seatNumber}
+                                          </span>
+                                        )}
+                                      </div>
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                      {seat.isBooked ? (
+                                        <div className="text-center">
+                                          <p className="font-semibold">
+                                            Booked by {seat.user?.firstname}{" "}
+                                            {seat.user?.lastname}
+                                          </p>
+                                          <p className="text-xs text-muted-foreground">
+                                            Table {seat.tableNumber}, Seat{" "}
+                                            {seat.seatNumber}
+                                          </p>
+                                        </div>
+                                      ) : (
+                                        <p>Click to book this seat</p>
+                                      )}
+                                    </TooltipContent>
+                                  </Tooltip>
+                                </TooltipProvider>
+                              </motion.td>
                             );
                           })}
-                        </tr>
+                        </motion.tr>
                       ))}
                     </tbody>
                   </table>
                 </div>
+              </div>
+            </div>
+
+            {/* Legend */}
+            <div className="mt-6 flex flex-wrap gap-4 justify-center">
+              <div className="flex items-center gap-2">
+                <div className="w-4 h-4 bg-zinc-50 border border-zinc-200 rounded"></div>
+                <span className="text-sm text-muted-foreground">Available</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-4 h-4 bg-red-50 border border-red-200 rounded"></div>
+                <span className="text-sm text-muted-foreground">Booked</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-4 h-4 bg-zinc-100 border border-zinc-200 rounded"></div>
+                <span className="text-sm text-muted-foreground">Selected</span>
               </div>
             </div>
           </CardContent>
@@ -371,22 +519,38 @@ const SeatBooking = () => {
       <Dialog open={isConfirmationOpen} onOpenChange={setIsConfirmationOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Confirm Booking</DialogTitle>
-            <DialogDescription>
-              Are you sure you want to book Table {selectedSeat?.tableNumber},
-              Seat {selectedSeat?.seatNumber} for {personToBook?.firstName}{" "}
-              {personToBook?.lastName}?
+            <DialogTitle className="text-xl font-bold">
+              Confirm Booking
+            </DialogTitle>
+            <DialogDescription className="mt-2">
+              <div className="space-y-2">
+                <div className="p-4 bg-zinc-50 rounded-lg">
+                  <p className="font-medium text-zinc-700">
+                    Table {selectedSeat?.tableNumber}, Seat{" "}
+                    {selectedSeat?.seatNumber}
+                  </p>
+                  <p className="text-zinc-600">
+                    {personToBook?.firstName} {personToBook?.lastName}
+                  </p>
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  Please confirm if you want to proceed with this booking.
+                </p>
+              </div>
             </DialogDescription>
           </DialogHeader>
-          <DialogFooter className="flex-col sm:flex-row gap-2">
+          <DialogFooter className="flex-col sm:flex-row gap-2 mt-4">
             <Button
               variant="outline"
               onClick={() => setIsConfirmationOpen(false)}
-              className="w-full sm:w-auto"
+              className="w-full sm:w-auto hover:bg-red-50 hover:text-red-600"
             >
               Cancel
             </Button>
-            <Button onClick={handleConfirmBooking} className="w-full sm:w-auto">
+            <Button
+              onClick={handleConfirmBooking}
+              className="w-full sm:w-auto bg-gradient-to-r from-zinc-600 to-zinc-600 hover:from-zinc-700 hover:to-zinc-700 text-white"
+            >
               Confirm Booking
             </Button>
           </DialogFooter>
