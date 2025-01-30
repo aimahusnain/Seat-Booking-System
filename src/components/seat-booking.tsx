@@ -289,6 +289,95 @@ const SeatBooking = () => {
     return { total, booked, available, percentageBooked };
   };
 
+  const renderCircularTable = (table: TableData) => {
+    return (
+      <div className="relative w-[250px] h-[250px] m-4">
+        {/* Center Table Label */}
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-10">
+          <div className="bg-white shadow-sm rounded-full p-4 border border-zinc-100">
+            <span className="flex items-center justify-center gap-2">
+              <Sparkles className="h-4 w-4 text-zinc-500" />
+              <span className="font-semibold">Table {table.tableNumber}</span>
+            </span>
+          </div>
+        </div>
+
+        {/* Circular Seats */}
+        {table.seats.map((seat, index) => {
+          // Calculate position in circle
+          const angle = (index * 2 * Math.PI) / 10; // 10 seats per table
+          const radius = 100; // Radius of the circle
+          const left = Math.cos(angle) * radius + 125;
+          const top = Math.sin(angle) * radius + 125;
+
+          return (
+            <motion.div
+              key={seat.id}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: index * 0.05 }}
+              className="absolute"
+              style={{
+                left: `${left}px`,
+                top: `${top}px`,
+                transform: "translate(-50%, -50%)",
+              }}
+            >
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div
+                      onClick={() => handleSeatClick(seat)}
+                      className={`
+                        w-12 h-12 rounded-full cursor-pointer
+                        flex items-center justify-center
+                        transition-all duration-200
+                        ${
+                          seat.isBooked
+                            ? "bg-red-50 border-red-200"
+                            : hoveredSeat === seat.id
+                            ? "bg-zinc-50 border-zinc-300"
+                            : "bg-white hover:bg-zinc-50/50"
+                        }
+                        border shadow-sm
+                      `}
+                      onMouseEnter={() => setHoveredSeat(seat.id)}
+                      onMouseLeave={() => setHoveredSeat(null)}
+                    >
+                      {seat.isBooked ? (
+                        <span className="text-red-500 font-bold text-lg">
+                          X
+                        </span>
+                      ) : (
+                        <span className="text-sm font-medium">
+                          {seat.seatNumber}
+                        </span>
+                      )}
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    {seat.isBooked ? (
+                      <div className="text-center">
+                        <p className="font-semibold">
+                          Booked by {seat.user?.firstname} {seat.user?.lastname}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          Table {seat.tableNumber}, Seat {seat.seatNumber}
+                        </p>
+                      </div>
+                    ) : (
+                      <p>Click to book this seat</p>
+                    )}
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            </motion.div>
+          );
+        })}
+      </div>
+    );
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-zinc-50 py-4 md:py-8">
       <div className="container mx-auto px-2 md:px-4">
@@ -357,8 +446,8 @@ const SeatBooking = () => {
             </div>
 
             <div className="grid gap-4 md:gap-8">
-              <div className="overflow-hidden rounded-xl border bg-white shadow-sm">
-                <div className="flex justify-between items-center p-3 bg-gradient-to-r from-zinc-50 to-zinc-50 border-b">
+              <div className="overflow-hidden rounded-xl border bg-white shadow-sm p-4">
+                <div className="flex justify-between items-center mb-4">
                   <Button
                     variant="outline"
                     size="sm"
@@ -388,95 +477,10 @@ const SeatBooking = () => {
                   </Button>
                 </div>
 
-                <div className="overflow-x-auto">
-                  <table className="w-full border-collapse">
-                    <thead>
-                      <tr className="bg-gradient-to-r from-zinc-50 to-zinc-50">
-                        {getVisibleTables().map((table) => (
-                          <th
-                            key={table.tableNumber}
-                            className="p-3 border-b text-center font-semibold text-sm md:text-base"
-                          >
-                            <span className="flex items-center justify-center gap-2">
-                              <Sparkles className="h-4 w-4 text-zinc-500" />
-                              Table {table.tableNumber}
-                            </span>
-                          </th>
-                        ))}
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {Array.from({ length: 10 }).map((_, rowIndex) => (
-                        <motion.tr key={rowIndex}>
-                          {getVisibleTables().map((table) => {
-                            const seat = table.seats[rowIndex];
-                            return (
-                              <motion.td
-                                key={seat.id}
-                                initial={{ opacity: 0 }}
-                                animate={{ opacity: 1 }}
-                                transition={{ delay: rowIndex * 0.05 }}
-                                className={`relative p-3 text-center border-b transition-all duration-200 ${
-                                  seat.isBooked
-                                    ? "bg-red-50"
-                                    : hoveredSeat === seat.id
-                                    ? "bg-zinc-50"
-                                    : "hover:bg-zinc-50/50"
-                                }`}
-                                onMouseEnter={() => setHoveredSeat(seat.id)}
-                                onMouseLeave={() => setHoveredSeat(null)}
-                                onClick={() => handleSeatClick(seat)}
-                              >
-                                <TooltipProvider>
-                                  <Tooltip>
-                                    <TooltipTrigger asChild>
-                                      <div
-                                        className={`
-                                          w-full h-full cursor-pointer rounded-md p-2
-                                          ${
-                                            seat.isBooked
-                                              ? "text-red-500 font-semibold"
-                                              : "text-zinc-600 hover:text-zinc-700"
-                                          }
-                                        `}
-                                      >
-                                        {seat.isBooked ? (
-                                          <div className="flex items-center justify-center gap-1">
-                                            <Clock className="h-4 w-4" />
-                                            <span>Booked</span>
-                                          </div>
-                                        ) : (
-                                          <span className="font-medium">
-                                            Seat {seat.seatNumber}
-                                          </span>
-                                        )}
-                                      </div>
-                                    </TooltipTrigger>
-                                    <TooltipContent>
-                                      {seat.isBooked ? (
-                                        <div className="text-center">
-                                          <p className="font-semibold">
-                                            Booked by {seat.user?.firstname}{" "}
-                                            {seat.user?.lastname}
-                                          </p>
-                                          <p className="text-xs text-muted-foreground">
-                                            Table {seat.tableNumber}, Seat{" "}
-                                            {seat.seatNumber}
-                                          </p>
-                                        </div>
-                                      ) : (
-                                        <p>Click to book this seat</p>
-                                      )}
-                                    </TooltipContent>
-                                  </Tooltip>
-                                </TooltipProvider>
-                              </motion.td>
-                            );
-                          })}
-                        </motion.tr>
-                      ))}
-                    </tbody>
-                  </table>
+                <div className="flex flex-wrap justify-center">
+                  {getVisibleTables().map((table) =>
+                    renderCircularTable(table)
+                  )}
                 </div>
               </div>
             </div>
