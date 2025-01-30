@@ -1,23 +1,7 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
-import { PersonSelector } from "./person-selector";
-import { BookingSidebar } from "./booking-sidebar";
-import { PDFExport } from "./pdf-export";
-import { useSeats } from "../hooks/useSeats";
-import type { Person, Seat, TableData } from "../types/booking";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  RefreshCw,
-  Users,
-  ChevronLeft,
-  ChevronRight,
-  Info,
-  Sparkles,
-  Clock,
-} from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { toast } from "sonner";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Dialog,
   DialogContent,
@@ -32,8 +16,23 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
+import {
+  ChevronLeft,
+  ChevronRight,
+  Info,
+  RefreshCw,
+  Sparkles,
+  Users
+} from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
+import { toast } from "sonner";
+import { useSeats } from "../hooks/useSeats";
+import type { Person, Seat, TableData } from "../types/booking";
+import { BookingSidebar } from "./booking-sidebar";
+import { PDFExport } from "./pdf-export";
+import { PersonSelector } from "./person-selector";
 
 const useResponsiveLayout = () => {
   const [layout, setLayout] = useState({
@@ -344,7 +343,7 @@ const SeatBooking = () => {
                       onMouseEnter={() => setHoveredSeat(seat.id)}
                       onMouseLeave={() => setHoveredSeat(null)}
                     >
-                      
+
                       {seat.isBooked ? (
                         <span className="text-red-500 font-bold text-lg">
                           X
