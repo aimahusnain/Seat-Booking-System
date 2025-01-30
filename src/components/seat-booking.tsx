@@ -344,6 +344,7 @@ const SeatBooking = () => {
                       onMouseEnter={() => setHoveredSeat(seat.id)}
                       onMouseLeave={() => setHoveredSeat(null)}
                     >
+                      
                       {seat.isBooked ? (
                         <span className="text-red-500 font-bold text-lg">
                           X
