@@ -54,7 +54,7 @@ export const PDFExport = forwardRef<{ generatePDF: () => void }, PDFExportProps>
                 <td className="border p-2">{seat.tableNumber}</td>
                 <td className="border p-2">{seat.seatNumber}</td>
                 <td className="border p-2">
-                  {seat.bookedBy?.firstName} {seat.bookedBy?.lastName}
+                  {/* {seat.bookedBy?.firstName} {seat.bookedBy?.lastName} */}
                 </td>
               </tr>
             ))}

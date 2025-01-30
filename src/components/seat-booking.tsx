@@ -20,7 +20,6 @@ import {
 } from "@/components/ui/dialog";
 import { useRouter } from "next/navigation";
 
-// Custom hook for responsive breakpoints
 const useResponsiveLayout = () => {
   const [layout, setLayout] = useState({
     tablesPerPage: 12,
@@ -44,10 +43,10 @@ const useResponsiveLayout = () => {
     handleResize();
 
     // Add event listener
-    window.addEventListener('resize', handleResize);
+    window.addEventListener("resize", handleResize);
 
     // Cleanup
-    return () => window.removeEventListener('resize', handleResize);
+    return () => window.removeEventListener("resize", handleResize);
   }, []);
 
   return layout;
@@ -147,8 +146,12 @@ const SeatBooking = () => {
                 ? {
                     ...seat,
                     isBooked: true,
-                    bookedBy: personToBook,
                     userId: personToBook.id,
+                    user: {
+                      id: personToBook.id,
+                      firstname: personToBook.firstName,
+                      lastname: personToBook.lastName,
+                    },
                   }
                 : seat
             ),
@@ -160,8 +163,12 @@ const SeatBooking = () => {
             {
               ...selectedSeat,
               isBooked: true,
-              bookedBy: personToBook,
               userId: personToBook.id,
+              user: {
+                id: personToBook.id,
+                firstname: personToBook.firstName,
+                lastname: personToBook.lastName,
+              },
             },
           ]);
 
@@ -207,8 +214,8 @@ const SeatBooking = () => {
               ? {
                   ...seat,
                   isBooked: false,
-                  bookedBy: undefined,
-                  userId: undefined,
+                  userId: null,
+                  user: null,
                 }
               : seat
           ),
@@ -387,6 +394,6 @@ const SeatBooking = () => {
       </Dialog>
     </div>
   );
-}
+};
 
-export default SeatBooking
+export default SeatBooking;
