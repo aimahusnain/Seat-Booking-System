@@ -1,7 +1,7 @@
-"use client";
+"use client"
 
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import {
   Dialog,
   DialogContent,
@@ -9,131 +9,112 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-import { motion } from "framer-motion";
-import {
-  ChevronLeft,
-  ChevronRight,
-  Info,
-  RefreshCw,
-  Sparkles,
-  Users
-} from "lucide-react";
-import { useRouter } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
-import { toast } from "sonner";
-import { useSeats } from "../hooks/useSeats";
-import type { Person, Seat, TableData } from "../types/booking";
-import { BookingSidebar } from "./booking-sidebar";
-import { PDFExport } from "./pdf-export";
-import { PersonSelector } from "./person-selector";
-
+} from "@/components/ui/dialog"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
+import { motion } from "framer-motion"
+import { ChevronLeft, ChevronRight, Info, RefreshCw, Sparkles, Users } from "lucide-react"
+import { useRouter } from "next/navigation"
+import { useEffect, useRef, useState } from "react"
+import { toast } from "sonner"
+import { useSeats } from "../hooks/useSeats"
+import type { Person, Seat, TableData } from "../types/booking"
+import { BookingSidebar } from "./booking-sidebar"
+import { PDFExport } from "./pdf-export"
+import { PersonSelector } from "./person-selector"
 
 const useResponsiveLayout = () => {
   const [layout, setLayout] = useState({
     tablesPerPage: 12,
     isMobile: false,
     isTablet: false,
-  });
+  })
 
   useEffect(() => {
     const handleResize = () => {
-      const width = window.innerWidth;
+      const width = window.innerWidth
       if (width < 768) {
-        setLayout({ tablesPerPage: 4, isMobile: true, isTablet: false });
+        setLayout({ tablesPerPage: 4, isMobile: true, isTablet: false })
       } else if (width < 1024) {
-        setLayout({ tablesPerPage: 8, isMobile: false, isTablet: true });
+        setLayout({ tablesPerPage: 8, isMobile: false, isTablet: true })
       } else {
-        setLayout({ tablesPerPage: 12, isMobile: false, isTablet: false });
+        setLayout({ tablesPerPage: 12, isMobile: false, isTablet: false })
       }
-    };
+    }
 
-    handleResize();
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
+    handleResize()
+    window.addEventListener("resize", handleResize)
+    return () => window.removeEventListener("resize", handleResize)
+  }, [])
 
-  return layout;
-};
+  return layout
+}
 
 const SeatBooking = () => {
-  const { seats: initialSeats } = useSeats();
-  const [tables, setTables] = useState<TableData[]>([]);
-  const [selectedSeat, setSelectedSeat] = useState<Seat | null>(null);
-  const [isPersonSelectorOpen, setIsPersonSelectorOpen] = useState(false);
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [bookedSeats, setBookedSeats] = useState<Seat[]>([]);
-  const [isConfirmationOpen, setIsConfirmationOpen] = useState(false);
-  const [personToBook, setPersonToBook] = useState<Person | null>(null);
-  const [currentSection, setCurrentSection] = useState(0);
-  const [hoveredSeat, setHoveredSeat] = useState<string | null>(null);
-  const pdfExportRef = useRef<{ generatePDF: () => void } | null>(null);
-  const router = useRouter();
-  const { tablesPerPage } = useResponsiveLayout();
+  const { seats: initialSeats } = useSeats()
+  const [tables, setTables] = useState<TableData[]>([])
+  const [selectedSeat, setSelectedSeat] = useState<Seat | null>(null)
+  const [isPersonSelectorOpen, setIsPersonSelectorOpen] = useState(false)
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false)
+  const [bookedSeats, setBookedSeats] = useState<Seat[]>([])
+  const [isConfirmationOpen, setIsConfirmationOpen] = useState(false)
+  const [personToBook, setPersonToBook] = useState<Person | null>(null)
+  const [currentSection, setCurrentSection] = useState(0)
+  const [hoveredSeat, setHoveredSeat] = useState<string | null>(null)
+  const pdfExportRef = useRef<{ generatePDF: () => void } | null>(null)
+  const router = useRouter()
+  const { tablesPerPage } = useResponsiveLayout()
 
   useEffect(() => {
     if (initialSeats.length > 0) {
-      const groupedSeats = initialSeats.reduce(
-        (acc: { [key: number]: Seat[] }, seat) => {
-          if (!acc[seat.tableNumber]) {
-            acc[seat.tableNumber] = [];
-          }
-          acc[seat.tableNumber].push(seat);
-          return acc;
-        },
-        {}
-      );
+      const groupedSeats = initialSeats.reduce((acc: { [key: number]: Seat[] }, seat) => {
+        if (!acc[seat.tableNumber]) {
+          acc[seat.tableNumber] = []
+        }
+        acc[seat.tableNumber].push(seat)
+        return acc
+      }, {})
 
       const formattedTables: TableData[] = Object.entries(groupedSeats)
         .map(([tableNumber, seats]) => ({
           tableNumber: Number.parseInt(tableNumber),
           seats: seats.sort((a, b) => a.seatNumber - b.seatNumber),
         }))
-        .sort((a, b) => a.tableNumber - b.tableNumber);
+        .sort((a, b) => a.tableNumber - b.tableNumber)
 
-      setTables(formattedTables);
-      setBookedSeats(initialSeats.filter((seat) => seat.isBooked));
+      setTables(formattedTables)
+      setBookedSeats(initialSeats.filter((seat) => seat.isBooked))
     }
-  }, [initialSeats]);
+  }, [initialSeats])
 
   const getVisibleTables = () => {
-    return tables.slice(
-      currentSection * tablesPerPage,
-      currentSection * tablesPerPage + tablesPerPage
-    );
-  };
+    return tables.slice(currentSection * tablesPerPage, currentSection * tablesPerPage + tablesPerPage)
+  }
 
   const maxSections = () => {
-    return Math.ceil(tables.length / tablesPerPage);
-  };
+    return Math.ceil(tables.length / tablesPerPage)
+  }
 
   const handleSeatClick = (seat: Seat) => {
     if (!seat.isBooked) {
-      setSelectedSeat(seat);
-      setIsPersonSelectorOpen(true);
+      setSelectedSeat(seat)
+      setIsPersonSelectorOpen(true)
     }
-  };
+  }
 
   const handlePersonSelect = (person: Person) => {
     if (selectedSeat) {
-      setPersonToBook(person);
-      setIsConfirmationOpen(true);
-      setIsPersonSelectorOpen(false);
+      setPersonToBook(person)
+      setIsConfirmationOpen(true)
+      setIsPersonSelectorOpen(false)
     }
-  };
+  }
 
   const handleConfirmBooking = async () => {
     if (selectedSeat && personToBook) {
-      setIsConfirmationOpen(false);
+      setIsConfirmationOpen(false)
 
       try {
-        const toastId = toast.loading("Booking seat...");
+        const toastId = toast.loading("Booking seat...")
 
         const response = await fetch("/api/update-seat", {
           method: "PUT",
@@ -144,9 +125,9 @@ const SeatBooking = () => {
             seatId: selectedSeat.id,
             userId: personToBook.id,
           }),
-        });
+        })
 
-        const result = await response.json();
+        const result = await response.json()
 
         if (result.success) {
           const updatedTables = tables.map((table) => ({
@@ -163,11 +144,11 @@ const SeatBooking = () => {
                       lastname: personToBook.lastName,
                     },
                   }
-                : seat
+                : seat,
             ),
-          }));
+          }))
 
-          setTables(updatedTables);
+          setTables(updatedTables)
           setBookedSeats([
             ...bookedSeats,
             {
@@ -180,39 +161,39 @@ const SeatBooking = () => {
                 lastname: personToBook.lastName,
               },
             },
-          ]);
+          ])
 
           toast.success(
             <div className="flex flex-col gap-1">
               <div className="font-semibold">Booking Confirmed! ✨</div>
               <div className="text-sm opacity-90">
-                {personToBook.firstName} {personToBook.lastName} is assigned to
-                Table {selectedSeat.tableNumber}, Seat {selectedSeat.seatNumber}
+                {personToBook.firstName} {personToBook.lastName} is assigned to Table {selectedSeat.tableNumber}, Seat{" "}
+                {selectedSeat.seatNumber}
               </div>
             </div>,
-            { id: toastId, duration: 4000 }
-          );
+            { id: toastId, duration: 4000 },
+          )
         } else {
           toast.error("Booking failed", {
             id: toastId,
             description: result.message || "Unable to book the seat",
-          });
+          })
         }
       } catch (error) {
         toast.error("Booking failed", {
           description: `An unexpected error occurred ${error}`,
-        });
+        })
       } finally {
-        setSelectedSeat(null);
-        setPersonToBook(null);
-        setIsSidebarOpen(true);
+        setSelectedSeat(null)
+        setPersonToBook(null)
+        setIsSidebarOpen(true)
       }
     }
-  };
+  }
 
   const handleDeleteBooking = async (seatId: string) => {
     try {
-      const toastId = toast.loading("Deleting booking...");
+      const toastId = toast.loading("Deleting booking...")
 
       const response = await fetch("/api/delete-booking", {
         method: "PUT",
@@ -222,9 +203,9 @@ const SeatBooking = () => {
         body: JSON.stringify({
           seatId,
         }),
-      });
+      })
 
-      const result = await response.json();
+      const result = await response.json()
 
       if (result.success) {
         const updatedTables = tables.map((table) => ({
@@ -237,85 +218,83 @@ const SeatBooking = () => {
                   userId: null,
                   user: null,
                 }
-              : seat
+              : seat,
           ),
-        }));
+        }))
 
-        setTables(updatedTables);
-        setBookedSeats(bookedSeats.filter((seat) => seat.id !== seatId));
+        setTables(updatedTables)
+        setBookedSeats(bookedSeats.filter((seat) => seat.id !== seatId))
 
         toast.success(
           <div className="flex flex-col gap-1">
             <div className="font-semibold">Booking Deleted</div>
-            <div className="text-sm opacity-90">
-              The seat has been successfully freed up
-            </div>
+            <div className="text-sm opacity-90">The seat has been successfully freed up</div>
           </div>,
-          { id: toastId }
-        );
+          { id: toastId },
+        )
       } else {
         toast.error("Delete Failed", {
           id: toastId,
           description: "There was an error deleting the booking.",
-        });
+        })
       }
     } catch (error) {
       toast.error("Delete Failed", {
         description: `An unexpected error occurred while deleting the booking ${error}`,
-      });
+      })
     }
-  };
+  }
 
   const handleExportPDF = () => {
     if (pdfExportRef.current) {
-      pdfExportRef.current.generatePDF();
+      pdfExportRef.current.generatePDF()
       toast.success(
         <div className="flex flex-col gap-1">
           <div className="font-semibold">PDF Generated Successfully</div>
-          <div className="text-sm opacity-90">
-            Your booking details are ready for download
-          </div>
-        </div>
-      );
+          <div className="text-sm opacity-90">Your booking details are ready for download</div>
+        </div>,
+      )
     }
-  };
+  }
 
   const getBookingStats = () => {
-    const total = tables.reduce((acc, table) => acc + table.seats.length, 0);
-    const booked = bookedSeats.length;
-    const available = total - booked;
-    const percentageBooked = Math.round((booked / total) * 100);
+    const total = tables.reduce((acc, table) => acc + table.seats.length, 0)
+    const booked = bookedSeats.length
+    const available = total - booked
+    const percentageBooked = Math.round((booked / total) * 100)
 
-    return { total, booked, available, percentageBooked };
-  };
+    return { total, booked, available, percentageBooked }
+  }
 
   const renderCircularTable = (table: TableData) => {
     return (
-      <div className="relative w-[250px] h-[250px] m-4">
+      <div className="relative w-[300px] h-[300px] m-4">
+        {/* Table Background */}
+        {/* <div className="absolute inset-0 rounded-full bg-gradient-to-br from-blue-50 to-blue-100 opacity-50 border-2 border-blue-200"></div> */}
+
         {/* Center Table Label */}
         <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-10">
-          <div className="bg-white shadow-sm rounded-full p-4 border border-zinc-100">
+          <div className="bg-white shadow-lg rounded-full p-4 border border-blue-100">
             <span className="flex items-center justify-center gap-2">
-              <Sparkles className="h-4 w-4 text-zinc-500" />
-              <span className="font-semibold">Table {table.tableNumber}</span>
+              <Sparkles className="h-5 w-5 text-blue-500" />
+              <span className="font-semibold text-lg text-blue-700">Table {table.tableNumber}</span>
             </span>
           </div>
         </div>
 
         {/* Circular Seats */}
         {table.seats.map((seat, index) => {
-          // Calculate position in circle
-          const angle = (index * 2 * Math.PI) / 10; // 10 seats per table
-          const radius = 100; // Radius of the circle
-          const left = Math.cos(angle) * radius + 125;
-          const top = Math.sin(angle) * radius + 125;
+          const angle = ((index - 2.5) * 2 * Math.PI) / 10 // Start from top, distribute evenly
+          const radius = 130 // Increased radius for better spacing
+          const left = Math.cos(angle) * radius + 125
+          const top = Math.sin(angle) * radius + 125
 
           return (
             <motion.div
               key={seat.id}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: index * 0.05 }}
+              initial={{ opacity: 0, scale: 0.5 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.3, delay: index * 0.05 }}
               className="absolute"
               style={{
                 left: `${left}px`,
@@ -334,25 +313,20 @@ const SeatBooking = () => {
                         transition-all duration-200
                         ${
                           seat.isBooked
-                            ? "bg-red-50 border-red-200"
+                            ? "bg-red-100 border-red-300 text-red-600"
                             : hoveredSeat === seat.id
-                            ? "bg-zinc-50 border-zinc-300"
-                            : "bg-white hover:bg-zinc-50/50"
+                              ? "bg-blue-100 border-blue-300 text-blue-600"
+                              : "bg-white hover:bg-blue-50 text-blue-700"
                         }
-                        border shadow-sm
+                        border-2 shadow-md hover:shadow-lg
                       `}
                       onMouseEnter={() => setHoveredSeat(seat.id)}
                       onMouseLeave={() => setHoveredSeat(null)}
                     >
-
                       {seat.isBooked ? (
-                        <span className="text-red-500 font-bold text-lg">
-                          X
-                        </span>
+                        <span className="font-bold text-lg">X</span>
                       ) : (
-                        <span className="text-sm font-medium">
-                          {seat.seatNumber}
-                        </span>
+                        <span className="text-sm font-medium">{seat.seatNumber}</span>
                       )}
                     </div>
                   </TooltipTrigger>
@@ -373,22 +347,20 @@ const SeatBooking = () => {
                 </Tooltip>
               </TooltipProvider>
             </motion.div>
-          );
+          )
         })}
       </div>
-    );
-  };
+    )
+  }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-zinc-50 py-4 md:py-8">
-      <div className="container mx-auto px-2 md:px-4">
-        <Card className="mb-4 md:mb-8 border-none shadow-lg bg-white/80 backdrop-blur-sm">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100 py-8 px-4">
+      <div className="container mx-auto">
+        <Card className="mb-8 border-none shadow-2xl bg-white/80 backdrop-blur-sm">
           <CardHeader className="flex flex-col md:flex-row items-start md:items-center justify-between space-y-4 md:space-y-0">
             <div>
-              <CardTitle className="text-xl md:text-4xl font-bold text-black">
-                Seat Booking System
-              </CardTitle>
-              <p className="text-sm text-muted-foreground mt-1 flex items-center gap-2">
+              <CardTitle className="text-3xl md:text-4xl font-bold text-blue-800">Seat Booking System</CardTitle>
+              <p className="text-sm text-blue-600 mt-2 flex items-center gap-2">
                 <Info className="h-4 w-4" />
                 Click on any available seat to make a booking
               </p>
@@ -399,7 +371,7 @@ const SeatBooking = () => {
                   <TooltipTrigger asChild>
                     <Button
                       variant="outline"
-                      className="flex items-center gap-2 flex-1 md:flex-none justify-center hover:bg-zinc-50/50"
+                      className="flex items-center gap-2 flex-1 md:flex-none justify-center bg-blue-600 hover:bg-blue-700 text-white border-none"
                       onClick={() => setIsSidebarOpen(true)}
                     >
                       <Users className="h-4 w-4" />
@@ -418,7 +390,7 @@ const SeatBooking = () => {
                     <Button
                       variant="outline"
                       onClick={() => router.refresh()}
-                      className="flex-1 md:flex-none hover:bg-zinc-50/50"
+                      className="flex-1 md:flex-none bg-blue-600 hover:bg-blue-700 text-white border-none"
                     >
                       <RefreshCw className="h-4 w-4" />
                     </Button>
@@ -433,72 +405,62 @@ const SeatBooking = () => {
 
           <CardContent>
             {/* Booking Stats */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
               {Object.entries(getBookingStats()).map(([key, value]) => (
-                <Card key={key} className="bg-white/50 border border-zinc-100">
+                <Card key={key} className="bg-white border border-blue-100 shadow-md">
                   <CardContent className="p-4">
-                    <p className="text-sm text-muted-foreground capitalize">
-                      {key.replace(/([A-Z])/g, " $1").trim()}
-                    </p>
-                    <p className="text-2xl font-bold text-zinc-600">{value}</p>
+                    <p className="text-sm text-blue-600 capitalize">{key.replace(/([A-Z])/g, " $1").trim()}</p>
+                    <p className="text-2xl font-bold text-blue-800">{value}</p>
                   </CardContent>
                 </Card>
               ))}
             </div>
 
-            <div className="grid gap-4 md:gap-8">
-              <div className="overflow-hidden rounded-xl border bg-white shadow-sm p-4">
-                <div className="flex justify-between items-center mb-4">
+            <div className="grid gap-12 p-8">
+              <div className="overflow-hidden rounded-xl border border-blue-200 bg-white shadow-lg p-8">
+                <div className="flex justify-between items-center mb-6">
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() =>
-                      setCurrentSection((prev) => Math.max(0, prev - 1))
-                    }
+                    onClick={() => setCurrentSection((prev) => Math.max(0, prev - 1))}
                     disabled={currentSection === 0}
-                    className="hover:bg-zinc-100/50"
+                    className="hover:bg-blue-50"
                   >
                     <ChevronLeft className="h-4 w-4" />
                   </Button>
-                  <span className="text-sm font-medium">
+                  <span className="text-sm font-medium text-blue-600">
                     Section {currentSection + 1} of {maxSections()}
                   </span>
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() =>
-                      setCurrentSection((prev) =>
-                        Math.min(maxSections() - 1, prev + 1)
-                      )
-                    }
+                    onClick={() => setCurrentSection((prev) => Math.min(maxSections() - 1, prev + 1))}
                     disabled={currentSection === maxSections() - 1}
-                    className="hover:bg-zinc-100/50"
+                    className="hover:bg-blue-50"
                   >
                     <ChevronRight className="h-4 w-4" />
                   </Button>
                 </div>
 
                 <div className="flex flex-wrap justify-center">
-                  {getVisibleTables().map((table) =>
-                    renderCircularTable(table)
-                  )}
+                  {getVisibleTables().map((table) => renderCircularTable(table))}
                 </div>
               </div>
             </div>
 
             {/* Legend */}
-            <div className="mt-6 flex flex-wrap gap-4 justify-center">
+            <div className="mt-8 flex flex-wrap gap-6 justify-center">
               <div className="flex items-center gap-2">
-                <div className="w-4 h-4 bg-zinc-50 border border-zinc-200 rounded"></div>
-                <span className="text-sm text-muted-foreground">Available</span>
+                <div className="w-5 h-5 bg-white border-2 border-blue-300 rounded-full"></div>
+                <span className="text-sm text-blue-600">Available</span>
               </div>
               <div className="flex items-center gap-2">
-                <div className="w-4 h-4 bg-red-50 border border-red-200 rounded"></div>
-                <span className="text-sm text-muted-foreground">Booked</span>
+                <div className="w-5 h-5 bg-red-100 border-2 border-red-300 rounded-full"></div>
+                <span className="text-sm text-blue-600">Booked</span>
               </div>
               <div className="flex items-center gap-2">
-                <div className="w-4 h-4 bg-zinc-100 border border-zinc-200 rounded"></div>
-                <span className="text-sm text-muted-foreground">Selected</span>
+                <div className="w-5 h-5 bg-blue-100 border-2 border-blue-300 rounded-full"></div>
+                <span className="text-sm text-blue-600">Selected</span>
               </div>
             </div>
           </CardContent>
@@ -524,23 +486,18 @@ const SeatBooking = () => {
       <Dialog open={isConfirmationOpen} onOpenChange={setIsConfirmationOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle className="text-xl font-bold">
-              Confirm Booking
-            </DialogTitle>
+            <DialogTitle className="text-xl font-bold text-blue-800">Confirm Booking</DialogTitle>
             <DialogDescription className="mt-2">
               <div className="space-y-2">
-                <div className="p-4 bg-zinc-50 rounded-lg">
-                  <p className="font-medium text-zinc-700">
-                    Table {selectedSeat?.tableNumber}, Seat{" "}
-                    {selectedSeat?.seatNumber}
+                <div className="p-4 bg-blue-50 rounded-lg">
+                  <p className="font-medium text-blue-700">
+                    Table {selectedSeat?.tableNumber}, Seat {selectedSeat?.seatNumber}
                   </p>
-                  <p className="text-zinc-600">
+                  <p className="text-blue-600">
                     {personToBook?.firstName} {personToBook?.lastName}
                   </p>
                 </div>
-                <p className="text-sm text-muted-foreground">
-                  Please confirm if you want to proceed with this booking.
-                </p>
+                <p className="text-sm text-blue-600">Please confirm if you want to proceed with this booking.</p>
               </div>
             </DialogDescription>
           </DialogHeader>
@@ -554,7 +511,7 @@ const SeatBooking = () => {
             </Button>
             <Button
               onClick={handleConfirmBooking}
-              className="w-full sm:w-auto bg-gradient-to-r from-zinc-600 to-zinc-600 hover:from-zinc-700 hover:to-zinc-700 text-white"
+              className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white"
             >
               Confirm Booking
             </Button>
@@ -562,7 +519,8 @@ const SeatBooking = () => {
         </DialogContent>
       </Dialog>
     </div>
-  );
-};
+  )
+}
 
-export default SeatBooking;
+export default SeatBooking
+
