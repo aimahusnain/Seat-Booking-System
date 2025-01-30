@@ -15,7 +15,7 @@ export const useSeats = () => {
         const result = await response.json()
 
         if (result.success) {
-          const formattedSeats: Seat[] = result.data.map((seat: any) => ({
+          const formattedSeats: Seat[] = result.data.map((seat: { id: string; tableId: string; table: { name: string }; seat: number; isBooked: boolean; userId: string; user: { id: string; firstname: string; lastname: string } | null }) => ({
             id: seat.id,
             tableId: seat.tableId,
             tableName: seat.table.name,
