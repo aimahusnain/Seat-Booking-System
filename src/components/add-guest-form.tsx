@@ -45,7 +45,7 @@ export function AddGuestForm({ isOpen, onClose, onSuccess }: AddGuestFormProps) 
       }
     } catch (error) {
       toast.error("Failed to add guest", {
-        description: "An unexpected error occurred",
+        description: `An unexpected error occurred | ${error}`,
       })
     } finally {
       setIsLoading(false)
