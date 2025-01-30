@@ -34,6 +34,7 @@ import { BookingSidebar } from "./booking-sidebar";
 import { PDFExport } from "./pdf-export";
 import { PersonSelector } from "./person-selector";
 
+
 const useResponsiveLayout = () => {
   const [layout, setLayout] = useState({
     tablesPerPage: 12,
