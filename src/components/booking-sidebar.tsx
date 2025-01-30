@@ -9,7 +9,7 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import type { Seat } from "@/types/booking";
-import { Trash2, User, X, Calendar, Clock } from "lucide-react";
+import { Calendar, Clock, Trash2, User, X } from "lucide-react";
 import { useMemo } from "react";
 import PrintableBooking from "./single-seat-pdf";
 
@@ -33,7 +33,6 @@ export function BookingSidebar({
   onClose,
   bookedSeats,
   onDeleteBooking,
-  onExportPDF,
 }: BookingSidebarProps) {
   const groupedBookings = useMemo(() => {
     const groupedMap = bookedSeats.reduce((acc, seat) => {
