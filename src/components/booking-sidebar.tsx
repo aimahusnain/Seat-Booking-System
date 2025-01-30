@@ -9,7 +9,7 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import type { Seat } from "@/types/booking";
-import { Calendar, Clock, Trash2, User, X } from "lucide-react";
+import { Calendar, Clock, Trash2, User } from "lucide-react";
 import { useMemo } from "react";
 import PrintableBooking from "./single-seat-pdf";
 
