@@ -24,6 +24,7 @@ import {
   RefreshCw,
   Sparkles,
   Users,
+  Plus,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
@@ -33,6 +34,7 @@ import type { Person, Seat, TableData } from "../types/booking";
 import { BookingSidebar } from "./booking-sidebar";
 import { PDFExport } from "./pdf-export";
 import { PersonSelector } from "./person-selector";
+import { AddTableForm } from "./add-table-form";
 
 const useResponsiveLayout = () => {
   const [layout, setLayout] = useState({
@@ -72,6 +74,7 @@ const SeatBooking = () => {
   const [personToBook, setPersonToBook] = useState<Person | null>(null);
   const [currentSection, setCurrentSection] = useState(0);
   const [hoveredSeat, setHoveredSeat] = useState<string | null>(null);
+  const [isAddTableOpen, setIsAddTableOpen] = useState(false);
   const pdfExportRef = useRef<{ generatePDF: () => void } | null>(null);
   const router = useRouter();
   const { tablesPerPage } = useResponsiveLayout();
@@ -452,11 +455,20 @@ const SeatBooking = () => {
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <Button
-                      variant="outline"
-                      className="flex items-center gap-2 flex-1 md:flex-none justify-center bg-gray-600 hover:bg-gray-700 text-white border-none"
-                      onClick={() => setIsSidebarOpen(true)}
-                    >
+                    <Button onClick={() => setIsAddTableOpen(true)}>
+                      <Plus className="h-4 w-4" />
+                      <span className="hidden md:inline">Add Table</span>
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Add a new table</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button onClick={() => setIsSidebarOpen(true)}>
                       <Users className="h-4 w-4" />
                       <span className="hidden md:inline">View Bookings</span>
                     </Button>
@@ -470,11 +482,7 @@ const SeatBooking = () => {
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <Button
-                      variant="outline"
-                      onClick={() => router.refresh()}
-                      className="flex-1 md:flex-none bg-gray-600 hover:bg-gray-700 text-white border-none"
-                    >
+                    <Button variant="outline" onClick={() => router.refresh()}>
                       <RefreshCw className="h-4 w-4" />
                     </Button>
                   </TooltipTrigger>
@@ -619,6 +627,13 @@ const SeatBooking = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      <AddTableForm
+        isOpen={isAddTableOpen}
+        onClose={() => setIsAddTableOpen(false)}
+        onSuccess={() => {
+          router.refresh();
+        }}
+      />
     </div>
   );
 };

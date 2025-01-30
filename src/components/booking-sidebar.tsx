@@ -67,14 +67,6 @@ export function BookingSidebar({
                 Manage your seat reservations
               </p>
             </div>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={onClose}
-              className="hover:bg-slate-100 rounded-full"
-            >
-              <X className="h-4 w-4 text-slate-500" />
-            </Button>
           </div>
           <div className="flex justify-between items-center pt-2">
             <div className="flex items-center gap-2 text-black px-3 py-1.5 rounded-full text-sm font-medium">
