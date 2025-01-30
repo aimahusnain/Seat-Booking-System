@@ -1,45 +1,41 @@
-'use client'
+// hooks/useGuests.ts
+"use client";
 
-import { useEffect, useState } from 'react'
+import { User } from "../types/booking";
+import { useEffect } from "react";
+import useSWR from "swr";
 
-interface Guest {
-  id: string
-  firstname: string
-  lastname: string
-  seat: Array<{
-    id: string
-    seat: number
-    table: {
-      name: string
+const fetcher = async (url: string) => {
+  const res = await fetch(url);
+  if (!res.ok) throw new Error("Failed to fetch guests");
+  return res.json();
+};
+
+export function useGuests() {
+  const { data, error, isLoading, mutate } = useSWR<{ data: User[] }>(
+    "/api/get-guests",
+    fetcher,
+    {
+      refreshInterval: 1000,
     }
-  }>
-}
-
-export const useGuests = () => {
-  const [guests, setGuests] = useState<Guest[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  );
 
   useEffect(() => {
-    const fetchGuests = async () => {
-      try {
-        const response = await fetch('/api/get-guests')
-        const result = await response.json()
-        
-        if (result.success) {
-          setGuests(result.data)
-        } else {
-          setError('Failed to fetch guests')
-        }
-      } catch (err) {
-        setError(`Error fetching guests ${err}`)
-      } finally {
-        setLoading(false)
-      }
-    }
+    const ws = new WebSocket('your-websocket-url');
+    
+    ws.onmessage = () => {
+      mutate();
+    };
 
-    fetchGuests()
-  }, [])
+    return () => {
+      ws.close();
+    };
+  }, [mutate]);
 
-  return { guests, loading, error }
+  return {
+    guests: data?.data ?? [],
+    loading: isLoading,
+    error: error,
+    mutate,
+  };
 }

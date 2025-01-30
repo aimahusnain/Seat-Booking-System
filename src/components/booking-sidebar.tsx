@@ -5,6 +5,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sh
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { X, Trash2, Printer, User } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { SingleSeatPDF } from "./single-seat-pdf"
 import type { Seat } from "@/types/booking"
 
 interface BookingSidebarProps {
@@ -48,7 +49,7 @@ export function BookingSidebar({ isOpen, onClose, bookedSeats, onDeleteBooking, 
 
   return (
     <Sheet open={isOpen} onOpenChange={onClose}>
-      <SheetContent className="sm:max-w-md">
+      <SheetContent className="sm:max-w-md flex flex-col">
         <SheetHeader className="space-y-4">
           <div className="flex items-center justify-between">
             <SheetTitle className="text-2xl font-bold">Booked Seats</SheetTitle>
@@ -60,11 +61,11 @@ export function BookingSidebar({ isOpen, onClose, bookedSeats, onDeleteBooking, 
             <div className="text-sm text-muted-foreground">Total bookings: {bookedSeats.length}</div>
             <Button variant="outline" size="sm" onClick={onExportPDF}>
               <Printer className="h-4 w-4 mr-2" />
-              Export PDF
+              Export All
             </Button>
           </div>
         </SheetHeader>
-        <ScrollArea className="h-[calc(100vh-180px)] pr-4 mt-6">
+        <ScrollArea className="flex-1 pr-4 mt-6">
           <div className="space-y-4">
             {groupedBookings.map((booking) => (
               <div
@@ -83,20 +84,25 @@ export function BookingSidebar({ isOpen, onClose, bookedSeats, onDeleteBooking, 
                   <User className="h-4 w-4 mr-2" />
                   <span className="font-medium text-gray-900">Booked Seats:</span>
                 </div>
-                <div className="space-y-2 mb-3">
+                <div className="space-y-2">
                   {booking.seats.map((seat) => (
                     <div key={seat.id} className="flex justify-between items-center bg-white p-2 rounded-md">
                       <span className="text-sm">
                         Table {seat.tableNumber} • Seat {seat.seatNumber}
                       </span>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => onDeleteBooking(seat.id)}
-                        className="hover:bg-red-100 hover:text-red-600"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
+                      <div className="flex gap-2">
+                        <Button variant="ghost" size="sm" className="hover:bg-blue-100 hover:text-blue-600">
+                          <SingleSeatPDF seat={seat} />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => onDeleteBooking(seat.id)}
+                          className="hover:bg-red-100 hover:text-red-600"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -104,6 +110,16 @@ export function BookingSidebar({ isOpen, onClose, bookedSeats, onDeleteBooking, 
             ))}
           </div>
         </ScrollArea>
+        <div className="mt-6 pt-6 border-t text-center text-sm text-muted-foreground">
+          <a
+            href="https://www.devkins.dev"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hover:text-blue-600 transition-colors"
+          >
+            Made by Devkins
+          </a>
+        </div>
       </SheetContent>
     </Sheet>
   )
