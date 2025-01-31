@@ -9,7 +9,7 @@ const fetcher = async (url: string) => {
   if (!response.ok) throw new Error("Failed to fetch seats")
   
   const result = await response.json()
-  return result.data.map((seat: any) => ({
+  return result.data.map((seat: { id: string; tableId: string; table: { name: string }; seat: number; isBooked: boolean; userId: string; user: { id: string; firstname: string; lastname: string } | null }) => ({
     id: seat.id,
     tableId: seat.tableId,
     tableName: seat.table.name,

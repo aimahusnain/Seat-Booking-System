@@ -65,7 +65,8 @@ export function ImportGuests({ onSuccess }: { onSuccess: () => void }) {
           const sheetName = workbook.SheetNames[0];
           const sheet = workbook.Sheets[sheetName];
           const jsonData = XLSX.utils.sheet_to_json(sheet);
-          const formattedData = jsonData.map((row: any) => {
+          type GuestRow = { firstname?: string; lastname?: string; "First Name"?: string; "Last Name"?: string; "FirstName"?: string; "LastName"?: string };
+          const formattedData = (jsonData as GuestRow[]).map((row) => {
             const firstname =
               row.firstname || row["First Name"] || row["FirstName"];
             const lastname =
