@@ -273,20 +273,6 @@ const SeatBooking = () => {
     }
   };
 
-  const handleExportPDF = () => {
-    if (pdfExportRef.current) {
-      pdfExportRef.current.generatePDF();
-      toast.success(
-        <div className="flex flex-col gap-1">
-          <div className="font-semibold">PDF Generated Successfully</div>
-          <div className="text-sm opacity-90">
-            Your booking details are ready for download
-          </div>
-        </div>
-      );
-    }
-  };
-
   const getBookingStats = () => {
     const total = tables.reduce((acc, table) => acc + table.seats.length, 0);
     const booked = bookedSeats.length;
@@ -339,7 +325,7 @@ const SeatBooking = () => {
         border: "border-orange-300",
       },
     ];
-    return colors[tableNumber % colors.length];
+    return colors[tableNumber % colors.length] || colors[0];
   };
 
   const handleDeleteTable = async (tableNumber: number) => {
@@ -617,11 +603,24 @@ const SeatBooking = () => {
                   </Button>
                 </div>
 
-                <div className="flex flex-wrap justify-center">
-                  {getVisibleTables().map((table) =>
-                    renderCircularTable(table)
-                  )}
-                </div>
+
+                {tables.length > 0 ? (
+                  <div className="flex flex-wrap justify-center">
+                    {getVisibleTables().map((table) => renderCircularTable(table))}
+                  </div>
+                ) : (
+                  <div className="text-center py-12">
+                    <h3 className="text-2xl font-semibold text-gray-700 mb-4">No Tables Found</h3>
+                    <p className="text-gray-500 mb-6">It looks like there are no tables available at the moment.</p>
+                    <Button
+                      onClick={() => setIsAddTableOpen(true)}
+                      className="bg-indigo-600 hover:bg-indigo-700 text-white"
+                    >
+                      <Plus className="h-4 w-4 mr-2" />
+                      Add Your First Table
+                    </Button>
+                  </div>
+                )}
               </div>
             </div>
 
