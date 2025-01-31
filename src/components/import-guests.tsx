@@ -111,7 +111,7 @@ export function ImportGuests({ onSuccess }: { onSuccess: () => void }) {
             throw new Error("Invalid file format")
           }
 
-          const formattedData = (jsonData as { [key: string]: any }[]).map((row) => {
+          const formattedData = (jsonData as { firstname?: string; lastname?: string; "First Name"?: string; "Last Name"?: string; "FirstName"?: string; "LastName"?: string }[]).map((row) => {
             const firstname = row.firstname || row["First Name"] || row["FirstName"]
             const lastname = row.lastname || row["Last Name"] || row["LastName"]
 
