@@ -1,7 +1,7 @@
-"use client"
+"use client";
 
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Dialog,
   DialogContent,
@@ -9,117 +9,138 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog"
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
-import { motion } from "framer-motion"
-import { ChevronLeft, ChevronRight, Info, Plus, RefreshCw, Sparkles, Trash2, Users } from "lucide-react"
-import { useRouter } from "next/navigation"
-import { useEffect, useRef, useState } from "react"
-import { toast } from "sonner"
-import { useSeats } from "../hooks/useSeats"
-import type { Person, Seat, TableData } from "../types/booking"
-import { AddTableForm } from "./add-table-form"
-import { BookingSidebar } from "./booking-sidebar"
-import { PDFExport } from "./pdf-export"
-import { PersonSelector } from "./person-selector"
+} from "@/components/ui/dialog";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { motion } from "framer-motion";
+import {
+  ChevronLeft,
+  ChevronRight,
+  Info,
+  Plus,
+  RefreshCw,
+  Sparkles,
+  Trash2,
+  Users,
+} from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
+import { toast } from "sonner";
+import { useSeats } from "../hooks/useSeats";
+import type { Person, Seat, TableData } from "../types/booking";
+import { AddTableForm } from "./add-table-form";
+import { BookingSidebar } from "./booking-sidebar";
+import { PDFExport } from "./pdf-export";
+import { PersonSelector } from "./person-selector";
+import Link from "next/link";
 
 const useResponsiveLayout = () => {
   const [layout, setLayout] = useState({
     tablesPerPage: 12,
     isMobile: false,
     isTablet: false,
-  })
+  });
 
   useEffect(() => {
     const handleResize = () => {
-      const width = window.innerWidth
+      const width = window.innerWidth;
       if (width < 768) {
-        setLayout({ tablesPerPage: 4, isMobile: true, isTablet: false })
+        setLayout({ tablesPerPage: 4, isMobile: true, isTablet: false });
       } else if (width < 1024) {
-        setLayout({ tablesPerPage: 8, isMobile: false, isTablet: true })
+        setLayout({ tablesPerPage: 8, isMobile: false, isTablet: true });
       } else {
-        setLayout({ tablesPerPage: 12, isMobile: false, isTablet: false })
+        setLayout({ tablesPerPage: 12, isMobile: false, isTablet: false });
       }
-    }
+    };
 
-    handleResize()
-    window.addEventListener("resize", handleResize)
-    return () => window.removeEventListener("resize", handleResize)
-  }, [])
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
-  return layout
-}
+  return layout;
+};
 
 const SeatBooking = () => {
-  const { seats: initialSeats } = useSeats()
-  const [tables, setTables] = useState<TableData[]>([])
-  const [selectedSeat, setSelectedSeat] = useState<Seat | null>(null)
-  const [isPersonSelectorOpen, setIsPersonSelectorOpen] = useState(false)
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false)
-  const [bookedSeats, setBookedSeats] = useState<Seat[]>([])
-  const [isConfirmationOpen, setIsConfirmationOpen] = useState(false)
-  const [personToBook, setPersonToBook] = useState<Person | null>(null)
-  const [currentSection, setCurrentSection] = useState(0)
-  const [hoveredSeat, setHoveredSeat] = useState<string | null>(null)
-  const [isAddTableOpen, setIsAddTableOpen] = useState(false)
-  const pdfExportRef = useRef<{ generatePDF: () => void } | null>(null)
-  const router = useRouter()
-  const { tablesPerPage } = useResponsiveLayout()
-  const [hoveredTable, setHoveredTable] = useState<number | null>(null)
-  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
-  const [tableToDelete, setTableToDelete] = useState<number | null>(null)
+  const { seats: initialSeats } = useSeats();
+  const [tables, setTables] = useState<TableData[]>([]);
+  const [selectedSeat, setSelectedSeat] = useState<Seat | null>(null);
+  const [isPersonSelectorOpen, setIsPersonSelectorOpen] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [bookedSeats, setBookedSeats] = useState<Seat[]>([]);
+  const [isConfirmationOpen, setIsConfirmationOpen] = useState(false);
+  const [personToBook, setPersonToBook] = useState<Person | null>(null);
+  const [currentSection, setCurrentSection] = useState(0);
+  const [hoveredSeat, setHoveredSeat] = useState<string | null>(null);
+  const [isAddTableOpen, setIsAddTableOpen] = useState(false);
+  const pdfExportRef = useRef<{ generatePDF: () => void } | null>(null);
+  const router = useRouter();
+  const { tablesPerPage } = useResponsiveLayout();
+  const [hoveredTable, setHoveredTable] = useState<number | null>(null);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [tableToDelete, setTableToDelete] = useState<number | null>(null);
 
   useEffect(() => {
     if (initialSeats.length > 0) {
-      const groupedSeats = initialSeats.reduce((acc: { [key: number]: Seat[] }, seat) => {
-        if (!acc[seat.tableNumber]) {
-          acc[seat.tableNumber] = []
-        }
-        acc[seat.tableNumber].push(seat)
-        return acc
-      }, {})
+      const groupedSeats = initialSeats.reduce(
+        (acc: { [key: number]: Seat[] }, seat) => {
+          if (!acc[seat.tableNumber]) {
+            acc[seat.tableNumber] = [];
+          }
+          acc[seat.tableNumber].push(seat);
+          return acc;
+        },
+        {}
+      );
 
       const formattedTables: TableData[] = Object.entries(groupedSeats)
         .map(([tableNumber, seats]) => ({
           tableNumber: Number.parseInt(tableNumber),
           seats: seats.sort((a, b) => a.seatNumber - b.seatNumber),
         }))
-        .sort((a, b) => a.tableNumber - b.tableNumber)
+        .sort((a, b) => a.tableNumber - b.tableNumber);
 
-      setTables(formattedTables)
-      setBookedSeats(initialSeats.filter((seat) => seat.isBooked))
+      setTables(formattedTables);
+      setBookedSeats(initialSeats.filter((seat) => seat.isBooked));
     }
-  }, [initialSeats])
+  }, [initialSeats]);
 
   const getVisibleTables = () => {
-    return tables.slice(currentSection * tablesPerPage, currentSection * tablesPerPage + tablesPerPage)
-  }
+    return tables.slice(
+      currentSection * tablesPerPage,
+      currentSection * tablesPerPage + tablesPerPage
+    );
+  };
 
   const maxSections = () => {
-    return Math.ceil(tables.length / tablesPerPage)
-  }
+    return Math.ceil(tables.length / tablesPerPage);
+  };
 
   const handleSeatClick = (seat: Seat) => {
     if (!seat.isBooked) {
-      setSelectedSeat(seat)
-      setIsPersonSelectorOpen(true)
+      setSelectedSeat(seat);
+      setIsPersonSelectorOpen(true);
     }
-  }
+  };
 
   const handlePersonSelect = (person: Person) => {
     if (selectedSeat) {
-      setPersonToBook(person)
-      setIsConfirmationOpen(true)
-      setIsPersonSelectorOpen(false)
+      setPersonToBook(person);
+      setIsConfirmationOpen(true);
+      setIsPersonSelectorOpen(false);
     }
-  }
+  };
 
   const handleConfirmBooking = async () => {
     if (selectedSeat && personToBook) {
-      setIsConfirmationOpen(false)
+      setIsConfirmationOpen(false);
 
       try {
-        const toastId = toast.loading("Booking seat...")
+        const toastId = toast.loading("Booking seat...");
 
         const response = await fetch("/api/update-seat", {
           method: "PUT",
@@ -130,9 +151,9 @@ const SeatBooking = () => {
             seatId: selectedSeat.id,
             userId: personToBook.id,
           }),
-        })
+        });
 
-        const result = await response.json()
+        const result = await response.json();
 
         if (result.success) {
           const updatedTables = tables.map((table) => ({
@@ -149,11 +170,11 @@ const SeatBooking = () => {
                       lastname: personToBook.lastName,
                     },
                   }
-                : seat,
+                : seat
             ),
-          }))
+          }));
 
-          setTables(updatedTables)
+          setTables(updatedTables);
           setBookedSeats([
             ...bookedSeats,
             {
@@ -166,39 +187,39 @@ const SeatBooking = () => {
                 lastname: personToBook.lastName,
               },
             },
-          ])
+          ]);
 
           toast.success(
             <div className="flex flex-col gap-1">
               <div className="font-semibold">Booking Confirmed! ✨</div>
               <div className="text-sm opacity-90">
-                {personToBook.firstName} {personToBook.lastName} is assigned to Table {selectedSeat.tableNumber}, Seat{" "}
-                {selectedSeat.seatNumber}
+                {personToBook.firstName} {personToBook.lastName} is assigned to
+                Table {selectedSeat.tableNumber}, Seat {selectedSeat.seatNumber}
               </div>
             </div>,
-            { id: toastId, duration: 4000 },
-          )
+            { id: toastId, duration: 4000 }
+          );
         } else {
           toast.error("Booking failed", {
             id: toastId,
             description: result.message || "Unable to book the seat",
-          })
+          });
         }
       } catch (error) {
         toast.error("Booking failed", {
           description: `An unexpected error occurred ${error}`,
-        })
+        });
       } finally {
-        setSelectedSeat(null)
-        setPersonToBook(null)
-        setIsSidebarOpen(true)
+        setSelectedSeat(null);
+        setPersonToBook(null);
+        setIsSidebarOpen(true);
       }
     }
-  }
+  };
 
   const handleDeleteBooking = async (seatId: string) => {
     try {
-      const toastId = toast.loading("Deleting booking...")
+      const toastId = toast.loading("Deleting booking...");
 
       const response = await fetch("/api/delete-booking", {
         method: "PUT",
@@ -208,9 +229,9 @@ const SeatBooking = () => {
         body: JSON.stringify({
           seatId,
         }),
-      })
+      });
 
-      const result = await response.json()
+      const result = await response.json();
 
       if (result.success) {
         const updatedTables = tables.map((table) => ({
@@ -223,53 +244,57 @@ const SeatBooking = () => {
                   userId: null,
                   user: null,
                 }
-              : seat,
+              : seat
           ),
-        }))
+        }));
 
-        setTables(updatedTables)
-        setBookedSeats(bookedSeats.filter((seat) => seat.id !== seatId))
+        setTables(updatedTables);
+        setBookedSeats(bookedSeats.filter((seat) => seat.id !== seatId));
 
         toast.success(
           <div className="flex flex-col gap-1">
             <div className="font-semibold">Booking Deleted</div>
-            <div className="text-sm opacity-90">The seat has been successfully freed up</div>
+            <div className="text-sm opacity-90">
+              The seat has been successfully freed up
+            </div>
           </div>,
-          { id: toastId },
-        )
+          { id: toastId }
+        );
       } else {
         toast.error("Delete Failed", {
           id: toastId,
           description: "There was an error deleting the booking.",
-        })
+        });
       }
     } catch (error) {
       toast.error("Delete Failed", {
         description: `An unexpected error occurred while deleting the booking ${error}`,
-      })
+      });
     }
-  }
+  };
 
   const handleExportPDF = () => {
     if (pdfExportRef.current) {
-      pdfExportRef.current.generatePDF()
+      pdfExportRef.current.generatePDF();
       toast.success(
         <div className="flex flex-col gap-1">
           <div className="font-semibold">PDF Generated Successfully</div>
-          <div className="text-sm opacity-90">Your booking details are ready for download</div>
-        </div>,
-      )
+          <div className="text-sm opacity-90">
+            Your booking details are ready for download
+          </div>
+        </div>
+      );
     }
-  }
+  };
 
   const getBookingStats = () => {
-    const total = tables.reduce((acc, table) => acc + table.seats.length, 0)
-    const booked = bookedSeats.length
-    const available = total - booked
-    const percentageBooked = Math.round((booked / total) * 100)
+    const total = tables.reduce((acc, table) => acc + table.seats.length, 0);
+    const booked = bookedSeats.length;
+    const available = total - booked;
+    const percentageBooked = Math.round((booked / total) * 100);
 
-    return { total, booked, available, percentageBooked }
-  }
+    return { total, booked, available, percentageBooked };
+  };
 
   const getTableColor = (tableNumber: number) => {
     const colors = [
@@ -313,9 +338,9 @@ const SeatBooking = () => {
         text: "text-orange-700",
         border: "border-orange-300",
       },
-    ]
-    return colors[tableNumber % colors.length]
-  }
+    ];
+    return colors[tableNumber % colors.length];
+  };
 
   const handleDeleteTable = async (tableNumber: number) => {
     try {
@@ -325,29 +350,32 @@ const SeatBooking = () => {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({ tableNumber }),
-      })
+      });
 
-      const result = await response.json()
+      const result = await response.json();
 
       if (result.success) {
-        toast.success("Table deleted successfully")
-        setTables(tables.filter((t) => t.tableNumber !== tableNumber))
-        setBookedSeats(bookedSeats.filter((seat) => seat.tableNumber !== tableNumber))
-        router.refresh()
+        toast.success("Table deleted successfully");
+        setTables(tables.filter((t) => t.tableNumber !== tableNumber));
+        setBookedSeats(
+          bookedSeats.filter((seat) => seat.tableNumber !== tableNumber)
+        );
+        router.refresh();
       } else {
-        throw new Error(result.message || "Failed to delete table")
+        throw new Error(result.message || "Failed to delete table");
       }
     } catch (error) {
       toast.error("Failed to delete table", {
-        description: error instanceof Error ? error.message : "Unknown error occurred",
-      })
+        description:
+          error instanceof Error ? error.message : "Unknown error occurred",
+      });
     }
-    setIsDeleteDialogOpen(false)
-  }
+    setIsDeleteDialogOpen(false);
+  };
 
   const renderCircularTable = (table: TableData) => {
-    const tableColor = getTableColor(table.tableNumber)
-    const isHovered = hoveredTable === table.tableNumber
+    const tableColor = getTableColor(table.tableNumber);
+    const isHovered = hoveredTable === table.tableNumber;
 
     return (
       <div
@@ -362,10 +390,14 @@ const SeatBooking = () => {
 
         {/* Center Table Label */}
         <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-10">
-          <div className={`relative bg-white shadow-lg rounded-full p-4 ${tableColor.border} group`}>
+          <div
+            className={`relative bg-white shadow-lg rounded-full p-4 ${tableColor.border} group`}
+          >
             <span className="flex items-center justify-center gap-2">
               <Sparkles className={`h-5 w-5 ${tableColor.text}`} />
-              <span className={`font-semibold text-lg ${tableColor.text}`}>Table {table.tableNumber}</span>
+              <span className={`font-semibold text-lg ${tableColor.text}`}>
+                Table {table.tableNumber}
+              </span>
             </span>
 
             {/* Delete Button - Shows on Hover */}
@@ -383,9 +415,9 @@ const SeatBooking = () => {
                         size="sm"
                         className="rounded-full w-8 h-8 p-0"
                         onClick={(e) => {
-                          e.stopPropagation()
-                          setTableToDelete(table.tableNumber)
-                          setIsDeleteDialogOpen(true)
+                          e.stopPropagation();
+                          setTableToDelete(table.tableNumber);
+                          setIsDeleteDialogOpen(true);
                         }}
                       >
                         <Trash2 className="h-4 w-4" />
@@ -403,10 +435,10 @@ const SeatBooking = () => {
 
         {/* Circular Seats */}
         {table.seats.map((seat, index) => {
-          const angle = ((index - 2.5) * 2 * Math.PI) / 10
-          const radius = 130
-          const left = Math.cos(angle) * radius + 125
-          const top = Math.sin(angle) * radius + 125
+          const angle = ((index - 2.5) * 2 * Math.PI) / 10;
+          const radius = 130;
+          const left = Math.cos(angle) * radius + 125;
+          const top = Math.sin(angle) * radius + 125;
 
           return (
             <motion.div
@@ -434,8 +466,12 @@ const SeatBooking = () => {
                           seat.isBooked
                             ? "bg-red-100 border-red-300 text-red-600"
                             : hoveredSeat === seat.id
-                              ? `${tableColor.bg.split(" ")[1]} ${tableColor.border} ${tableColor.text}`
-                              : `bg-white hover:${tableColor.bg.split(" ")[1]} ${tableColor.text}`
+                            ? `${tableColor.bg.split(" ")[1]} ${
+                                tableColor.border
+                              } ${tableColor.text}`
+                            : `bg-white hover:${tableColor.bg.split(" ")[1]} ${
+                                tableColor.text
+                              }`
                         }
                         border-2 shadow-md hover:shadow-lg
                       `}
@@ -445,7 +481,9 @@ const SeatBooking = () => {
                       {seat.isBooked ? (
                         <span className="font-bold text-lg">X</span>
                       ) : (
-                        <span className="text-sm font-medium">{seat.seatNumber}</span>
+                        <span className="text-sm font-medium">
+                          {seat.seatNumber}
+                        </span>
                       )}
                     </div>
                   </TooltipTrigger>
@@ -466,11 +504,11 @@ const SeatBooking = () => {
                 </Tooltip>
               </TooltipProvider>
             </motion.div>
-          )
+          );
         })}
       </div>
-    )
-  }
+    );
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 py-8 px-4">
@@ -478,7 +516,9 @@ const SeatBooking = () => {
         <Card className="mb-8 border-none shadow-2xl bg-white/80 backdrop-blur-sm">
           <CardHeader className="flex flex-col md:flex-row items-start md:items-center justify-between space-y-4 md:space-y-0">
             <div>
-              <CardTitle className="text-3xl md:text-4xl font-bold text-gray-800">Seat Booking System</CardTitle>
+              <CardTitle className="text-3xl md:text-4xl font-bold text-gray-800">
+                Seat Booking System
+              </CardTitle>
               <p className="text-sm text-gray-600 mt-2 flex items-center gap-2">
                 <Info className="h-4 w-4" />
                 Click on any available seat to make a booking
@@ -531,9 +571,14 @@ const SeatBooking = () => {
             {/* Booking Stats */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
               {Object.entries(getBookingStats()).map(([key, value]) => (
-                <Card key={key} className="bg-white border border-gray-200 shadow-md">
+                <Card
+                  key={key}
+                  className="bg-white border border-gray-200 shadow-md"
+                >
                   <CardContent className="p-4">
-                    <p className="text-sm text-gray-600 capitalize">{key.replace(/([A-Z])/g, " $1").trim()}</p>
+                    <p className="text-sm text-gray-600 capitalize">
+                      {key.replace(/([A-Z])/g, " $1").trim()}
+                    </p>
                     <p className="text-2xl font-bold text-gray-800">{value}</p>
                   </CardContent>
                 </Card>
@@ -546,7 +591,9 @@ const SeatBooking = () => {
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => setCurrentSection((prev) => Math.max(0, prev - 1))}
+                    onClick={() =>
+                      setCurrentSection((prev) => Math.max(0, prev - 1))
+                    }
                     disabled={currentSection === 0}
                     className="hover:bg-indigo-50"
                   >
@@ -558,7 +605,11 @@ const SeatBooking = () => {
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => setCurrentSection((prev) => Math.min(maxSections() - 1, prev + 1))}
+                    onClick={() =>
+                      setCurrentSection((prev) =>
+                        Math.min(maxSections() - 1, prev + 1)
+                      )
+                    }
                     disabled={currentSection === maxSections() - 1}
                     className="hover:bg-indigo-50"
                   >
@@ -567,7 +618,9 @@ const SeatBooking = () => {
                 </div>
 
                 <div className="flex flex-wrap justify-center">
-                  {getVisibleTables().map((table) => renderCircularTable(table))}
+                  {getVisibleTables().map((table) =>
+                    renderCircularTable(table)
+                  )}
                 </div>
               </div>
             </div>
@@ -582,11 +635,13 @@ const SeatBooking = () => {
                 <div className="w-5 h-5 bg-red-100 border-2 border-red-300 rounded-full"></div>
                 <span className="text-sm text-gray-600">Booked</span>
               </div>
-              <div className="flex items-center gap-2">
-                <div className="w-5 h-5 bg-gray-200 border-2 border-gray-400 rounded-full"></div>
-                <span className="text-sm text-gray-600">Selected</span>
-              </div>
             </div>
+            <span className="flex items-end justify-end gap-1">
+              Made by{" "}
+              <Link href="https://devkins.dev/" target="_blank">
+                <Button variant="link" className="p-0 !h-fit font-bold text-lg"> Devkins</Button>
+              </Link>
+            </span>
           </CardContent>
         </Card>
       </div>
@@ -610,18 +665,23 @@ const SeatBooking = () => {
       <Dialog open={isConfirmationOpen} onOpenChange={setIsConfirmationOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle className="text-xl font-bold text-indigo-800">Confirm Booking</DialogTitle>
+            <DialogTitle className="text-xl font-bold text-indigo-800">
+              Confirm Booking
+            </DialogTitle>
             <DialogDescription className="mt-2">
               <div className="space-y-2">
                 <div className="p-4 bg-indigo-50 rounded-lg">
                   <p className="font-medium text-indigo-700">
-                    Table {selectedSeat?.tableNumber}, Seat {selectedSeat?.seatNumber}
+                    Table {selectedSeat?.tableNumber}, Seat{" "}
+                    {selectedSeat?.seatNumber}
                   </p>
                   <p className="text-indigo-600">
                     {personToBook?.firstName} {personToBook?.lastName}
                   </p>
                 </div>
-                <p className="text-sm text-indigo-600">Please confirm if you want to proceed with this booking.</p>
+                <p className="text-sm text-indigo-600">
+                  Please confirm if you want to proceed with this booking.
+                </p>
               </div>
             </DialogDescription>
           </DialogHeader>
@@ -646,7 +706,7 @@ const SeatBooking = () => {
         isOpen={isAddTableOpen}
         onClose={() => setIsAddTableOpen(false)}
         onSuccess={() => {
-          router.refresh()
+          router.refresh();
         }}
       />
 
@@ -654,20 +714,29 @@ const SeatBooking = () => {
       <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle className="text-xl font-bold text-red-800">Delete Table</DialogTitle>
+            <DialogTitle className="text-xl font-bold text-red-800">
+              Delete Table
+            </DialogTitle>
             <DialogDescription className="mt-2">
               <div className="space-y-2">
                 <div className="p-4 bg-red-50 rounded-lg">
-                  <p className="font-medium text-red-700">Are you sure you want to delete Table {tableToDelete}?</p>
+                  <p className="font-medium text-red-700">
+                    Are you sure you want to delete Table {tableToDelete}?
+                  </p>
                   <p className="text-red-600 text-sm mt-2">
-                    This will permanently delete the table and all its seat assignments. This action cannot be undone.
+                    This will permanently delete the table and all its seat
+                    assignments. This action cannot be undone.
                   </p>
                 </div>
               </div>
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="flex-col sm:flex-row gap-2 mt-4">
-            <Button variant="outline" onClick={() => setIsDeleteDialogOpen(false)} className="w-full sm:w-auto">
+            <Button
+              variant="outline"
+              onClick={() => setIsDeleteDialogOpen(false)}
+              className="w-full sm:w-auto"
+            >
               Cancel
             </Button>
             <Button
@@ -681,7 +750,7 @@ const SeatBooking = () => {
         </DialogContent>
       </Dialog>
     </div>
-  )
-}
+  );
+};
 
-export default SeatBooking
+export default SeatBooking;
