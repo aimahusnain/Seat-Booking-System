@@ -159,7 +159,7 @@ export function ImportGuests({ onSuccess }: { onSuccess: () => void }) {
           <Plus className="h-4 w-4" />
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-[550px]">
         <DialogHeader>
           <DialogTitle>Import Guests</DialogTitle>
         </DialogHeader>
