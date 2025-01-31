@@ -38,7 +38,9 @@ export interface Seat {
 }
 
 export interface TableData {
+  id?: string;  // Add this line
   tableNumber: number;
+  name?: string;  // Add this line
   seats: Seat[];
 }
 
