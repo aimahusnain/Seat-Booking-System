@@ -657,7 +657,6 @@ const SeatBooking = () => {
         onClose={() => setIsSidebarOpen(false)}
         bookedSeats={bookedSeats}
         onDeleteBooking={handleDeleteBooking}
-        onExportPDF={handleExportPDF}
       />
 
       <PDFExport bookedSeats={bookedSeats} ref={pdfExportRef} />
