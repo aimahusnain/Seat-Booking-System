@@ -10,7 +10,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { motion } from "framer-motion";
-import { Plus } from "lucide-react";
+import { Plus, Wand2 } from "lucide-react";
 import { toast } from "sonner";
 
 interface AddTableFormProps {
@@ -27,6 +27,7 @@ export function AddTableForm({
   const [tableName, setTableName] = useState("");
   const [seatNumbers, setSeatNumbers] = useState<string[]>(Array(10).fill(""));
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [magicNumber, setMagicNumber] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -71,23 +72,46 @@ export function AddTableForm({
     setSeatNumbers(newSeatNumbers);
   };
 
+  const handleMagicFill = () => {
+    const num = Number.parseInt(magicNumber);
+    if (isNaN(num)) {
+      toast.error("Please enter a valid number");
+      return;
+    }
+
+    setTableName(`Table${num}`);
+
+    let newSeatNumbers;
+    if (num < 10) {
+      newSeatNumbers = Array.from({ length: 10 }, (_, i) => `${num}0${i + 1}`);
+    } else {
+      newSeatNumbers = Array.from(
+        { length: 10 },
+        (_, i) => `${num}${i + 1 < 10 ? "0" : ""}${i + 1}`
+      );
+    }
+    setSeatNumbers(newSeatNumbers);
+
+    setMagicNumber("");
+    toast.success("Magic fill applied!");
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[600px]">
+      <DialogContent className="sm:max-w-[700px]">
         <DialogHeader>
-          <DialogTitle className="text-xl font-bold text-gray-800">
+          <DialogTitle className="text-2xl font-bold text-indigo-800">
             Add New Table
           </DialogTitle>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="mt-4">
-          <div className="relative w-[500px] h-[500px] mx-auto">
+        <form onSubmit={handleSubmit} className="mt-6">
+          <div className="relative w-[600px] h-[600px] mx-auto">
             {/* Center Input for Table Name */}
-            <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-10 w-32">
+            <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-10 w-40">
               <Input
                 placeholder="Table Name"
                 value={tableName}
                 onChange={(e) => setTableName(e.target.value)}
-                className="text-center bg-white shadow-lg border-2 border-indigo-200"
                 required
               />
             </div>
@@ -95,9 +119,9 @@ export function AddTableForm({
             {/* Circular Seat Number Inputs */}
             {seatNumbers.map((seatNumber, index) => {
               const angle = ((index - 2.5) * 2 * Math.PI) / 10;
-              const radius = 180;
-              const left = Math.cos(angle) * radius + 225;
-              const top = Math.sin(angle) * radius + 225;
+              const radius = 240;
+              const left = Math.cos(angle) * radius + 250;
+              const top = Math.sin(angle) * radius + 260;
 
               return (
                 <motion.div
@@ -119,7 +143,7 @@ export function AddTableForm({
                     onChange={(e) =>
                       handleSeatNumberChange(index, e.target.value)
                     }
-                    className="w-20 overflow-y-hidden h-16 rounded-full text-center bg-white shadow-md border-2 border-indigo-200"
+                    className="w-20 h-14 text-center rounded-full"
                     required
                     min="1"
                   />
@@ -128,23 +152,43 @@ export function AddTableForm({
             })}
           </div>
 
-          <div className="flex justify-end gap-3 mt-6">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={onClose}
-              className="hover:bg-red-50 hover:text-red-600"
-            >
-              Cancel
-            </Button>
-            <Button
-              type="submit"
-              disabled={isSubmitting}
-              className="bg-indigo-600 hover:bg-indigo-700 text-white"
-            >
-              <Plus className="w-4 h-4 mr-2" />
-              {isSubmitting ? "Adding..." : "Add Table"}
-            </Button>
+          <div className="flex items-center justify-between mt-6">
+            <div className="flex items-center space-x-2">
+              <Input
+                type="number"
+                placeholder="Magic number"
+                value={magicNumber}
+                onChange={(e) => setMagicNumber(e.target.value)}
+                className="w-32"
+              />
+              <Button
+                type="button"
+                onClick={handleMagicFill}
+                variant="outline"
+                className="flex items-center space-x-2 bg-gradient-to-r from-purple-400 to-pink-500 text-white hover:from-purple-500 hover:to-pink-600"
+              >
+                <Wand2 className="w-4 h-4" />
+                <span>Magic Fill</span>
+              </Button>
+            </div>
+            <div className="flex justify-end space-x-3">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={onClose}
+                className="hover:bg-red-50 hover:text-red-600"
+              >
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                disabled={isSubmitting}
+                className="bg-indigo-600 hover:bg-indigo-700 text-white"
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                {isSubmitting ? "Adding..." : "Add Table"}
+              </Button>
+            </div>
           </div>
         </form>
       </DialogContent>
