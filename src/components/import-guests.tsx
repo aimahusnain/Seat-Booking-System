@@ -3,7 +3,7 @@
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Download, Plus } from "lucide-react"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { toast } from "sonner"
 import * as XLSX from "xlsx"
 import { FileUpload } from "./ui/file-upload"
@@ -17,6 +17,7 @@ interface Guest {
 export function ImportGuests({ onSuccess }: { onSuccess: () => void }) {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [jobId, setJobId] = useState<string | null>(null)
   const [importProgress, setImportProgress] = useState<{
     current: number
     total: number
@@ -30,6 +31,48 @@ export function ImportGuests({ onSuccess }: { onSuccess: () => void }) {
     duplicateGuests?: Guest[]
     errors?: string[]
   } | null>(null)
+
+  useEffect(() => {
+    let intervalId: NodeJS.Timeout
+
+    if (jobId) {
+      intervalId = setInterval(checkJobStatus, 2000)
+    }
+
+    return () => {
+      if (intervalId) {
+        clearInterval(intervalId)
+      }
+    }
+  }, [jobId])
+
+  const checkJobStatus = async () => {
+    if (!jobId) return
+
+    try {
+      const response = await fetch(`/api/import-status/${jobId}`)
+      const data = await response.json()
+
+      if (data.status === "completed") {
+        setJobId(null)
+        setIsLoading(false)
+        setImportStats(data.result)
+        onSuccess()
+      } else if (data.status === "failed") {
+        setJobId(null)
+        setIsLoading(false)
+        setError(data.error)
+      } else if (data.progress) {
+        setImportProgress({
+          current: data.progress.currentCount,
+          total: data.progress.totalCount,
+          duplicates: data.progress.duplicateCount,
+        })
+      }
+    } catch (error) {
+      console.error("Error checking job status:", error)
+    }
+  }
 
   const handleFileUpload = async (files: File[]) => {
     if (!files || files.length === 0) {
@@ -65,29 +108,15 @@ export function ImportGuests({ onSuccess }: { onSuccess: () => void }) {
       const result = await response.json()
 
       if (result.success) {
-        setImportStats({
-          imported: result.importedCount,
-          total: result.totalProcessed,
-          duplicates: result.duplicateCount,
-          failedGuests: result.failedGuests,
-          duplicateGuests: result.duplicateGuests,
-          errors: result.errors,
-        })
-
-        if (result.importedCount > 0) {
-          toast.success(`Imported ${result.importedCount} out of ${result.totalProcessed} guests successfully`)
-          onSuccess()
-        } else {
-          toast.warning("No new guests were imported (possible duplicates)")
-        }
+        setJobId(result.jobId)
+        toast.success("Import job started successfully")
       } else {
-        throw new Error(result.message || "Failed to import guests")
+        throw new Error(result.message || "Failed to start import job")
       }
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "Unknown error occurred"
       setError(errorMessage)
       toast.error("Failed to import guests", { description: errorMessage })
-    } finally {
       setIsLoading(false)
     }
   }
@@ -111,7 +140,7 @@ export function ImportGuests({ onSuccess }: { onSuccess: () => void }) {
             throw new Error("Invalid file format")
           }
 
-          const formattedData = (jsonData as { firstname?: string; lastname?: string; "First Name"?: string; "Last Name"?: string; "FirstName"?: string; "LastName"?: string }[]).map((row) => {
+          const formattedData = jsonData.map((row: any) => {
             const firstname = row.firstname || row["First Name"] || row["FirstName"]
             const lastname = row.lastname || row["Last Name"] || row["LastName"]
 
@@ -159,7 +188,7 @@ export function ImportGuests({ onSuccess }: { onSuccess: () => void }) {
           <Plus className="h-4 w-4" />
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[550px]">
+      <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>Import Guests</DialogTitle>
         </DialogHeader>

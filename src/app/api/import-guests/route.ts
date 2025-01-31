@@ -1,7 +1,16 @@
 import { NextResponse } from "next/server"
 import { PrismaClient } from "@prisma/client"
+import { Queue } from "bullmq"
 
 const prisma = new PrismaClient()
+
+// Initialize a Bull queue
+const importQueue = new Queue("guestImport", {
+  connection: {
+    host: process.env.REDIS_HOST,
+    port: Number.parseInt(process.env.REDIS_PORT || "6379"),
+  },
+})
 
 interface Guest {
   firstname: string
@@ -44,87 +53,26 @@ export async function POST(request: Request) {
       )
     }
 
-    // Process guests in batches
-    const batchSize = 20
-    const importedGuests: Guest[] = []
-    const duplicateGuests: Guest[] = []
-    const failedGuests: Guest[] = []
-    const errors: string[] = []
-
-    for (let i = 0; i < validGuests.length; i += batchSize) {
-      const batch = validGuests.slice(i, i + batchSize)
-
-      try {
-        const results = await prisma.$transaction(async (tx) => {
-          const batchResults: Guest[] = []
-
-          for (const guest of batch) {
-            // const fullName = `${guest.firstname.trim()} ${guest.lastname.trim()}`.toLowerCase()
-
-            // Check for existing guest
-            const existingGuest = await tx.users.findFirst({
-              where: {
-                firstname: { equals: guest.firstname.trim(), mode: "insensitive" },
-                lastname: { equals: guest.lastname.trim(), mode: "insensitive" },
-              },
-            })
-
-            if (!existingGuest) {
-              const newGuest = await tx.users.create({
-                data: {
-                  firstname: guest.firstname.trim(),
-                  lastname: guest.lastname.trim(),
-                },
-              })
-              batchResults.push(newGuest)
-            } else {
-              duplicateGuests.push(guest)
-            }
-          }
-
-          return batchResults
-        })
-
-        importedGuests.push(...results)
-
-        // Send progress update
-        const progress = {
-          currentCount: importedGuests.length,
-          totalCount: validGuests.length,
-          duplicateCount: duplicateGuests.length,
-        }
-
-        // In a real-time scenario, you would emit this progress to the client
-        // For example, using Server-Sent Events or WebSockets
-        console.log("Progress update:", progress)
-      } catch (error) {
-        console.error(`Error processing batch ${i}-${i + batchSize}:`, error)
-        errors.push(`Failed to process guests ${i}-${i + batchSize}`)
-        failedGuests.push(...batch)
-      }
-    }
+    // Add the import job to the queue
+    const job = await importQueue.add("importGuests", {
+      guests: validGuests,
+    })
 
     return NextResponse.json({
       success: true,
-      importedCount: importedGuests.length,
-      totalProcessed: validGuests.length,
-      duplicateCount: duplicateGuests.length,
-      failedGuests: failedGuests,
-      duplicateGuests: duplicateGuests,
-      errors: errors.length > 0 ? errors : undefined,
+      message: "Import job started",
+      jobId: job.id,
     })
   } catch (error) {
-    console.error("Error importing guests:", error)
+    console.error("Error starting import job:", error)
     return NextResponse.json(
       {
         success: false,
-        message: "Failed to import guests",
+        message: "Failed to start import job",
         error: error instanceof Error ? error.message : "Unknown error",
       },
       { status: 500 },
     )
-  } finally {
-    await prisma.$disconnect()
   }
 }
 
