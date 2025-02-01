@@ -1,7 +1,7 @@
-import { NextResponse } from "next/server";
-import { PrismaClient } from "@prisma/client";
+export const dynamic = "force-dynamic";
 
-const prisma = new PrismaClient();
+import { db } from "@/lib/db";
+import { NextResponse } from "next/server";
 
 interface Guest {
   firstname: string;
@@ -54,7 +54,7 @@ export async function POST(request: Request) {
       const batch = validGuests.slice(i, i + batchSize);
 
       try {
-        const results = await prisma.$transaction(async (tx) => {
+        const results = await db.$transaction(async (tx) => {
           const batchResults: Guest[] = [];
 
           for (const guest of batch) {
@@ -130,6 +130,6 @@ export async function POST(request: Request) {
       { status: 500 }
     );
   } finally {
-    await prisma.$disconnect();
+    await db.$disconnect();
   }
 }
