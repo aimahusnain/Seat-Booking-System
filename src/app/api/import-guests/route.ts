@@ -44,7 +44,7 @@ export async function POST(request: Request) {
       );
     }
 
-    const batchSize = 11;
+    const batchSize = 30;
     const importedGuests: Guest[] = [];
     const duplicateGuests: Guest[] = [];
     const failedGuests: Guest[] = [];
