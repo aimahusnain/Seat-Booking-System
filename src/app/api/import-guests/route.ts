@@ -105,7 +105,7 @@ export async function POST(request: Request) {
         console.log("Progress update:", progress);
       } catch (error) {
         console.error(`Error processing batch ${i}-${i + batchSize}:`, error);
-        errors.push(`Failed to process guests ${i}-${i + batchSize}`);
+        errors.push(`Failed to process guests ${i}-${i + batchSize} ${error}`);
         failedGuests.push(...batch);
       }
     }
