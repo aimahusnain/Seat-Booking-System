@@ -52,9 +52,8 @@ export async function POST(request: Request) {
       const batch = validGuests.slice(i, i + batchSize)
 
       try {
-        const results = await db.$transaction(async (tx) => {
-          const batchResults: Guest[] = []
-
+        // Use a single transaction for each batch
+        await db.$transaction(async (tx) => {
           for (const guest of batch) {
             // Check for existing guest
             const existingGuest = await tx.users.findFirst({
@@ -77,16 +76,12 @@ export async function POST(request: Request) {
                   lastname: guest.lastname.trim(),
                 },
               })
-              batchResults.push(newGuest)
+              importedGuests.push(newGuest)
             } else {
               duplicateGuests.push(guest)
             }
           }
-
-          return batchResults
         })
-
-        importedGuests.push(...results)
 
         // Send progress update
         const progress = {
