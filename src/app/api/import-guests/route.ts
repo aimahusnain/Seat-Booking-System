@@ -58,8 +58,8 @@ export async function POST(request: Request) {
           const batchResults: Guest[] = [];
 
           for (const guest of batch) {
-            const fullName =
-              `${guest.firstname.trim()} ${guest.lastname.trim()}`.toLowerCase();
+            // const fullName =
+              // `${guest.firstname.trim()} ${guest.lastname.trim()}`.toLowerCase();
 
             // Check for existing guest
             const existingGuest = await tx.users.findFirst({
