@@ -35,7 +35,8 @@ export function ImportGuests({ onSuccess }: { onSuccess: () => void }) {
     failedGuests: Guest[];
     errors: string[];
   } | null>(null);
-
+  
+  console.log(`Importproress ${importProgress}`);
   useEffect(() => {
     let intervalId: NodeJS.Timeout;
 
