@@ -1,21 +1,5 @@
+import { db } from "@/lib/db"
 import { NextResponse } from "next/server"
-import { PrismaClient } from "@prisma/client"
-
-// Initialize PrismaClient
-let prisma: PrismaClient
-
-declare global {
-  var prisma: PrismaClient | undefined
-}
-
-if (process.env.NODE_ENV === "production") {
-  prisma = new PrismaClient()
-} else {
-  if (!global.prisma) {
-    global.prisma = new PrismaClient()
-  }
-  prisma = global.prisma
-}
 
 interface Guest {
   firstname: string
@@ -68,7 +52,7 @@ export async function POST(request: Request) {
       const batch = validGuests.slice(i, i + batchSize)
 
       try {
-        const results = await prisma.$transaction(async (tx) => {
+        const results = await db.$transaction(async (tx) => {
           const batchResults: Guest[] = []
 
           for (const guest of batch) {
