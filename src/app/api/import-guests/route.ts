@@ -5,6 +5,7 @@ interface Guest {
   lastname: string;
 }
 
+
 async function addGuest(guest: Guest) {
   const response = await fetch(`${process.env.NEXT_PUBLIC_URL}/api/add-guest`, {
     method: 'POST',
