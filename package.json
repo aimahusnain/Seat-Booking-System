@@ -7,10 +7,10 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "postinstall": "prisma generate"
+    "postinstall": "prisma generate && prisma migrate dev --name prisma-migirate"
   },
   "dependencies": {
-    "@prisma/client": "^6.0.1",
+    "@prisma/client": "^6.3.0",
     "@radix-ui/react-dialog": "^1.1.5",
     "@radix-ui/react-progress": "^1.1.1",
     "@radix-ui/react-scroll-area": "^1.2.2",
