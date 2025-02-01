@@ -1,16 +1,26 @@
-import { NextResponse } from "next/server";
-import { PrismaClient } from "@prisma/client";
+import { NextResponse } from "next/server"
+import { PrismaClient } from "@prisma/client"
 
-const prisma = new PrismaClient();
+// Initialize PrismaClient
+let prisma: PrismaClient
+
+if (process.env.NODE_ENV === "production") {
+  prisma = new PrismaClient()
+} else {
+  if (!(global as any).prisma) {
+    ;(global as any).prisma = new PrismaClient()
+  }
+  prisma = (global as any).prisma
+}
 
 interface Guest {
-  firstname: string;
-  lastname: string;
+  firstname: string
+  lastname: string
 }
 
 export async function POST(request: Request) {
   try {
-    const body = await request.json();
+    const body = await request.json()
 
     if (!body || !body.guests || !Array.isArray(body.guests)) {
       return NextResponse.json(
@@ -18,11 +28,11 @@ export async function POST(request: Request) {
           success: false,
           message: "Invalid request format. Expected an array of guests.",
         },
-        { status: 400 }
-      );
+        { status: 400 },
+      )
     }
 
-    const { guests } = body as { guests: Guest[] };
+    const { guests } = body as { guests: Guest[] }
 
     // Validate guest data
     const validGuests = guests.filter(
@@ -31,8 +41,8 @@ export async function POST(request: Request) {
         typeof guest.firstname === "string" &&
         typeof guest.lastname === "string" &&
         guest.firstname.trim() !== "" &&
-        guest.lastname.trim() !== ""
-    );
+        guest.lastname.trim() !== "",
+    )
 
     if (validGuests.length === 0) {
       return NextResponse.json(
@@ -40,27 +50,24 @@ export async function POST(request: Request) {
           success: false,
           message: "No valid guests found in the data",
         },
-        { status: 400 }
-      );
+        { status: 400 },
+      )
     }
 
-    const batchSize = 30;
-    const importedGuests: Guest[] = [];
-    const duplicateGuests: Guest[] = [];
-    const failedGuests: Guest[] = [];
-    const errors: string[] = [];
+    const batchSize = 30
+    const importedGuests: Guest[] = []
+    const duplicateGuests: Guest[] = []
+    const failedGuests: Guest[] = []
+    const errors: string[] = []
 
     for (let i = 0; i < validGuests.length; i += batchSize) {
-      const batch = validGuests.slice(i, i + batchSize);
+      const batch = validGuests.slice(i, i + batchSize)
 
       try {
         const results = await prisma.$transaction(async (tx) => {
-          const batchResults: Guest[] = [];
+          const batchResults: Guest[] = []
 
           for (const guest of batch) {
-            // const fullName =
-              // `${guest.firstname.trim()} ${guest.lastname.trim()}`.toLowerCase();
-
             // Check for existing guest
             const existingGuest = await tx.users.findFirst({
               where: {
@@ -73,7 +80,7 @@ export async function POST(request: Request) {
                   mode: "insensitive",
                 },
               },
-            });
+            })
 
             if (!existingGuest) {
               const newGuest = await tx.users.create({
@@ -81,32 +88,32 @@ export async function POST(request: Request) {
                   firstname: guest.firstname.trim(),
                   lastname: guest.lastname.trim(),
                 },
-              });
-              batchResults.push(newGuest);
+              })
+              batchResults.push(newGuest)
             } else {
-              duplicateGuests.push(guest);
+              duplicateGuests.push(guest)
             }
           }
 
-          return batchResults;
-        });
+          return batchResults
+        })
 
-        importedGuests.push(...results);
+        importedGuests.push(...results)
 
         // Send progress update
         const progress = {
           currentCount: importedGuests.length,
           totalCount: validGuests.length,
           duplicateCount: duplicateGuests.length,
-        };
+        }
 
         // In a real-time scenario, you would emit this progress to the client
         // For example, using Server-Sent Events or WebSockets
-        console.log("Progress update:", progress);
+        console.log("Progress update:", progress)
       } catch (error) {
-        console.error(`Error processing batch ${i}-${i + batchSize}:`, error);
-        errors.push(`Failed to process guests ${i}-${i + batchSize} ${error}`);
-        failedGuests.push(...batch);
+        console.error(`Error processing batch ${i}-${i + batchSize}:`, error)
+        errors.push(`Failed to process guests ${i}-${i + batchSize} ${error}`)
+        failedGuests.push(...batch)
       }
     }
 
@@ -118,18 +125,17 @@ export async function POST(request: Request) {
       failedGuests: failedGuests,
       duplicateGuests: duplicateGuests,
       errors: errors.length > 0 ? errors : undefined,
-    });
+    })
   } catch (error) {
-    console.error("Error importing guests:", error);
+    console.error("Error importing guests:", error)
     return NextResponse.json(
       {
         success: false,
         message: "Failed to import guests",
         error: error instanceof Error ? error.message : "Unknown error",
       },
-      { status: 500 }
-    );
-  } finally {
-    await prisma.$disconnect();
+      { status: 500 },
+    )
   }
 }
+
