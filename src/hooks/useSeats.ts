@@ -32,7 +32,7 @@ export const useSeats = () => {
     "/api/get-seat", 
     fetcher,
     {
-      refreshInterval: 20000, // Refresh every 20 seconds (1 minute)
+      refreshInterval: 10000, // Refresh every 10 seconds (1 minute)
     }
   )
 
