@@ -27,7 +27,7 @@ export async function POST() {
     const idsToDelete = new Set<string>();
 
     // Process each group of users with the same name
-    for (const [_, duplicateUsers] of userGroups) {
+    for (const [, duplicateUsers] of userGroups) {
       if (duplicateUsers.length <= 1) continue;
 
       // Sort users: users with seats come first
