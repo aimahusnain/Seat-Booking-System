@@ -25,7 +25,7 @@ export default function AuthForm({ onAuthenticate }: AuthFormProps) {
     e.preventDefault()
 
     // Replace this with your actual password hash
-    const correctPasswordHash = "5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8" // SHA-256 hash of "password"
+    const correctPasswordHash = "960596e95046987cdee0c19fcb38235fa6602391acef6a2219c4f281e427aff3" // SHA-256 hash of "Jodel123"
 
     const inputHash = await sha256(password)
 
