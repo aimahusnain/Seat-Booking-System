@@ -14,16 +14,9 @@ export default function AuthForm({ onAuthenticate }: AuthFormProps) {
   const [password, setPassword] = useState("")
 
   const sha256 = async (message: string) => {
-    // encode as UTF-8
     const msgBuffer = new TextEncoder().encode(message)
-
-    // hash the message
     const hashBuffer = await crypto.subtle.digest("SHA-256", msgBuffer)
-
-    // convert ArrayBuffer to Array
     const hashArray = Array.from(new Uint8Array(hashBuffer))
-
-    // convert bytes to hex string
     const hashHex = hashArray.map((b) => b.toString(16).padStart(2, "0")).join("")
     return hashHex
   }
@@ -32,12 +25,11 @@ export default function AuthForm({ onAuthenticate }: AuthFormProps) {
     e.preventDefault()
 
     // Replace this with your actual password hash
-    const correctPasswordHash = "c56981074bcc743259f7434b53baef47e78ed5cec99c3379b3374c8a1114380f" // SHA-256 hash of "SeatBookingSystemJodel"
+    const correctPasswordHash = "5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8" // SHA-256 hash of "password"
 
     const inputHash = await sha256(password)
 
     if (inputHash === correctPasswordHash) {
-      localStorage.setItem("isAuthenticated", "true")
       onAuthenticate()
     } else {
       toast.error("Invalid password")
