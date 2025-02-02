@@ -315,9 +315,9 @@ const SeatBooking = () => {
         border: "border-pink-300",
       },
       {
-        bg: "from-indigo-100 to-indigo-200",
-        text: "text-indigo-700",
-        border: "border-indigo-300",
+        bg: "from-zinc-100 to-zinc-200",
+        text: "text-zinc-700",
+        border: "border-zinc-300",
       },
       {
         bg: "from-orange-100 to-orange-200",
@@ -572,7 +572,7 @@ const SeatBooking = () => {
             </div>
 
             <div className="grid gap-12 p-8">
-              <div className="overflow-hidden rounded-xl border border-indigo-200 bg-white shadow-lg p-8">
+              <div className="overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-lg p-8">
                 <div className="flex justify-between items-center mb-6">
                   <Button
                     variant="outline"
@@ -581,12 +581,13 @@ const SeatBooking = () => {
                       setCurrentSection((prev) => Math.max(0, prev - 1))
                     }
                     disabled={currentSection === 0}
-                    className="hover:bg-indigo-50"
+                    className="hover:bg-zinc-50"
                   >
                     <ChevronLeft className="h-4 w-4" />
                   </Button>
-                  <span className="text-sm font-medium text-indigo-600">
-                    Section {currentSection + 1} of {maxSections()}
+                  <span className="text-sm font-bold text-zinc-600">
+                    Room {currentSection + 1}
+                    {/* of {maxSections()} */}
                   </span>
                   <Button
                     variant="outline"
@@ -597,24 +598,29 @@ const SeatBooking = () => {
                       )
                     }
                     disabled={currentSection === maxSections() - 1}
-                    className="hover:bg-indigo-50"
+                    className="hover:bg-zinc-50"
                   >
                     <ChevronRight className="h-4 w-4" />
                   </Button>
                 </div>
 
-
                 {tables.length > 0 ? (
                   <div className="flex flex-wrap justify-center">
-                    {getVisibleTables().map((table) => renderCircularTable(table))}
+                    {getVisibleTables().map((table) =>
+                      renderCircularTable(table)
+                    )}
                   </div>
                 ) : (
                   <div className="text-center py-12">
-                    <h3 className="text-2xl font-semibold text-gray-700 mb-4">No Tables Found</h3>
-                    <p className="text-gray-500 mb-6">It looks like there are no tables available at the moment.</p>
+                    <h3 className="text-2xl font-semibold text-gray-700 mb-4">
+                      No Tables Found
+                    </h3>
+                    <p className="text-gray-500 mb-6">
+                      It looks like there are no tables available at the moment.
+                    </p>
                     <Button
                       onClick={() => setIsAddTableOpen(true)}
-                      className="bg-indigo-600 hover:bg-indigo-700 text-white"
+                      className="bg-zinc-600 hover:bg-zinc-700 text-white"
                     >
                       <Plus className="h-4 w-4 mr-2" />
                       Add Your First Table
@@ -638,7 +644,10 @@ const SeatBooking = () => {
             <span className="flex items-end justify-end gap-1">
               Made by{" "}
               <Link href="https://devkins.dev/" target="_blank">
-                <Button variant="link" className="p-0 !h-fit font-bold text-lg"> Devkins</Button>
+                <Button variant="link" className="p-0 !h-fit font-bold text-lg">
+                  {" "}
+                  Devkins
+                </Button>
               </Link>
             </span>
           </CardContent>
@@ -663,21 +672,21 @@ const SeatBooking = () => {
       <Dialog open={isConfirmationOpen} onOpenChange={setIsConfirmationOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle className="text-xl font-bold text-indigo-800">
+            <DialogTitle className="text-xl font-bold text-zinc-800">
               Confirm Booking
             </DialogTitle>
             <DialogDescription className="mt-2">
               <div className="space-y-2">
-                <div className="p-4 bg-indigo-50 rounded-lg">
-                  <p className="font-medium text-indigo-700">
+                <div className="p-4 bg-zinc-50 rounded-lg">
+                  <p className="font-medium text-zinc-700">
                     Table {selectedSeat?.tableNumber}, Seat{" "}
                     {selectedSeat?.seatNumber}
                   </p>
-                  <p className="text-indigo-600">
+                  <p className="text-zinc-600">
                     {personToBook?.firstName} {personToBook?.lastName}
                   </p>
                 </div>
-                <p className="text-sm text-indigo-600">
+                <p className="text-sm text-zinc-600">
                   Please confirm if you want to proceed with this booking.
                 </p>
               </div>
@@ -693,7 +702,7 @@ const SeatBooking = () => {
             </Button>
             <Button
               onClick={handleConfirmBooking}
-              className="w-full sm:w-auto bg-indigo-600 hover:bg-indigo-700 text-white"
+              className="w-full sm:w-auto bg-zinc-600 hover:bg-zinc-700 text-white"
             >
               Confirm Booking
             </Button>
