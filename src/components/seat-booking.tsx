@@ -30,33 +30,6 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { BookingSidebar } from "./booking-sidebar"
 import { Switch } from "@/components/ui/switch"
 
-const useResponsiveLayout = () => {
-  const [layout, setLayout] = useState({
-    tablesPerPage: 12,
-    isMobile: false,
-    isTablet: false,
-  })
-
-  useEffect(() => {
-    const handleResize = () => {
-      const width = window.innerWidth
-      if (width < 640) {
-        setLayout({ tablesPerPage: 1, isMobile: true, isTablet: false })
-      } else if (width < 1024) {
-        setLayout({ tablesPerPage: 4, isMobile: false, isTablet: true })
-      } else {
-        setLayout({ tablesPerPage: 100, isMobile: false, isTablet: false })
-      }
-    }
-
-    handleResize()
-    window.addEventListener("resize", handleResize)
-    return () => window.removeEventListener("resize", handleResize)
-  }, [])
-
-  return layout
-}
-
 const SeatBooking = () => {
   const { seats: initialSeats } = useSeats()
   const [tables, setTables] = useState<TableData[]>([])
@@ -65,12 +38,10 @@ const SeatBooking = () => {
   const [bookedSeats, setBookedSeats] = useState<Seat[]>([])
   const [isConfirmationOpen, setIsConfirmationOpen] = useState(false)
   const [personToBook, setPersonToBook] = useState<Person | null>(null)
-  const [currentSection, setCurrentSection] = useState(0)
   const [hoveredSeat, setHoveredSeat] = useState<string | null>(null)
   const [isAddTableOpen, setIsAddTableOpen] = useState(false)
   const pdfExportRef = useRef<{ generatePDF: () => void } | null>(null)
   const router = useRouter()
-  const { tablesPerPage, isMobile } = useResponsiveLayout()
   const [hoveredTable, setHoveredTable] = useState<number | null>(null)
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
   const [tableToDelete, setTableToDelete] = useState<number | null>(null)
@@ -117,9 +88,8 @@ const SeatBooking = () => {
   }, [isFullScreen])
 
   const getVisibleTables = () => {
-    return tables.slice(currentSection * tablesPerPage, (currentSection + 1) * tablesPerPage)
+    return tables
   }
-
   // const maxSections = () => {
   //   return Math.ceil(tables.length / tablesPerPage)
   // }
@@ -446,10 +416,6 @@ const SeatBooking = () => {
     )
   }
 
-  const filteredBookedSeats = bookedSeats.filter((seat) =>
-    `${seat.user?.firstname} ${seat.user?.lastname}`.toLowerCase().includes(searchTerm.toLowerCase()),
-  )
-
   const handleFullScreenToggle = (checked: boolean) => {
     setIsFullScreen(checked)
     if (checked) {
@@ -476,7 +442,7 @@ const SeatBooking = () => {
         toast.error("Failed to change password")
       }
     } catch (error) {
-      toast.error("An error occurred while changing the password")
+      toast.error(`An error occurred while changing the password ${error}`)
     }
   }
 

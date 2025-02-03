@@ -1,11 +1,11 @@
 "use client";
 
-import { useState, useMemo } from "react";
 import { Button } from "@/components/ui/button";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { Input } from "@/components/ui/input";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import type { Seat } from "@/types/booking";
-import { Search, Trash2, Printer, User } from "lucide-react";
+import { Search, Trash2, User } from "lucide-react";
+import { useMemo, useState } from "react";
 import PrintableBooking from "./single-seat-pdf";
 
 interface BookingSidebarProps {
