@@ -1,9 +1,9 @@
-"use client";
+"use client"
 
-import { useState, useEffect } from "react";
-import { Button } from "@/components/ui/button";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useState, useEffect } from "react"
+import { Button } from "@/components/ui/button"
+import { ScrollArea } from "@/components/ui/scroll-area"
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import {
   Dialog,
   DialogContent,
@@ -11,120 +11,110 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { motion, AnimatePresence } from "framer-motion";
-import { ChevronDown, Search, Trash2, LogOut, Check } from "lucide-react";
-import { useRouter } from "next/navigation";
-import { useRef } from "react";
-import { toast } from "sonner";
-import { useSeats } from "../hooks/useSeats";
-import type { Person, Seat, TableData } from "../types/booking";
-import { AddTableForm } from "./add-table-form";
-import { PDFExport } from "./pdf-export";
-import { PersonSelector } from "./person-selector";
-import Link from "next/link";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-import { BookingSidebar } from "./booking-sidebar";
-import { Switch } from "@/components/ui/switch";
+} from "@/components/ui/dialog"
+import { Input } from "@/components/ui/input"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { motion, AnimatePresence } from "framer-motion"
+import { ChevronDown, Search, Trash2, Check } from "lucide-react"
+import { useRouter } from "next/navigation"
+import { useRef } from "react"
+import { toast } from "sonner"
+import { useSeats } from "../hooks/useSeats"
+import type { Person, Seat, TableData } from "../types/booking"
+import { AddTableForm } from "./add-table-form"
+import { PDFExport } from "./pdf-export"
+import { PersonSelector } from "./person-selector"
+import Link from "next/link"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
+import { BookingSidebar } from "./booking-sidebar"
+import { Switch } from "@/components/ui/switch"
 
 const SeatBooking = () => {
-  const { seats: initialSeats, loading, error } = useSeats();
-  const [tables, setTables] = useState<TableData[]>([]);
-  const [selectedSeat, setSelectedSeat] = useState<Seat | null>(null);
-  const [isPersonSelectorOpen, setIsPersonSelectorOpen] = useState(false);
-  const [bookedSeats, setBookedSeats] = useState<Seat[]>([]);
-  const [isConfirmationOpen, setIsConfirmationOpen] = useState(false);
-  const [personToBook, setPersonToBook] = useState<Person | null>(null);
-  const [hoveredSeat, setHoveredSeat] = useState<string | null>(null);
-  const [isAddTableOpen, setIsAddTableOpen] = useState(false);
-  const pdfExportRef = useRef<{ generatePDF: () => void } | null>(null);
-  const router = useRouter();
-  const [hoveredTable, setHoveredTable] = useState<number | null>(null);
-  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const [tableToDelete, setTableToDelete] = useState<number | null>(null);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [isFullScreen, setIsFullScreen] = useState(false);
-  const [isChangePasswordOpen, setIsChangePasswordOpen] = useState(false);
-  const [newPassword, setNewPassword] = useState("");
+  const { seats: initialSeats, loading, error } = useSeats()
+  const [tables, setTables] = useState<TableData[]>([])
+  const [selectedSeat, setSelectedSeat] = useState<Seat | null>(null)
+  const [isPersonSelectorOpen, setIsPersonSelectorOpen] = useState(false)
+  const [bookedSeats, setBookedSeats] = useState<Seat[]>([])
+  const [isConfirmationOpen, setIsConfirmationOpen] = useState(false)
+  const [personToBook, setPersonToBook] = useState<Person | null>(null)
+  const [hoveredSeat, setHoveredSeat] = useState<string | null>(null)
+  const [isAddTableOpen, setIsAddTableOpen] = useState(false)
+  const pdfExportRef = useRef<{ generatePDF: () => void } | null>(null)
+  const router = useRouter()
+  const [hoveredTable, setHoveredTable] = useState<number | null>(null)
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
+  const [tableToDelete, setTableToDelete] = useState<number | null>(null)
+  const [searchTerm, setSearchTerm] = useState("")
+  const [isFullScreen, setIsFullScreen] = useState(false)
+  const [isChangePasswordOpen, setIsChangePasswordOpen] = useState(false)
+  const [newPassword, setNewPassword] = useState("")
 
   useEffect(() => {
     if (initialSeats.length > 0) {
-      const groupedSeats = initialSeats.reduce(
-        (acc: { [key: string]: Seat[] }, seat) => {
-          if (!acc[seat.table.name]) {
-            acc[seat.table.name] = [];
-          }
-          acc[seat.table.name].push(seat);
-          return acc;
-        },
-        {}
-      );
+      const groupedSeats = initialSeats.reduce((acc: { [key: string]: Seat[] }, seat) => {
+        if (!acc[seat.table.name]) {
+          acc[seat.table.name] = []
+        }
+        acc[seat.table.name].push(seat)
+        return acc
+      }, {})
 
       const formattedTables: TableData[] = Object.entries(groupedSeats)
         .map(([tableName, seats]) => ({
           tableNumber: Number.parseInt(tableName.replace("Table", "")),
           seats: seats.sort((a, b) => a.seat - b.seat),
         }))
-        .sort((a, b) => a.tableNumber - b.tableNumber);
+        .sort((a, b) => a.tableNumber - b.tableNumber)
 
-      setTables(formattedTables);
-      setBookedSeats(initialSeats.filter((seat) => seat.isBooked));
+      setTables(formattedTables)
+      setBookedSeats(initialSeats.filter((seat) => seat.isBooked))
     }
-  }, [initialSeats]);
+  }, [initialSeats])
 
   useEffect(() => {
     const handleEscKey = (event: KeyboardEvent) => {
       if (event.key === "Escape" && isFullScreen) {
-        setIsFullScreen(false);
-        toast.info("Exited full-screen mode");
+        setIsFullScreen(false)
+        toast.info("Exited full-screen mode")
       }
-    };
+    }
 
-    document.addEventListener("keydown", handleEscKey);
+    document.addEventListener("keydown", handleEscKey)
 
     return () => {
-      document.removeEventListener("keydown", handleEscKey);
-    };
-  }, [isFullScreen]);
+      document.removeEventListener("keydown", handleEscKey)
+    }
+  }, [isFullScreen])
 
   const getVisibleTables = () => {
-    return tables;
-  };
+    return tables
+  }
 
   const handleSeatClick = (seat: Seat) => {
-    if (!seat.isBooked) {
-      setSelectedSeat(seat);
-      setIsPersonSelectorOpen(true);
+    if (seat.isBooked) {
+      // Toggle received status when clicking a booked seat
+      handleToggleReceived(seat.id, !seat.isReceived)
+    } else {
+      setSelectedSeat(seat)
+      setIsPersonSelectorOpen(true)
     }
-  };
+  }
 
   const handlePersonSelect = (person: Person) => {
     if (selectedSeat) {
-      setPersonToBook(person);
-      setIsConfirmationOpen(true);
-      setIsPersonSelectorOpen(false);
+      setPersonToBook(person)
+      setIsConfirmationOpen(true)
+      setIsPersonSelectorOpen(false)
     }
-  };
+  }
 
   const handleConfirmBooking = async () => {
     if (selectedSeat && personToBook) {
-      setIsConfirmationOpen(false);
+      setIsConfirmationOpen(false)
 
       try {
-        const toastId = toast.loading("Booking seat...");
+        const toastId = toast.loading("Booking seat...")
 
         const response = await fetch("/api/update-seat", {
           method: "PUT",
@@ -135,9 +125,9 @@ const SeatBooking = () => {
             seatId: selectedSeat.id,
             userId: personToBook.id,
           }),
-        });
+        })
 
-        const result = await response.json();
+        const result = await response.json()
 
         if (result.success) {
           const updatedTables = tables.map((table) => ({
@@ -154,11 +144,11 @@ const SeatBooking = () => {
                       lastname: personToBook.lastName,
                     },
                   }
-                : seat
+                : seat,
             ),
-          }));
+          }))
 
-          setTables(updatedTables);
+          setTables(updatedTables)
           setBookedSeats([
             ...bookedSeats,
             {
@@ -171,38 +161,38 @@ const SeatBooking = () => {
                 lastname: personToBook.lastName,
               },
             },
-          ]);
+          ])
 
           toast.success(
             <div className="flex flex-col gap-1">
               <div className="font-semibold">Booking Confirmed! ✨</div>
               <div className="text-sm opacity-90">
-                {personToBook.firstName} {personToBook.lastName} is assigned to
-                Table {selectedSeat.table.name}, Seat {selectedSeat.seat}
+                {personToBook.firstName} {personToBook.lastName} is assigned to Table {selectedSeat.table.name}, Seat{" "}
+                {selectedSeat.seat}
               </div>
             </div>,
-            { id: toastId, duration: 4000 }
-          );
+            { id: toastId, duration: 4000 },
+          )
         } else {
           toast.error("Booking failed", {
             id: toastId,
             description: result.message || "Unable to book the seat",
-          });
+          })
         }
       } catch (error) {
         toast.error("Booking failed", {
           description: `An unexpected error occurred ${error}`,
-        });
+        })
       } finally {
-        setSelectedSeat(null);
-        setPersonToBook(null);
+        setSelectedSeat(null)
+        setPersonToBook(null)
       }
     }
-  };
+  }
 
   const handleDeleteBooking = async (seatId: string) => {
     try {
-      const toastId = toast.loading("Deleting booking...");
+      const toastId = toast.loading("Deleting booking...")
 
       const response = await fetch("/api/delete-booking", {
         method: "PUT",
@@ -212,9 +202,9 @@ const SeatBooking = () => {
         body: JSON.stringify({
           seatId,
         }),
-      });
+      })
 
-      const result = await response.json();
+      const result = await response.json()
 
       if (result.success) {
         const updatedTables = tables.map((table) => ({
@@ -227,34 +217,32 @@ const SeatBooking = () => {
                   userId: null,
                   user: null,
                 }
-              : seat
+              : seat,
           ),
-        }));
+        }))
 
-        setTables(updatedTables);
-        setBookedSeats(bookedSeats.filter((seat) => seat.id !== seatId));
+        setTables(updatedTables)
+        setBookedSeats(bookedSeats.filter((seat) => seat.id !== seatId))
 
         toast.success(
           <div className="flex flex-col gap-1">
             <div className="font-semibold">Booking Deleted</div>
-            <div className="text-sm opacity-90">
-              The seat has been successfully freed up
-            </div>
+            <div className="text-sm opacity-90">The seat has been successfully freed up</div>
           </div>,
-          { id: toastId }
-        );
+          { id: toastId },
+        )
       } else {
         toast.error("Delete Failed", {
           id: toastId,
           description: "There was an error deleting the booking.",
-        });
+        })
       }
     } catch (error) {
       toast.error("Delete Failed", {
         description: `An unexpected error occurred while deleting the booking ${error}`,
-      });
+      })
     }
-  };
+  }
 
   const getTableColor = (tableNumber: number) => {
     const colors = [
@@ -266,9 +254,9 @@ const SeatBooking = () => {
       "bg-pink-100 text-pink-700 border-pink-300",
       "bg-indigo-100 text-indigo-700 border-indigo-300",
       "bg-teal-100 text-teal-700 border-teal-300",
-    ];
-    return colors[tableNumber % colors.length];
-  };
+    ]
+    return colors[tableNumber % colors.length]
+  }
 
   const handleDeleteTable = async (tableNumber: number) => {
     try {
@@ -278,40 +266,33 @@ const SeatBooking = () => {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({ tableNumber }),
-      });
+      })
 
-      const result = await response.json();
+      const result = await response.json()
 
       if (result.success) {
-        toast.success("Table deleted successfully");
-        setTables(tables.filter((t) => t.tableNumber !== tableNumber));
-        setBookedSeats(
-          bookedSeats.filter(
-            (seat) => seat.table.name !== `Table${tableNumber}`
-          )
-        );
-        router.refresh();
+        toast.success("Table deleted successfully")
+        setTables(tables.filter((t) => t.tableNumber !== tableNumber))
+        setBookedSeats(bookedSeats.filter((seat) => seat.table.name !== `Table${tableNumber}`))
+        router.refresh()
       } else {
-        throw new Error(result.message || "Failed to delete table");
+        throw new Error(result.message || "Failed to delete table")
       }
     } catch (error) {
       toast.error("Failed to delete table", {
-        description:
-          error instanceof Error ? error.message : "Unknown error occurred",
-      });
+        description: error instanceof Error ? error.message : "Unknown error occurred",
+      })
     }
-    setIsDeleteDialogOpen(false);
-  };
+    setIsDeleteDialogOpen(false)
+  }
 
   const renderCircularTable = (table: TableData) => {
-    const tableColor = getTableColor(table.tableNumber);
-    const isHovered = hoveredTable === table.tableNumber;
+    const tableColor = getTableColor(table.tableNumber)
+    const isHovered = hoveredTable === table.tableNumber
 
     return (
       <motion.div
-        className={`relative w-full aspect-square mx-auto ${
-          isFullScreen ? "max-w-[500px]" : "max-w-[300px]"
-        }`}
+        className={`relative w-full aspect-square mx-auto ${isFullScreen ? "max-w-[500px]" : "max-w-[300px]"}`}
         onMouseEnter={() => setHoveredTable(table.tableNumber)}
         onMouseLeave={() => setHoveredTable(null)}
         layout
@@ -326,9 +307,7 @@ const SeatBooking = () => {
             className={`relative ${tableColor} rounded-full px-4 py-2 transition-all duration-200 ease-in-out mt-5 ml-5`}
           >
             <span className="flex items-center justify-center">
-              <span className={`font-semibold text-lg text-center`}>
-                Table {table.tableNumber}
-              </span>
+              <span className={`font-semibold text-lg text-center`}>Table {table.tableNumber}</span>
             </span>
 
             {/* Delete Button - Shows on Hover */}
@@ -346,9 +325,9 @@ const SeatBooking = () => {
                         size="sm"
                         className="rounded-full w-8 h-8 p-0"
                         onClick={(e) => {
-                          e.stopPropagation();
-                          setTableToDelete(table.tableNumber);
-                          setIsDeleteDialogOpen(true);
+                          e.stopPropagation()
+                          setTableToDelete(table.tableNumber)
+                          setIsDeleteDialogOpen(true)
                         }}
                       >
                         <Trash2 className="h-4 w-4" />
@@ -366,10 +345,10 @@ const SeatBooking = () => {
 
         {/* Circular Seats */}
         {table.seats.map((seat, index) => {
-          const angle = ((index - 2.5) * 2 * Math.PI) / 10;
-          const radius = 45; // Percentage of container width
-          const left = 43 + Math.cos(angle) * radius;
-          const top = 43 + Math.sin(angle) * radius;
+          const angle = ((index - 2.5) * 2 * Math.PI) / 10
+          const radius = 45 // Percentage of container width
+          const left = 43 + Math.cos(angle) * radius
+          const top = 43 + Math.sin(angle) * radius
 
           return (
             <motion.div
@@ -377,9 +356,7 @@ const SeatBooking = () => {
               initial={{ opacity: 0, scale: 0.5 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.3, delay: index * 0.05 }}
-              className={`absolute ${
-                isFullScreen ? "w-[20%]" : "w-[15%]"
-              } aspect-square`}
+              className={`absolute ${isFullScreen ? "w-[20%]" : "w-[15%]"} aspect-square`}
               style={{
                 left: `${left}%`,
                 top: `${top}%`,
@@ -397,12 +374,15 @@ const SeatBooking = () => {
                         transition-all duration-200
                         ${
                           seat.isBooked
-                            ? seat.isReceived
-                              ? "bg-green-200 border-green-300 text-green-600"
-                              : "bg-red-200 border-red-300 text-red-600"
+                            ? "cursor-pointer " +
+                              (
+                                seat.isReceived
+                                  ? "bg-green-200 border-green-300 text-green-600"
+                                  : "bg-red-200 border-red-300 text-red-600"
+                              )
                             : hoveredSeat === seat.id
-                            ? `${tableColor}`
-                            : `bg-white hover:${tableColor}`
+                              ? `${tableColor} cursor-pointer`
+                              : `bg-white hover:${tableColor} cursor-pointer`
                         }
                         border-2
                       `}
@@ -416,13 +396,7 @@ const SeatBooking = () => {
                           <span className="font-bold text-lg">X</span>
                         )
                       ) : (
-                        <span
-                          className={`text-sm font-medium ${
-                            isFullScreen ? "text-lg" : ""
-                          }`}
-                        >
-                          {seat.seat}
-                        </span>
+                        <span className={`text-sm font-medium ${isFullScreen ? "text-lg" : ""}`}>{seat.seat}</span>
                       )}
                     </div>
                   </TooltipTrigger>
@@ -435,8 +409,9 @@ const SeatBooking = () => {
                         <p className="text-xs text-muted-foreground">
                           {seat.table.name}, Seat {seat.seat}
                         </p>
-                        <p className="text-xs text-muted-foreground">
-                          {seat.isReceived ? "Received" : "Not Received"}
+                        <p className="text-xs font-medium">Status: {seat.isReceived ? "Received" : "Not Received"}</p>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          Click to {seat.isReceived ? "mark as not received" : "mark as received"}
                         </p>
                       </div>
                     ) : (
@@ -446,18 +421,18 @@ const SeatBooking = () => {
                 </Tooltip>
               </TooltipProvider>
             </motion.div>
-          );
+          )
         })}
       </motion.div>
-    );
-  };
+    )
+  }
 
   const handleFullScreenToggle = (checked: boolean) => {
-    setIsFullScreen(checked);
+    setIsFullScreen(checked)
     if (checked) {
-      toast.info("Press Esc to exit full-screen mode");
+      toast.info("Press Esc to exit full-screen mode")
     }
-  };
+  }
 
   const handleChangePassword = async () => {
     try {
@@ -467,18 +442,18 @@ const SeatBooking = () => {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({ newPassword }),
-      });
-      const data = await response.json();
+      })
+      const data = await response.json()
       if (data.success) {
-        toast.success("Password changed successfully");
-        setIsChangePasswordOpen(false);
+        toast.success("Password changed successfully")
+        setIsChangePasswordOpen(false)
       } else {
-        toast.error("Failed to change password");
+        toast.error("Failed to change password")
       }
     } catch (error) {
-      toast.error(`An error occurred while changing the password ${error}`);
+      toast.error(`An error occurred while changing the password ${error}`)
     }
-  };
+  }
 
   const handleToggleReceived = async (seatId: string, isReceived: boolean) => {
     try {
@@ -491,55 +466,40 @@ const SeatBooking = () => {
           seatId,
           isReceived,
         }),
-      });
+      })
 
-      const result = await response.json();
+      const result = await response.json()
 
       if (result.success) {
         const updatedTables = tables.map((table) => ({
           ...table,
-          seats: table.seats.map((seat) =>
-            seat.id === seatId ? { ...seat, isReceived } : seat
-          ),
-        }));
+          seats: table.seats.map((seat) => (seat.id === seatId ? { ...seat, isReceived } : seat)),
+        }))
 
-        setTables(updatedTables);
-        setBookedSeats(
-          bookedSeats.map((seat) =>
-            seat.id === seatId ? { ...seat, isReceived } : seat
-          )
-        );
+        setTables(updatedTables)
+        setBookedSeats(bookedSeats.map((seat) => (seat.id === seatId ? { ...seat, isReceived } : seat)))
 
-        toast.success(
-          `Seat ${isReceived ? "marked as received" : "unmarked as received"}`
-        );
+        toast.success(`Seat ${isReceived ? "marked as received" : "unmarked as received"}`)
       } else {
-        throw new Error(
-          result.message || "Failed to update seat received status"
-        );
+        throw new Error(result.message || "Failed to update seat received status")
       }
     } catch (error) {
       toast.error("Failed to update seat received status", {
-        description:
-          error instanceof Error ? error.message : "Unknown error occurred",
-      });
+        description: error instanceof Error ? error.message : "Unknown error occurred",
+      })
     }
-  };
+  }
 
   if (loading) {
-    return <div>Loading...</div>;
+    return <div>Loading...</div>
   }
 
   if (error) {
-    return <div>Error: {error}</div>;
+    return <div>Error: {error}</div>
   }
 
   return (
-    <div
-      className={`min-h-screen bg-zinc-50 ${
-        isFullScreen ? "overflow-hidden" : ""
-      }`}
-    >
+    <div className={`min-h-screen bg-zinc-50 ${isFullScreen ? "overflow-hidden" : ""}`}>
       <AnimatePresence>
         {!isFullScreen && (
           <motion.nav
@@ -550,10 +510,7 @@ const SeatBooking = () => {
           >
             <div className="flex items-center justify-between h-16">
               {/* Logo */}
-              <Link
-                href="/"
-                className="flex justify-center items-center space-x-2"
-              >
+              <Link href="/" className="flex justify-center items-center space-x-2">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   viewBox="0 0 24 24"
@@ -570,9 +527,7 @@ const SeatBooking = () => {
                   <path d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-8" />
                   <line x1="2" y1="2" x2="22" y2="22" />
                 </svg>
-                <span className="text-xl font-bold text-zinc-900">
-                  Seat Booking
-                </span>
+                <span className="text-xl font-bold text-zinc-900">Seat Booking</span>
               </Link>
 
               {/* Search Bar */}
@@ -599,40 +554,24 @@ const SeatBooking = () => {
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
-                    <DropdownMenuItem onClick={() => setIsAddTableOpen(true)}>
-                      New Table
-                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setIsAddTableOpen(true)}>New Table</DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
 
                 <div className="flex items-center space-x-2">
                   <span className="text-sm font-medium">Full Screen</span>
-                  <Switch
-                    checked={isFullScreen}
-                    onCheckedChange={handleFullScreenToggle}
-                  />
+                  <Switch checked={isFullScreen} onCheckedChange={handleFullScreenToggle} />
                 </div>
 
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Avatar>
-                      <AvatarImage
-                        src="https://github.com/shadcn.png"
-                        alt="@shadcn"
-                      />
+                      <AvatarImage src="https://github.com/shadcn.png" alt="@shadcn" />
                       <AvatarFallback>JA</AvatarFallback>
                     </Avatar>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
-                    <DropdownMenuItem
-                      onClick={() => setIsChangePasswordOpen(true)}
-                    >
-                      Change Password
-                    </DropdownMenuItem>
-                    <DropdownMenuItem>
-                      <LogOut className="mr-2 h-4 w-4" />
-                      <span>Log out</span>
-                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setIsChangePasswordOpen(true)}>Change Password</DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
               </div>
@@ -642,17 +581,11 @@ const SeatBooking = () => {
       </AnimatePresence>
 
       {/* Main Content */}
-      <div
-        className={`flex flex-col lg:flex-row ${
-          isFullScreen ? "h-screen" : "h-[calc(100vh-64px)]"
-        }`}
-      >
+      <div className={`flex flex-col lg:flex-row ${isFullScreen ? "h-screen" : "h-[calc(100vh-64px)]"}`}>
         {/* Main Content - 80% on desktop, 100% on mobile */}
         <motion.div
           layout
-          className={`w-full ${
-            isFullScreen ? "" : "lg:w-3/4"
-          } bg-zinc-50 overflow-hidden`}
+          className={`w-full ${isFullScreen ? "" : "lg:w-3/4"} bg-zinc-50 overflow-hidden`}
           animate={{
             width: isFullScreen ? "100%" : "75%",
           }}
@@ -695,9 +628,7 @@ const SeatBooking = () => {
           </AnimatePresence>
 
           {/* Scrollable Table Grid */}
-          <ScrollArea
-            className={`${isFullScreen ? "h-screen" : "h-[calc(100vh-144px)]"}`}
-          >
+          <ScrollArea className={`${isFullScreen ? "h-screen" : "h-[calc(100vh-144px)]"}`}>
             <motion.div
               layout
               className={`py-6 px-8 grid gap-12`}
@@ -742,9 +673,7 @@ const SeatBooking = () => {
       <Dialog open={isConfirmationOpen} onOpenChange={setIsConfirmationOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle className="text-xl font-bold text-zinc-800">
-              Confirm Booking
-            </DialogTitle>
+            <DialogTitle className="text-xl font-bold text-zinc-800">Confirm Booking</DialogTitle>
             <DialogDescription className="mt-2">
               <div className="space-y-2">
                 <div className="p-4 bg-zinc-50 rounded-lg">
@@ -755,9 +684,7 @@ const SeatBooking = () => {
                     {personToBook?.firstName} {personToBook?.lastName}
                   </p>
                 </div>
-                <p className="text-sm text-zinc-600">
-                  Please confirm if you want to proceed with this booking.
-                </p>
+                <p className="text-sm text-zinc-600">Please confirm if you want to proceed with this booking.</p>
               </div>
             </DialogDescription>
           </DialogHeader>
@@ -778,36 +705,27 @@ const SeatBooking = () => {
         isOpen={isAddTableOpen}
         onClose={() => setIsAddTableOpen(false)}
         onSuccess={() => {
-          router.refresh();
+          router.refresh()
         }}
       />
 
       <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle className="text-xl font-bold text-red-800">
-              Delete Table
-            </DialogTitle>
+            <DialogTitle className="text-xl font-bold text-red-800">Delete Table</DialogTitle>
             <DialogDescription className="mt-2">
               <div className="space-y-2">
                 <div className="p-4 bg-red-50 rounded-lg">
-                  <p className="font-medium text-red-700">
-                    Are you sure you want to delete Table {tableToDelete}?
-                  </p>
+                  <p className="font-medium text-red-700">Are you sure you want to delete Table {tableToDelete}?</p>
                   <p className="text-red-600 text-sm mt-2">
-                    This will permanently delete the table and all its seat
-                    assignments. This action cannot be undone.
+                    This will permanently delete the table and all its seat assignments. This action cannot be undone.
                   </p>
                 </div>
               </div>
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="flex-col sm:flex-row gap-2 mt-4">
-            <Button
-              variant="outline"
-              onClick={() => setIsDeleteDialogOpen(false)}
-              className="w-full sm:w-auto"
-            >
+            <Button variant="outline" onClick={() => setIsDeleteDialogOpen(false)} className="w-full sm:w-auto">
               Cancel
             </Button>
             <Button
@@ -821,18 +739,11 @@ const SeatBooking = () => {
         </DialogContent>
       </Dialog>
 
-      <Dialog
-        open={isChangePasswordOpen}
-        onOpenChange={setIsChangePasswordOpen}
-      >
+      <Dialog open={isChangePasswordOpen} onOpenChange={setIsChangePasswordOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle className="text-xl font-bold text-zinc-800">
-              Change Password
-            </DialogTitle>
-            <DialogDescription className="mt-2">
-              Enter your new password below.
-            </DialogDescription>
+            <DialogTitle className="text-xl font-bold text-zinc-800">Change Password</DialogTitle>
+            <DialogDescription className="mt-2">Enter your new password below.</DialogDescription>
           </DialogHeader>
           <div className="mt-4">
             <Input
@@ -843,24 +754,16 @@ const SeatBooking = () => {
             />
           </div>
           <DialogFooter className="flex-col sm:flex-row gap-2 mt-4">
-            <Button
-              variant="outline"
-              onClick={() => setIsChangePasswordOpen(false)}
-              className="w-full sm:w-auto"
-            >
+            <Button variant="outline" onClick={() => setIsChangePasswordOpen(false)} className="w-full sm:w-auto">
               Cancel
             </Button>
-            <Button
-              onClick={handleChangePassword}
-              className="w-full sm:w-auto bg-zinc-600 hover:bg-zinc-700 text-white"
-            >
-              Change Password
-            </Button>
+            <Button onClick={handleChangePassword}>Change Password</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>
-  );
-};
+  )
+}
 
-export default SeatBooking;
+export default SeatBooking
+

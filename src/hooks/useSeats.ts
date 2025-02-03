@@ -18,8 +18,8 @@ export function useSeats() {
         } else {
           setError(data.message)
         }
-      } catch (err) {
-        setError("Failed to fetch seats")
+      } catch (error) {
+        setError(`Failed to fetch seats ${error}`)
       } finally {
         setLoading(false)
       }
