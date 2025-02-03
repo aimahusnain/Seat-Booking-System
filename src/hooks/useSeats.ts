@@ -25,12 +25,22 @@ export function useSeats() {
       }
     }
 
+    // Initial fetch
     fetchSeats()
-  }, [])
+
+    // Set up polling every 5 seconds
+    const intervalId = setInterval(() => {
+      fetchSeats()
+    }, 5000)
+
+    // Cleanup function to clear the interval when component unmounts
+    return () => {
+      clearInterval(intervalId)
+    }
+  }, []) // Empty dependency array means this effect runs once on mount
 
   return { seats, loading, error }
 }
-
 
 
 // "use client"
