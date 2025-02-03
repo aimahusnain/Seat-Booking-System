@@ -1,12 +1,6 @@
 "use client";
 
 import { ScrollArea } from "@/components/ui/scroll-area";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 import { useSeats } from "@/hooks/useSeats";
 import { Seat, TableData } from "@/types/booking";
 import { motion } from "framer-motion";
