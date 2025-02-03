@@ -1,50 +1,35 @@
-// types/booking.ts
-
-export interface Person {
-  id: string;
-  firstName: string;
-  lastName: string;
+export interface Table {
+  id: string
+  name: string
 }
 
 export interface User {
-  id: string;
-  firstname: string;
-  lastname: string;
-  seat: UserSeat[];
-}
-
-export interface UserSeat {
-  id: string;
-  seat: number;
-  table: {
-    id: string;
-    name: string;
-  };
+  id: string
+  firstname: string
+  lastname: string
 }
 
 export interface Seat {
-  id: string;
-  tableId: string;
-  tableName: string;
-  tableNumber: number;
-  seatNumber: number;
-  isBooked: boolean;
-  userId: string | null;
-  user: {
-    id: string;
-    firstname: string;
-    lastname: string;
-  } | null;
+  id: string
+  tableId: string
+  seat: number
+  isBooked: boolean
+  isReceived: boolean
+  userId: string | null
+  table: Table
+  user: User | null
+  tableNumber: number
+  seatNumber: number
 }
 
 export interface TableData {
-  id?: string;  // Add this line
-  tableNumber: number;
-  name?: string;  // Add this line
-  seats: Seat[];
+  tableNumber: number
+  seats: Seat[]
 }
 
-// This type represents the actual API response structure
-export interface GuestApiResponse {
-  data: User[];
+export interface Person {
+  id: string
+  firstName: string
+  lastName: string
 }
+

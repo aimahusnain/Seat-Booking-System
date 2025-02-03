@@ -11,11 +11,11 @@ export async function POST(request: Request) {
     const table = await prisma.table.create({
       data: {
         name,
-        // Create all seats for this table
         Seat: {
           create: seats.map((seatNumber: number) => ({
             seat: seatNumber,
             isBooked: false,
+            isReceived: false,
           })),
         },
       },

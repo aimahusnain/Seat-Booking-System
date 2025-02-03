@@ -80,7 +80,7 @@ const PrintableBooking = ({ firstName, lastName, seats }: PrintBookingProps) => 
   }
 
   return (
-    <Button variant="ghost" size="sm" onClick={handlePrint} className="bg-blue-100 hover:text-blue-600">
+    <Button variant="ghost" size="sm" onClick={handlePrint}>
       <Printer className="h-4 w-4" />
     </Button>
   )

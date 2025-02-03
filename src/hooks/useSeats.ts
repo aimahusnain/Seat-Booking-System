@@ -1,48 +1,37 @@
-
 "use client"
 
-import useSWR from 'swr'
-import type { Seat } from "../types/booking"
+import { useState, useEffect } from "react"
+import type { Seat } from "@/types/booking"
 
-const fetcher = async (url: string) => {
-  const response = await fetch(url)
-  if (!response.ok) throw new Error("Failed to fetch seats")
-  
-  const result = await response.json()
-  return result.data.map((seat: { id: string; tableId: string; table: { name: string }; seat: number; isBooked: boolean; userId: string; user: { id: string; firstname: string; lastname: string } | null }) => ({
-    id: seat.id,
-    tableId: seat.tableId,
-    tableName: seat.table.name,
-    tableNumber: Number.parseInt(seat.table.name.replace("Table", "")),
-    seatNumber: seat.seat,
-    isBooked: seat.isBooked,
-    userId: seat.userId,
-    user: seat.user
-      ? {
-          id: seat.user.id,
-          firstname: seat.user.firstname,
-          lastname: seat.user.lastname,
+export function useSeats() {
+  const [seats, setSeats] = useState<Seat[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    async function fetchSeats() {
+      try {
+        const response = await fetch("/api/get-seat")
+        const data = await response.json()
+        if (data.success) {
+          setSeats(data.data)
+        } else {
+          setError(data.message)
         }
-      : null,
-  }))
-}
-
-export const useSeats = () => {
-  const { data, error, isLoading, mutate } = useSWR<Seat[]>(
-    "/api/get-seat", 
-    fetcher,
-    {
-      refreshInterval: 50000, // Refresh every 5 seconds (1 minute)
+      } catch (err) {
+        setError("Failed to fetch seats")
+      } finally {
+        setLoading(false)
+      }
     }
-  )
 
-  return { 
-    seats: data ?? [], 
-    loading: isLoading, 
-    error: error,
-    mutate 
-  }
+    fetchSeats()
+  }, [])
+
+  return { seats, loading, error }
 }
+
+
 
 // "use client"
 

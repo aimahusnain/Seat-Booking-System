@@ -1,37 +1,32 @@
-"use client";
-
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import type { Seat } from "@/types/booking";
-import { Search, Trash2, User } from "lucide-react";
-import { useMemo, useState } from "react";
-import PrintableBooking from "./single-seat-pdf";
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { ScrollArea } from "@/components/ui/scroll-area"
+import type { Seat } from "@/types/booking"
+import { Search, Trash2, User } from "lucide-react"
+import { useMemo, useState } from "react"
+import PrintableBooking from "./single-seat-pdf"
+import { Checkbox } from "@/components/ui/checkbox"
 
 interface BookingSidebarProps {
-  bookedSeats: Seat[];
-  onDeleteBooking: (seatId: string) => void;
+  bookedSeats: Seat[]
+  onDeleteBooking: (seatId: string) => void
+  onToggleReceived: (seatId: string, isReceived: boolean) => void
 }
 
-export function BookingSidebar({
-  bookedSeats,
-  onDeleteBooking,
-}: BookingSidebarProps) {
-  const [searchTerm, setSearchTerm] = useState("");
+export function BookingSidebar({ bookedSeats, onDeleteBooking, onToggleReceived }: BookingSidebarProps) {
+  const [searchTerm, setSearchTerm] = useState("")
 
   const filteredBookings = useMemo(() => {
     return bookedSeats.filter((seat) => {
-      const searchString = searchTerm.toLowerCase();
+      const searchString = searchTerm.toLowerCase()
       return (
         seat.user &&
         (seat.user.firstname.toLowerCase().includes(searchString) ||
           seat.user.lastname.toLowerCase().includes(searchString) ||
-          `${seat.user.firstname} ${seat.user.lastname}`
-            .toLowerCase()
-            .includes(searchString))
-      );
-    });
-  }, [bookedSeats, searchTerm]);
+          `${seat.user.firstname} ${seat.user.lastname}`.toLowerCase().includes(searchString))
+      )
+    })
+  }, [bookedSeats, searchTerm])
 
   return (
     <div className="flex flex-col h-full w-full max-w-xs shadow-lg">
@@ -67,15 +62,22 @@ export function BookingSidebar({
                     <h3 className="text-sm font-semibold text-gray-800 truncate">
                       {seat.user?.firstname} {seat.user?.lastname}
                     </h3>
-                    <p className="text-xs text-gray-500">
-                      Table {seat.tableNumber}
-                    </p>
+                    <p className="text-xs text-gray-500">{seat.table.name}</p>
                   </div>
-                  <div className="flex-shrink-0 text-2xl font-bold text-indigo-600">
-                    #{seat.seatNumber}
-                  </div>
+                  <div className="flex-shrink-0 text-2xl font-bold text-indigo-600">#{seat.seat}</div>
                 </div>
                 <div className="bg-gray-50 px-4 py-2 flex justify-between items-center">
+                  <div className="flex items-center space-x-2">
+                    <Checkbox
+                      id={`received-${seat.id}`}
+                      checked={seat.isReceived}
+                      onCheckedChange={(checked) => onToggleReceived(seat.id, checked as boolean)}
+                    />
+                    <label htmlFor={`received-${seat.id}`} className="text-sm text-gray-700 cursor-pointer">
+                      Received
+                    </label>
+                  </div>
+                  <div>
                   <PrintableBooking
                     firstName={seat.user?.firstname || ""}
                     lastName={seat.user?.lastname || ""}
@@ -88,8 +90,9 @@ export function BookingSidebar({
                     className="text-gray-600 hover:text-red-600 hover:bg-red-50"
                   >
                     <Trash2 className="h-4 w-4 mr-1" />
-                    <span className="text-xs">Remove</span>
+                    {/* <span className="text-xs">Remove</span> */}
                   </Button>
+                  </div>
                 </div>
               </div>
             ))
@@ -102,5 +105,6 @@ export function BookingSidebar({
         </div>
       </ScrollArea>
     </div>
-  );
+  )
 }
+

@@ -14,6 +14,7 @@ export async function PUT(req: NextRequest) {
       },
       data: {
         isBooked: false,
+        isReceived: false,
         userId: null,
       },
     });
