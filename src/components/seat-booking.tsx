@@ -1,9 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Dialog,
   DialogContent,
@@ -12,33 +10,34 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { motion, AnimatePresence } from "framer-motion";
-import { ChevronDown, Search, Trash2, Check, PersonStandingIcon } from "lucide-react";
-import { useRouter } from "next/navigation";
-import { useRef } from "react";
-import { toast } from "sonner";
-import { useSeats } from "../hooks/useSeats";
-import type { Person, Seat, TableData } from "../types/booking";
-import { AddTableForm } from "./add-table-form";
-import { PDFExport } from "./pdf-export";
-import { PersonSelector } from "./person-selector";
-import Link from "next/link";
+import { Input } from "@/components/ui/input";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Switch } from "@/components/ui/switch";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { AnimatePresence, motion } from "framer-motion";
+import { Check, ChevronDown, PersonStandingIcon, Search, Trash2 } from "lucide-react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
+import { toast } from "sonner";
+import { useSeats } from "../hooks/useSeats";
+import type { Person, Seat, TableData } from "../types/booking";
+import { AddTableForm } from "./add-table-form";
 import { BookingSidebar } from "./booking-sidebar";
-import { Switch } from "@/components/ui/switch";
+import { PDFExport } from "./pdf-export";
+import { PersonSelector } from "./person-selector";
 
 const SeatBooking = () => {
   const { seats: initialSeats, loading, error } = useSeats();
@@ -549,7 +548,7 @@ const SeatBooking = () => {
 
   return (
     <div
-      className={`min-h-screen bg-zinc-50 ${
+      className={`min-h-screen bg-zinc-50 m-5 ${
         isFullScreen ? "overflow-hidden" : ""
       }`}
     >
