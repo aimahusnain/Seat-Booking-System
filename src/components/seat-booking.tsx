@@ -1,7 +1,9 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Dialog,
   DialogContent,
@@ -10,33 +12,33 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { motion, AnimatePresence } from "framer-motion";
+import { ChevronDown, Search, Trash2 } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useRef } from "react";
+import { toast } from "sonner";
+import { useSeats } from "../hooks/useSeats";
+import type { Person, Seat, TableData } from "../types/booking";
+import { AddTableForm } from "./add-table-form";
+import { PDFExport } from "./pdf-export";
+import { PersonSelector } from "./person-selector";
+import Link from "next/link";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { motion } from "framer-motion";
-import {
-  ChevronLeft,
-  ChevronRight,
-  Info,
-  Plus,
-  RefreshCw,
-  Sparkles,
-  Trash2,
-  Users,
-} from "lucide-react";
-import { useRouter } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
-import { toast } from "sonner";
-import { useSeats } from "../hooks/useSeats";
-import type { Person, Seat, TableData } from "../types/booking";
-import { AddTableForm } from "./add-table-form";
 import { BookingSidebar } from "./booking-sidebar";
-import { PDFExport } from "./pdf-export";
-import { PersonSelector } from "./person-selector";
-import Link from "next/link";
+import { Switch } from "@/components/ui/switch";
 
 const useResponsiveLayout = () => {
   const [layout, setLayout] = useState({
@@ -48,12 +50,12 @@ const useResponsiveLayout = () => {
   useEffect(() => {
     const handleResize = () => {
       const width = window.innerWidth;
-      if (width < 768) {
-        setLayout({ tablesPerPage: 4, isMobile: true, isTablet: false });
+      if (width < 640) {
+        setLayout({ tablesPerPage: 1, isMobile: true, isTablet: false });
       } else if (width < 1024) {
-        setLayout({ tablesPerPage: 8, isMobile: false, isTablet: true });
+        setLayout({ tablesPerPage: 4, isMobile: false, isTablet: true });
       } else {
-        setLayout({ tablesPerPage: 12, isMobile: false, isTablet: false });
+        setLayout({ tablesPerPage: 100, isMobile: false, isTablet: false });
       }
     };
 
@@ -70,7 +72,6 @@ const SeatBooking = () => {
   const [tables, setTables] = useState<TableData[]>([]);
   const [selectedSeat, setSelectedSeat] = useState<Seat | null>(null);
   const [isPersonSelectorOpen, setIsPersonSelectorOpen] = useState(false);
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [bookedSeats, setBookedSeats] = useState<Seat[]>([]);
   const [isConfirmationOpen, setIsConfirmationOpen] = useState(false);
   const [personToBook, setPersonToBook] = useState<Person | null>(null);
@@ -79,10 +80,13 @@ const SeatBooking = () => {
   const [isAddTableOpen, setIsAddTableOpen] = useState(false);
   const pdfExportRef = useRef<{ generatePDF: () => void } | null>(null);
   const router = useRouter();
-  const { tablesPerPage } = useResponsiveLayout();
+  const { tablesPerPage, isMobile } = useResponsiveLayout();
   const [hoveredTable, setHoveredTable] = useState<number | null>(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [tableToDelete, setTableToDelete] = useState<number | null>(null);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [isFullScreen, setIsFullScreen] = useState(false);
+  const [isTransitioning, setIsTransitioning] = useState(false);
 
   useEffect(() => {
     if (initialSeats.length > 0) {
@@ -109,10 +113,25 @@ const SeatBooking = () => {
     }
   }, [initialSeats]);
 
+  useEffect(() => {
+    const handleEscKey = (event: KeyboardEvent) => {
+      if (event.key === "Escape" && isFullScreen) {
+        setIsFullScreen(false);
+        toast.info("Exited full-screen mode");
+      }
+    };
+
+    document.addEventListener("keydown", handleEscKey);
+
+    return () => {
+      document.removeEventListener("keydown", handleEscKey);
+    };
+  }, [isFullScreen]);
+
   const getVisibleTables = () => {
     return tables.slice(
       currentSection * tablesPerPage,
-      currentSection * tablesPerPage + tablesPerPage
+      (currentSection + 1) * tablesPerPage
     );
   };
 
@@ -212,7 +231,6 @@ const SeatBooking = () => {
       } finally {
         setSelectedSeat(null);
         setPersonToBook(null);
-        setIsSidebarOpen(true);
       }
     }
   };
@@ -273,59 +291,18 @@ const SeatBooking = () => {
     }
   };
 
-  const getBookingStats = () => {
-    const total = tables.reduce((acc, table) => acc + table.seats.length, 0);
-    const booked = bookedSeats.length;
-    const available = total - booked;
-    const percentageBooked = Math.round((booked / total) * 100);
-
-    return { total, booked, available, percentageBooked };
-  };
-
   const getTableColor = (tableNumber: number) => {
     const colors = [
-      {
-        bg: "from-red-100 to-red-200",
-        text: "text-red-700",
-        border: "border-red-300",
-      },
-      {
-        bg: "from-blue-100 to-blue-200",
-        text: "text-blue-700",
-        border: "border-blue-300",
-      },
-      {
-        bg: "from-green-100 to-green-200",
-        text: "text-green-700",
-        border: "border-green-300",
-      },
-      {
-        bg: "from-yellow-100 to-yellow-200",
-        text: "text-yellow-700",
-        border: "border-yellow-300",
-      },
-      {
-        bg: "from-purple-100 to-purple-200",
-        text: "text-purple-700",
-        border: "border-purple-300",
-      },
-      {
-        bg: "from-pink-100 to-pink-200",
-        text: "text-pink-700",
-        border: "border-pink-300",
-      },
-      {
-        bg: "from-zinc-100 to-zinc-200",
-        text: "text-zinc-700",
-        border: "border-zinc-300",
-      },
-      {
-        bg: "from-orange-100 to-orange-200",
-        text: "text-orange-700",
-        border: "border-orange-300",
-      },
+      "bg-red-100 text-red-700 border-red-300",
+      "bg-blue-100 text-blue-700 border-blue-300",
+      "bg-green-100 text-green-700 border-green-300",
+      "bg-yellow-100 text-yellow-700 border-yellow-300",
+      "bg-purple-100 text-purple-700 border-purple-300",
+      "bg-pink-100 text-pink-700 border-pink-300",
+      "bg-indigo-100 text-indigo-700 border-indigo-300",
+      "bg-teal-100 text-teal-700 border-teal-300",
     ];
-    return colors[tableNumber % colors.length] || colors[0];
+    return colors[tableNumber % colors.length];
   };
 
   const handleDeleteTable = async (tableNumber: number) => {
@@ -365,29 +342,25 @@ const SeatBooking = () => {
 
     return (
       <div
-        className="relative w-[300px] h-[300px] m-4"
+        className={`relative w-full aspect-square mx-auto ${
+          isFullScreen ? "max-w-[500px]" : "max-w-[300px]"
+        }`}
         onMouseEnter={() => setHoveredTable(table.tableNumber)}
         onMouseLeave={() => setHoveredTable(null)}
       >
-        {/* Table Background */}
-        {/* <div
-          className={`absolute inset-0 rounded-full bg-gradient-to-br ${tableColor.bg} opacity-80 ${tableColor.border}`}
-        ></div> */}
-
         {/* Center Table Label */}
         <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-10">
           <div
-            className={`relative bg-white shadow-lg rounded-full p-4 ${tableColor.border} group`}
+            className={`relative ${tableColor} rounded-full px-4 py-2 transition-all duration-200 ease-in-out mt-5 ml-5`}
           >
-            <span className="flex items-center justify-center gap-2">
-              <Sparkles className={`h-5 w-5 ${tableColor.text}`} />
-              <span className={`font-semibold text-lg ${tableColor.text}`}>
+            <span className="flex items-center justify-center">
+              <span className={`font-semibold text-lg text-center`}>
                 Table {table.tableNumber}
               </span>
             </span>
 
             {/* Delete Button - Shows on Hover */}
-            {isHovered && (
+            {isHovered && !isFullScreen && (
               <motion.div
                 initial={{ opacity: 0, scale: 0.8 }}
                 animate={{ opacity: 1, scale: 1 }}
@@ -422,9 +395,9 @@ const SeatBooking = () => {
         {/* Circular Seats */}
         {table.seats.map((seat, index) => {
           const angle = ((index - 2.5) * 2 * Math.PI) / 10;
-          const radius = 130;
-          const left = Math.cos(angle) * radius + 125;
-          const top = Math.sin(angle) * radius + 125;
+          const radius = 45; // Percentage of container width
+          const left = 43 + Math.cos(angle) * radius;
+          const top = 43 + Math.sin(angle) * radius;
 
           return (
             <motion.div
@@ -432,10 +405,12 @@ const SeatBooking = () => {
               initial={{ opacity: 0, scale: 0.5 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.3, delay: index * 0.05 }}
-              className="absolute"
+              className={`absolute ${
+                isFullScreen ? "w-[20%]" : "w-[15%]"
+              } aspect-square`}
               style={{
-                left: `${left}px`,
-                top: `${top}px`,
+                left: `${left}%`,
+                top: `${top}%`,
                 transform: "translate(-50%, -50%)",
               }}
             >
@@ -445,21 +420,17 @@ const SeatBooking = () => {
                     <div
                       onClick={() => handleSeatClick(seat)}
                       className={`
-                        w-12 h-12 rounded-full cursor-pointer
+                        w-full h-full rounded-full cursor-pointer
                         flex items-center justify-center
                         transition-all duration-200
                         ${
                           seat.isBooked
-                            ? "bg-red-100 border-red-300 text-red-600"
+                            ? "bg-red-200 border-red-300 text-red-600"
                             : hoveredSeat === seat.id
-                            ? `${tableColor.bg.split(" ")[1]} ${
-                                tableColor.border
-                              } ${tableColor.text}`
-                            : `bg-white hover:${tableColor.bg.split(" ")[1]} ${
-                                tableColor.text
-                              }`
+                            ? `${tableColor}`
+                            : `bg-white hover:${tableColor}`
                         }
-                        border-2 shadow-md hover:shadow-lg
+                        border-2
                       `}
                       onMouseEnter={() => setHoveredSeat(seat.id)}
                       onMouseLeave={() => setHoveredSeat(null)}
@@ -467,7 +438,11 @@ const SeatBooking = () => {
                       {seat.isBooked ? (
                         <span className="font-bold text-lg">X</span>
                       ) : (
-                        <span className="text-sm font-medium">
+                        <span
+                          className={`text-sm font-medium ${
+                            isFullScreen ? "text-lg" : ""
+                          }`}
+                        >
                           {seat.seatNumber}
                         </span>
                       )}
@@ -496,175 +471,213 @@ const SeatBooking = () => {
     );
   };
 
+  const filteredBookedSeats = bookedSeats.filter((seat) =>
+    `${seat.user?.firstname} ${seat.user?.lastname}`
+      .toLowerCase()
+      .includes(searchTerm.toLowerCase())
+  );
+
+  const handleFullScreenToggle = (checked: boolean) => {
+    setIsTransitioning(true);
+    setTimeout(() => {
+      setIsFullScreen(checked);
+      setIsTransitioning(false);
+      if (checked) {
+        toast.info("Press Esc to exit full-screen mode");
+      }
+    }, 500); // Adjust this delay to match your animation duration
+  };
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 py-8 px-4">
-      <div className="container mx-auto">
-        <Card className="mb-8 border-none shadow-2xl bg-white/80 backdrop-blur-sm">
-          <CardHeader className="flex flex-col md:flex-row items-start md:items-center justify-between space-y-4 md:space-y-0">
-            <div>
-              <CardTitle className="text-3xl md:text-4xl font-bold text-gray-800">
-                Seat Booking System
-              </CardTitle>
-              <p className="text-sm text-gray-600 mt-2 flex items-center gap-2">
-                <Info className="h-4 w-4" />
-                Click on any available seat to make a booking
-              </p>
-            </div>
-            <div className="flex gap-2 w-full md:w-auto">
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button onClick={() => setIsAddTableOpen(true)}>
-                      <Plus className="h-4 w-4" />
-                      <span className="hidden md:inline">Add Table</span>
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>Add a new table</p>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button onClick={() => setIsSidebarOpen(true)}>
-                      <Users className="h-4 w-4" />
-                      <span className="hidden md:inline">View Bookings</span>
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>View all current bookings</p>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button variant="outline" onClick={() => router.refresh()}>
-                      <RefreshCw className="h-4 w-4" />
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>Refresh booking data</p>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-            </div>
-          </CardHeader>
-
-          <CardContent>
-            {/* Booking Stats */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-              {Object.entries(getBookingStats()).map(([key, value]) => (
-                <Card
-                  key={key}
-                  className="bg-white border border-gray-200 shadow-md"
+    <div
+      className={`min-h-screen bg-zinc-50 ${
+        isFullScreen ? "overflow-hidden" : ""
+      }`}
+    >
+      <AnimatePresence>
+        {!isFullScreen && (
+          <motion.nav
+            initial={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -50 }}
+            transition={{ duration: 0.5 }}
+            className="sticky top-0 z-50 bg-white border-b border-zinc-200 px-4"
+          >
+            <div className="flex items-center justify-between h-16">
+              {/* Logo */}
+              <Link
+                href="/"
+                className="flex justify-center items-center space-x-2"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="w-6 h-6 text-zinc-900"
                 >
-                  <CardContent className="p-4">
-                    <p className="text-sm text-gray-600 capitalize">
-                      {key.replace(/([A-Z])/g, " $1").trim()}
-                    </p>
-                    <p className="text-2xl font-bold text-gray-800">{value}</p>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
+                  <path d="M18 11V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v0" />
+                  <path d="M14 10V4a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v2" />
+                  <path d="M10 10.5V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v8" />
+                  <path d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-8" />
+                  <line x1="2" y1="2" x2="22" y2="22" />
+                </svg>
+                <span className="text-xl font-bold text-zinc-900">
+                  Seat Booking
+                </span>
+              </Link>
 
-            <div className="grid gap-12 p-8">
-              <div className="overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-lg p-8">
-                <div className="flex justify-between items-center mb-6">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() =>
-                      setCurrentSection((prev) => Math.max(0, prev - 1))
-                    }
-                    disabled={currentSection === 0}
-                    className="hover:bg-zinc-50"
-                  >
-                    <ChevronLeft className="h-4 w-4" />
-                  </Button>
-                  <span className="text-sm font-bold text-zinc-600">
-                    Room {currentSection + 1}
-                    {/* of {maxSections()} */}
-                  </span>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() =>
-                      setCurrentSection((prev) =>
-                        Math.min(maxSections() - 1, prev + 1)
-                      )
-                    }
-                    disabled={currentSection === maxSections() - 1}
-                    className="hover:bg-zinc-50"
-                  >
-                    <ChevronRight className="h-4 w-4" />
-                  </Button>
+              {/* Search Bar */}
+              <div className="max-w-md w-full mx-4">
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-zinc-400 h-4 w-4" />
+                  <Input
+                    type="search"
+                    placeholder="Search..."
+                    className="w-full pl-10 bg-zinc-50"
+                  />
+                </div>
+              </div>
+
+              {/* Right Section */}
+              <div className="flex items-center space-x-4">
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button>
+                      Create New
+                      <ChevronDown className="h-4 w-4 ml-2" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem onClick={() => setIsAddTableOpen(true)}>
+                      New Table
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+
+                <div className="flex items-center space-x-2">
+                  <span className="text-sm font-medium">Full Screen</span>
+                  <Switch
+                    checked={isFullScreen}
+                    onCheckedChange={handleFullScreenToggle}
+                  />
                 </div>
 
-                {tables.length > 0 ? (
-                  <div className="flex flex-wrap justify-center">
-                    {getVisibleTables().map((table) =>
-                      renderCircularTable(table)
-                    )}
-                  </div>
-                ) : (
-                  <div className="text-center py-12">
-                    <h3 className="text-2xl font-semibold text-gray-700 mb-4">
-                      No Tables Found
-                    </h3>
-                    <p className="text-gray-500 mb-6">
-                      It looks like there are no tables available at the moment.
-                    </p>
-                    <Button
-                      onClick={() => setIsAddTableOpen(true)}
-                      className="bg-zinc-600 hover:bg-zinc-700 text-white"
-                    >
-                      <Plus className="h-4 w-4 mr-2" />
-                      Add Your First Table
-                    </Button>
-                  </div>
-                )}
+                <Avatar>
+                  <AvatarImage
+                    src="https://github.com/shadcn.png"
+                    alt="@shadcn"
+                  />
+                  <AvatarFallback>JA</AvatarFallback>
+                </Avatar>
               </div>
             </div>
+          </motion.nav>
+        )}
+      </AnimatePresence>
 
-            {/* Legend */}
-            <div className="mt-8 flex flex-wrap gap-6 justify-center">
-              <div className="flex items-center gap-2">
-                <div className="w-5 h-5 bg-white border-2 border-gray-300 rounded-full"></div>
-                <span className="text-sm text-gray-600">Available</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="w-5 h-5 bg-red-100 border-2 border-red-300 rounded-full"></div>
-                <span className="text-sm text-gray-600">Booked</span>
-              </div>
-            </div>
-            <span className="flex items-end justify-end gap-1">
-              Made by{" "}
-              <Link href="https://devkins.dev/" target="_blank">
-                <Button variant="link" className="p-0 !h-fit font-bold text-lg">
-                  {" "}
-                  Devkins
-                </Button>
-              </Link>
-            </span>
-          </CardContent>
-        </Card>
+      {/* Main Content */}
+      <div
+        className={`flex flex-col lg:flex-row ${
+          isFullScreen ? "h-screen" : "h-[calc(100vh-64px)]"
+        }`}
+      >
+        {/* Main Content - 80% on desktop, 100% on mobile */}
+        <motion.div
+          layout
+          className={`w-full ${
+            isFullScreen ? "" : "lg:w-3/4"
+          } bg-zinc-50 overflow-hidden`}
+          animate={{
+            width: isFullScreen ? "100%" : "75%",
+          }}
+          transition={{ duration: 0.5 }}
+        >
+          <AnimatePresence>
+            {!isFullScreen && (
+              <motion.div
+                initial={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -50 }}
+                transition={{ duration: 0.5 }}
+                className="sticky top-2 mx-5 bg-white rounded-2xl border-b border-zinc-200 z-40"
+              >
+                <div className="flex justify-between items-center px-6 py-4">
+                  <Tabs defaultValue="seat" className="w-[300px]">
+                    <TabsList className="grid w-full grid-cols-3">
+                      <TabsTrigger value="seat">Seats</TabsTrigger>
+                      <TabsTrigger value="available">Available</TabsTrigger>
+                      <TabsTrigger value="booked">Booked</TabsTrigger>
+                    </TabsList>
+                  </Tabs>
+
+                  <div className="flex items-center space-x-4">
+                    <div className="flex items-center space-x-2">
+                      <div className="w-3 h-3 rounded-full bg-zinc-200"></div>
+                      <span className="text-sm text-zinc-600">Available</span>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <div className="w-3 h-3 rounded-full bg-red-200"></div>
+                      <span className="text-sm text-zinc-600">Booked</span>
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* Scrollable Table Grid */}
+          <ScrollArea
+            className={`${isFullScreen ? "h-screen" : "h-[calc(100vh-144px)]"}`}
+          >
+            <motion.div
+              layout
+              className={`py-6 px-8 grid gap-12`}
+              style={{
+                gridTemplateColumns: isFullScreen
+                  ? "repeat(4, minmax(0, 1fr))"
+                  : "repeat(auto-fill, minmax(250px, 1fr))",
+              }}
+              transition={{ duration: 0.5 }}
+            >
+              {getVisibleTables().map((table) => (
+                <motion.div
+                  key={table.tableNumber}
+                  layout
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.8 }}
+                  transition={{ duration: 0.5 }}
+                >
+                  {renderCircularTable(table)}
+                </motion.div>
+              ))}
+            </motion.div>
+          </ScrollArea>
+        </motion.div>
+
+        <AnimatePresence>
+          {!isFullScreen && (
+            <motion.div
+              initial={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 100 }}
+              transition={{ duration: 0.5 }}
+              className="w-full lg:w-1/4 bg-white rounded-2xl overflow-hidden my-2 mr-5"
+            >
+              <BookingSidebar
+                bookedSeats={bookedSeats}
+                onDeleteBooking={handleDeleteBooking}
+              />
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
 
       <PersonSelector
         isOpen={isPersonSelectorOpen}
         onClose={() => setIsPersonSelectorOpen(false)}
         onSelect={handlePersonSelect}
-      />
-
-      <BookingSidebar
-        isOpen={isSidebarOpen}
-        onClose={() => setIsSidebarOpen(false)}
-        bookedSeats={bookedSeats}
-        onDeleteBooking={handleDeleteBooking}
       />
 
       <PDFExport bookedSeats={bookedSeats} ref={pdfExportRef} />
@@ -717,7 +730,6 @@ const SeatBooking = () => {
         }}
       />
 
-      {/* Add Delete Confirmation Dialog */}
       <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>

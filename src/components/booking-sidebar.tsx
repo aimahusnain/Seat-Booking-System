@@ -4,177 +4,103 @@ import { useState, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Input } from "@/components/ui/input";
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-} from "@/components/ui/sheet";
 import type { Seat } from "@/types/booking";
-import { Calendar, Clock, Trash2, User, Search } from "lucide-react";
+import { Search, Trash2, Printer, User } from "lucide-react";
 import PrintableBooking from "./single-seat-pdf";
 
 interface BookingSidebarProps {
-  isOpen: boolean;
-  onClose: () => void;
   bookedSeats: Seat[];
   onDeleteBooking: (seatId: string) => void;
 }
 
-interface GroupedBooking {
-  userId: string;
-  firstName: string;
-  lastName: string;
-  seats: Seat[];
-}
-
 export function BookingSidebar({
-  isOpen,
-  onClose,
   bookedSeats,
   onDeleteBooking,
 }: BookingSidebarProps) {
   const [searchTerm, setSearchTerm] = useState("");
 
-  const groupedBookings = useMemo(() => {
-    const groupedMap = bookedSeats.reduce((acc, seat) => {
-      if (seat.user) {
-        const { id, firstname, lastname } = seat.user;
-        if (!acc[id]) {
-          acc[id] = {
-            userId: id,
-            firstName: firstname,
-            lastName: lastname,
-            seats: [],
-          };
-        }
-        acc[id].seats.push(seat);
-      }
-      return acc;
-    }, {} as Record<string, GroupedBooking>);
-
-    return Object.values(groupedMap);
-  }, [bookedSeats]);
-
   const filteredBookings = useMemo(() => {
-    return groupedBookings.filter((booking) => {
+    return bookedSeats.filter((seat) => {
       const searchString = searchTerm.toLowerCase();
       return (
-        booking.firstName.toLowerCase().includes(searchString) ||
-        booking.lastName.toLowerCase().includes(searchString) ||
-        `${booking.firstName} ${booking.lastName}`
-          .toLowerCase()
-          .includes(searchString)
+        seat.user &&
+        (seat.user.firstname.toLowerCase().includes(searchString) ||
+          seat.user.lastname.toLowerCase().includes(searchString) ||
+          `${seat.user.firstname} ${seat.user.lastname}`
+            .toLowerCase()
+            .includes(searchString))
       );
     });
-  }, [groupedBookings, searchTerm]);
+  }, [bookedSeats, searchTerm]);
 
   return (
-    <Sheet open={isOpen} onOpenChange={onClose}>
-      <SheetContent className="sm:max-w-md flex flex-col bg-gradient-to-br from-slate-50 to-white">
-        <SheetHeader className="space-y-4 pb-6 border-b border-slate-200">
-          <div className="flex items-center justify-between">
-            <div className="space-y-1">
-              <SheetTitle className="text-2xl font-bold bg-gradient-to-r from-cyan-600 to-blue-600 bg-clip-text text-transparent">
-                Booked Seats
-              </SheetTitle>
-              <p className="text-sm text-slate-500">
-                Manage your seat reservations
-              </p>
-            </div>
-          </div>
+    <div className="flex flex-col h-full w-full max-w-xs shadow-lg">
+      <div className="p-4 bg-white shadow-sm">
+        <h2 className="text-xl font-bold text-gray-800 mb-4">Booked Seats</h2>
+        <div className="relative">
+          <Input
+            placeholder="Search by name"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="pl-9 pr-4 py-2 w-full text-sm rounded-full border-gray-200 focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
+          />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 h-4 w-4" />
+        </div>
+      </div>
 
-          <div className="flex justify-between items-center pt-2">
-            <div className="flex items-center gap-2 text-black px-3 py-1.5 rounded-full text-sm font-medium">
-              <Calendar className="h-4 w-4" />
-              {bookedSeats.length} Active Bookings
-            </div>
-          </div>
-          {/* Search Input */}
-          <div className="relative">
-            <Input
-              placeholder="Search by name"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10"
-            />
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400" />
-          </div>
-        </SheetHeader>
-
-        <ScrollArea className="flex-1 pr-4 mt-6">
-          <div className="space-y-4">
-            {filteredBookings.length > 0 ? (
-              filteredBookings.map((booking) => (
-                <div
-                  key={booking.userId}
-                  className="overflow-hidden rounded-2xl bg-white border border-slate-200 shadow-sm hover:shadow-md transition-all duration-200"
-                >
-                  <div className="p-4 bg-gradient-to-r from-cyan-500 to-blue-600">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center">
-                          <User className="h-5 w-5 text-white" />
-                        </div>
-                        <div>
-                          <h3 className="font-semibold text-white">
-                            {booking.firstName} {booking.lastName}
-                          </h3>
-                          <p className="text-cyan-100 text-sm">
-                            {booking.seats.length}{" "}
-                            {booking.seats.length === 1 ? "Seat" : "Seats"}{" "}
-                            Reserved
-                          </p>
-                        </div>
-                      </div>
-                      <PrintableBooking
-                        firstName={booking.firstName}
-                        lastName={booking.lastName}
-                        seats={booking.seats}
-                      />
+      <ScrollArea className="flex-1 px-4 py-2">
+        <div className="space-y-3">
+          {filteredBookings.length > 0 ? (
+            filteredBookings.map((seat) => (
+              <div
+                key={seat.id}
+                className="bg-white rounded-lg shadow-sm overflow-hidden transition-all duration-200 hover:shadow-md"
+              >
+                <div className="p-4 flex items-center space-x-3">
+                  <div className="flex-shrink-0">
+                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-400 to-indigo-500 flex items-center justify-center text-white font-bold text-lg">
+                      {seat.user?.firstname[0]}
+                      {seat.user?.lastname[0]}
                     </div>
                   </div>
-
-                  <div className="p-4 space-y-3">
-                    {booking.seats.map((seat) => (
-                      <div
-                        key={seat.id}
-                        className="flex justify-between items-center bg-slate-50 p-3 rounded-xl hover:bg-slate-100 transition-colors"
-                      >
-                        <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 rounded-lg bg-cyan-100 text-cyan-600 flex items-center justify-center">
-                            <Clock className="h-4 w-4" />
-                          </div>
-                          <div>
-                            <span className="text-sm font-medium text-slate-700">
-                              Table {seat.tableNumber}
-                            </span>
-                            <p className="text-xs text-slate-500">
-                              Seat {seat.seatNumber}
-                            </p>
-                          </div>
-                        </div>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => onDeleteBooking(seat.id)}
-                          className="hover:bg-red-50 hover:text-red-600 rounded-lg"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    ))}
+                  <div className="flex-grow min-w-0">
+                    <h3 className="text-sm font-semibold text-gray-800 truncate">
+                      {seat.user?.firstname} {seat.user?.lastname}
+                    </h3>
+                    <p className="text-xs text-gray-500">
+                      Table {seat.tableNumber}
+                    </p>
+                  </div>
+                  <div className="flex-shrink-0 text-2xl font-bold text-indigo-600">
+                    #{seat.seatNumber}
                   </div>
                 </div>
-              ))
-            ) : (
-              <div className="text-center text-slate-500 py-8">
-                No bookings found
+                <div className="bg-gray-50 px-4 py-2 flex justify-between items-center">
+                  <PrintableBooking
+                    firstName={seat.user?.firstname || ""}
+                    lastName={seat.user?.lastname || ""}
+                    seats={[seat]}
+                  />
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => onDeleteBooking(seat.id)}
+                    className="text-gray-600 hover:text-red-600 hover:bg-red-50"
+                  >
+                    <Trash2 className="h-4 w-4 mr-1" />
+                    <span className="text-xs">Remove</span>
+                  </Button>
+                </div>
               </div>
-            )}
-          </div>
-        </ScrollArea>
-      </SheetContent>
-    </Sheet>
+            ))
+          ) : (
+            <div className="text-center text-gray-500 py-8">
+              <User className="h-12 w-12 mx-auto mb-3 text-gray-400" />
+              <p className="text-sm font-medium">No bookings found</p>
+            </div>
+          )}
+        </div>
+      </ScrollArea>
+    </div>
   );
 }
