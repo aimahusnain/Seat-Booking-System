@@ -1,14 +1,11 @@
 import { Button } from "@/components/ui/button"
-import { Printer } from "lucide-react"
+import { Printer } from 'lucide-react'
+import type { Seat } from "@/types/booking"
 
 interface PrintBookingProps {
   firstName: string
   lastName: string
-  seats: Array<{
-    id: string
-    tableNumber: number
-    seatNumber: number
-  }>
+  seats: Seat[] // Update to use the Seat type
 }
 
 const PrintableBooking = ({ firstName, lastName, seats }: PrintBookingProps) => {
@@ -54,12 +51,17 @@ const PrintableBooking = ({ firstName, lastName, seats }: PrintBookingProps) => 
               font-size: 24px;
               color: #000;
             }
+            .table {
+              font-size: 20px;
+              color: #666;
+              margin-top: 10px;
+            }
           </style>
         </head>
         <body>
           <div class="container">
             <div class="name">${firstName} ${lastName}</div>
-            <div class="seat">Seat ${seats.map((seat) => seat.seatNumber).join(", ")}</div>
+            <div class="seat">Seat ${seats.map((seat) => seat.seat).join(", ")}</div>
           </div>
         </body>
       </html>
@@ -80,11 +82,10 @@ const PrintableBooking = ({ firstName, lastName, seats }: PrintBookingProps) => 
   }
 
   return (
-    <Button variant="ghost" size="sm" onClick={handlePrint}>
+    <Button variant="ghost" size="sm" onClick={handlePrint} className="text-gray-600 hover:text-blue-600 hover:bg-blue-50">
       <Printer className="h-4 w-4" />
     </Button>
   )
 }
 
 export default PrintableBooking
-

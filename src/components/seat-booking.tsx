@@ -109,6 +109,8 @@ const SeatBooking = () => {
     }
   }
 
+  
+
   const handleConfirmBooking = async () => {
     if (selectedSeat && personToBook) {
       setIsConfirmationOpen(false)
@@ -142,6 +144,7 @@ const SeatBooking = () => {
                       id: personToBook.id,
                       firstname: personToBook.firstName,
                       lastname: personToBook.lastName,
+                      seat: [],
                     },
                   }
                 : seat,
@@ -159,6 +162,7 @@ const SeatBooking = () => {
                 id: personToBook.id,
                 firstname: personToBook.firstName,
                 lastname: personToBook.lastName,
+                seat: [],
               },
             },
           ])
