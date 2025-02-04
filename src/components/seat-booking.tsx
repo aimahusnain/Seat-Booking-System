@@ -33,7 +33,6 @@ import {
   Eye,
   EyeOff,
   PersonStandingIcon,
-  Search,
   Trash2,
 } from "lucide-react";
 import Link from "next/link";
@@ -65,13 +64,15 @@ const SeatBooking = () => {
   const [hoveredTable, setHoveredTable] = useState<number | null>(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [tableToDelete, setTableToDelete] = useState<number | null>(null);
-  const [searchTerm, setSearchTerm] = useState("");
+  // const [searchTerm, setSearchTerm] = useState("");
   const [isFullScreen, setIsFullScreen] = useState(false);
   const [isChangePasswordOpen, setIsChangePasswordOpen] = useState(false);
   const [newPassword, setNewPassword] = useState("");
   const [deleteConfirmText, setDeleteConfirmText] = useState("");
   const [deletePassword, setDeletePassword] = useState("");
   const [showDeletePassword, setShowDeletePassword] = useState(false);
+  const [isAddGuestOpen, setIsAddGuestOpen] = useState(false);
+  const [isImportGuestsOpen, setIsImportGuestsOpen] = useState(false);
 
   useEffect(() => {
     if (initialSeats.length > 0) {
@@ -622,7 +623,7 @@ const SeatBooking = () => {
               </Link>
 
               {/* Search Bar */}
-              <div className="max-w-md w-full mx-4">
+              {/* <div className="max-w-md w-full mx-4">
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-zinc-400 h-4 w-4" />
                   <Input
@@ -633,7 +634,7 @@ const SeatBooking = () => {
                     onChange={(e) => setSearchTerm(e.target.value)}
                   />
                 </div>
-              </div>
+              </div> */}
 
               {/* Right Section */}
               <div className="flex items-center space-x-4">
@@ -663,6 +664,9 @@ const SeatBooking = () => {
                   <DropdownMenuContent align="end">
                     <DropdownMenuItem onClick={() => setIsAddTableOpen(true)}>
                       New Table
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setIsAddGuestOpen(true)}>
+                      New Guest
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
