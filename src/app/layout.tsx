@@ -47,7 +47,7 @@ export default function RootLayout({
                   <p
                     className="font-semibold text-black transition-colors duration-300"
                   >
-                    Credit by Jodel Aristilde (2BrothersMovement)
+                    Create by Jodel Aristilde (2BrothersMovement)
                   </p>
                 </div>
                 <Link
@@ -56,7 +56,7 @@ export default function RootLayout({
                   rel="noopener noreferrer"
                   className="inline-block text-zinc-500 hover:text-blue-600 transition-colors duration-300"
                 >
-                  Design by: Devkins Pvt. Ltd. Pakistan
+                  Design by: Devkins Private Limited Pakistan
                 </Link>
               </div>
             </div>
