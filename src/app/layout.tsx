@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import "./globals.css";
-import { Toaster } from "sonner";
 import Link from "next/link";
+import { Toaster } from "sonner";
+import "./globals.css";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -50,14 +50,14 @@ export default function RootLayout({
                     Credit by Jodel Aristilde (2BrothersMovement)
                   </p>
                 </div>
-                <a
+                <Link
                   href="https://devkins.dev/"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-block text-zinc-500 hover:text-blue-600 transition-colors duration-300"
                 >
                   Design by: Devkins Pvt. Ltd. Pakistan
-                </a>
+                </Link>
               </div>
             </div>
           </div>
