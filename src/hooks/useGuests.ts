@@ -17,7 +17,7 @@ export function useGuests() {
 
   useEffect(() => {
     // Replace with your actual WebSocket URL
-    const ws = new WebSocket(process.env.NEXT_PUBLIC_WEBSOCKET_URL || "ws://localhost:3001")
+    const ws = new WebSocket(process.env.NEXT_PUBLIC_WEBSOCKET_URL || "ws://localhost:3000")
 
     ws.onmessage = () => {
       mutate()

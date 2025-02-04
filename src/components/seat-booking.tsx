@@ -27,7 +27,15 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { AnimatePresence, motion } from "framer-motion";
-import { Check, ChevronDown, PersonStandingIcon, Search, Trash2 } from "lucide-react";
+import {
+  Check,
+  ChevronDown,
+  Eye,
+  EyeOff,
+  PersonStandingIcon,
+  Search,
+  Trash2,
+} from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
@@ -38,6 +46,8 @@ import { AddTableForm } from "./add-table-form";
 import { BookingSidebar } from "./booking-sidebar";
 import { PDFExport } from "./pdf-export";
 import { PersonSelector } from "./person-selector";
+import ChangePasswordForm from "./change-password-dialog";
+import { getPasswordHash } from "@/hooks/usePassword";
 
 const SeatBooking = () => {
   const { seats: initialSeats, loading, error } = useSeats();
@@ -58,6 +68,9 @@ const SeatBooking = () => {
   const [isFullScreen, setIsFullScreen] = useState(false);
   const [isChangePasswordOpen, setIsChangePasswordOpen] = useState(false);
   const [newPassword, setNewPassword] = useState("");
+  const [deleteConfirmText, setDeleteConfirmText] = useState("");
+  const [deletePassword, setDeletePassword] = useState("");
+  const [showDeletePassword, setShowDeletePassword] = useState(false);
 
   useEffect(() => {
     if (initialSeats.length > 0) {
@@ -274,8 +287,29 @@ const SeatBooking = () => {
     return colors[tableNumber % colors.length];
   };
 
+  async function sha256(message: string) {
+    const msgBuffer = new TextEncoder().encode(message);
+    const hashBuffer = await crypto.subtle.digest("SHA-256", msgBuffer);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    const hashHex = hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
+    return hashHex;
+  }
+
   const handleDeleteTable = async (tableNumber: number) => {
     try {
+      const storedHash = await getPasswordHash();
+      const inputHash = await sha256(deletePassword);
+
+      if (deleteConfirmText !== `Delete Table ${tableNumber}`) {
+        toast.error("Please type the exact confirmation text");
+        return;
+      }
+
+      if (inputHash !== storedHash) {
+        toast.error("Incorrect password");
+        return;
+      }
+
       const response = await fetch(`/api/delete-table`, {
         method: "DELETE",
         headers: {
@@ -295,6 +329,9 @@ const SeatBooking = () => {
           )
         );
         router.refresh();
+        setIsDeleteDialogOpen(false);
+        setDeleteConfirmText("");
+        setDeletePassword("");
       } else {
         throw new Error(result.message || "Failed to delete table");
       }
@@ -304,7 +341,6 @@ const SeatBooking = () => {
           error instanceof Error ? error.message : "Unknown error occurred",
       });
     }
-    setIsDeleteDialogOpen(false);
   };
 
   const renderCircularTable = (table: TableData) => {
@@ -441,14 +477,13 @@ const SeatBooking = () => {
                           {seat.table.name}, Seat {seat.seat}
                         </p>
                         <p className="text-xs font-medium">
-                          Status:{" "}
-                          {seat.isReceived ? "Received" : "Not Received"}
+                          Status: {seat.isReceived ? "Arrived" : "Not Arrived"}
                         </p>
                         <p className="text-xs text-muted-foreground mt-1">
                           Click to{" "}
                           {seat.isReceived
-                            ? "mark as not received"
-                            : "mark as received"}
+                            ? "mark as not arrived"
+                            : "mark as arrived"}
                         </p>
                       </div>
                     ) : (
@@ -523,15 +558,15 @@ const SeatBooking = () => {
         );
 
         toast.success(
-          `Seat ${isReceived ? "marked as received" : "unmarked as received"}`
+          `Seat ${isReceived ? "marked as arrived" : "unmarked as arrived"}`
         );
       } else {
         throw new Error(
-          result.message || "Failed to update seat received status"
+          result.message || "Failed to update seat arrived status"
         );
       }
     } catch (error) {
-      toast.error("Failed to update seat received status", {
+      toast.error("Failed to update seat arrived status", {
         description:
           error instanceof Error ? error.message : "Unknown error occurred",
       });
@@ -547,20 +582,16 @@ const SeatBooking = () => {
   }
 
   return (
-    <div
-      className={`min-h-screen bg-zinc-50 m-5 ${
-        isFullScreen ? "overflow-hidden" : ""
-      }`}
-    >
+    <div className={`bg-zinc-50 ${isFullScreen ? "overflow-hidden" : ""}`}>
       <AnimatePresence>
         {!isFullScreen && (
           <motion.nav
             initial={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -50 }}
             transition={{ duration: 0.5 }}
-            className="sticky top-0 z-50 bg-white border-b border-zinc-200 px-4"
+            className="z-50 bg-white border-b border-zinc-200 px-4"
           >
-            <div className="flex items-center justify-between h-16">
+            <div className="flex items-center justify-between h-14">
               {/* Logo */}
               <Link
                 href="/"
@@ -642,11 +673,7 @@ const SeatBooking = () => {
                     </Avatar>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
-                    <DropdownMenuItem
-                      onClick={() => setIsChangePasswordOpen(true)}
-                    >
-                      Change Password
-                    </DropdownMenuItem>
+                    <ChangePasswordForm />
                   </DropdownMenuContent>
                 </DropdownMenu>
               </div>
@@ -700,7 +727,7 @@ const SeatBooking = () => {
                     </div>
                     <div className="flex items-center space-x-2">
                       <div className="w-3 h-3 rounded-full bg-green-200"></div>
-                      <span className="text-sm text-zinc-600">Received</span>
+                      <span className="text-sm text-zinc-600">Arrived</span>
                     </div>
                   </div>
                 </div>
@@ -796,7 +823,17 @@ const SeatBooking = () => {
         }}
       />
 
-      <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+      <Dialog
+        open={isDeleteDialogOpen}
+        onOpenChange={(open) => {
+          setIsDeleteDialogOpen(open);
+          if (!open) {
+            setDeleteConfirmText("");
+            setDeletePassword("");
+            setShowDeletePassword(false);
+          }
+        }}
+      >
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle className="text-xl font-bold text-red-800">
@@ -816,7 +853,56 @@ const SeatBooking = () => {
               </div>
             </DialogDescription>
           </DialogHeader>
-          <DialogFooter className="flex-col sm:flex-row gap-2 mt-4">
+
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <label
+                htmlFor="confirmText"
+                className="text-sm font-medium text-gray-700"
+              >
+                Type "Delete Table {tableToDelete}" to confirm
+              </label>
+              <Input
+                id="confirmText"
+                value={deleteConfirmText}
+                onChange={(e) => setDeleteConfirmText(e.target.value)}
+                placeholder={`Delete Table ${tableToDelete}`}
+                className="w-full"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <label
+                htmlFor="password"
+                className="text-sm font-medium text-gray-700"
+              >
+                Enter Password
+              </label>
+              <div className="relative">
+                <Input
+                  id="password"
+                  type={showDeletePassword ? "text" : "password"}
+                  value={deletePassword}
+                  onChange={(e) => setDeletePassword(e.target.value)}
+                  placeholder="Enter your password"
+                  className="w-full pr-10"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowDeletePassword(!showDeletePassword)}
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                >
+                  {showDeletePassword ? (
+                    <EyeOff size={16} />
+                  ) : (
+                    <Eye size={16} />
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <DialogFooter className="flex-col sm:flex-row gap-2">
             <Button
               variant="outline"
               onClick={() => setIsDeleteDialogOpen(false)}
@@ -828,6 +914,10 @@ const SeatBooking = () => {
               variant="destructive"
               onClick={() => tableToDelete && handleDeleteTable(tableToDelete)}
               className="w-full sm:w-auto"
+              disabled={
+                deleteConfirmText !== `Delete Table ${tableToDelete}` ||
+                !deletePassword
+              }
             >
               Delete Table
             </Button>

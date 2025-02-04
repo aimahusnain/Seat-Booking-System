@@ -30,3 +30,8 @@ model Table {
   name      String
   Seat      Seat[]
 }
+
+model Password {
+  id        String   @id @default(cuid()) @map("_id")
+  passsword String
+}

@@ -5,11 +5,14 @@ import type { Seat } from "@/types/booking"
 interface PrintBookingProps {
   firstName: string
   lastName: string
-  seats: Seat[] // Update to use the Seat type
+  seats: Seat[]
 }
 
 const PrintableBooking = ({ firstName, lastName, seats }: PrintBookingProps) => {
   const handlePrint = () => {
+    // Extract table number by removing "Table" and trimming whitespace
+    const tableNumber = seats[0].table.name.replace(/Table/i, '').trim()
+
     const printFrame = document.createElement("iframe")
     printFrame.style.position = "absolute"
     printFrame.style.top = "-9999px"
@@ -41,27 +44,30 @@ const PrintableBooking = ({ firstName, lastName, seats }: PrintBookingProps) => 
               max-width: 400px;
               width: 100%;
             }
+            .welcome {
+              font-size: 36px;
+              font-weight: bold;
+              margin-bottom: 30px;
+              color: black;
+              text-transform: uppercase;
+            }
             .name {
               font-size: 28px;
-              font-weight: bold;
               margin-bottom: 20px;
               color: black;
             }
-            .seat {
-              font-size: 24px;
-              color: #000;
-            }
             .table {
-              font-size: 20px;
-              color: #666;
-              margin-top: 10px;
+              font-size: 24px;
+              color: black;
+              margin-top: 20px;
             }
           </style>
         </head>
         <body>
           <div class="container">
+            <div class="welcome">Welcome</div>
             <div class="name">${firstName} ${lastName}</div>
-            <div class="seat">Seat ${seats.map((seat) => seat.seat).join(", ")}</div>
+            <div class="table">You are Seating on TABLE ${tableNumber}</div>
           </div>
         </body>
       </html>

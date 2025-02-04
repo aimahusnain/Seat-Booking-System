@@ -12,12 +12,12 @@ export default function Page() {
   };
 
   return (
-    <>
+    <main className="bg-zinc-50">
       {isAuthenticated ? (
         <SeatBooking />
       ) : (
         <AuthForm onAuthenticate={handleAuthenticate} />
       )}
-    </>
+    </main>
   );
 }

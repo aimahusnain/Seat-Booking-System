@@ -1,50 +1,72 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { toast } from "sonner"
-import { motion } from "framer-motion"
-import { Lock, Eye, EyeOff } from "lucide-react"
+import { useState, useEffect } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { toast } from "sonner";
+import { motion } from "framer-motion";
+import { Lock, Eye, EyeOff } from "lucide-react";
+import { getPasswordHash } from "@/hooks/usePassword";
 
 interface AuthFormProps {
-  onAuthenticate: () => void
+  onAuthenticate: () => void;
 }
 
 export default function AuthForm({ onAuthenticate }: AuthFormProps) {
-  const [password, setPassword] = useState("")
-  const [isLoading, setIsLoading] = useState(false)
-  const [showPassword, setShowPassword] = useState(false)
-  // Remove this line
-  // const [isChangePasswordMode, setIsChangePasswordMode] = useState(false)
+  const [password, setPassword] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [correctPasswordHash, setCorrectPasswordHash] = useState<string | null>(
+    null
+  );
+
+  useEffect(() => {
+    const fetchPasswordHash = async () => {
+      try {
+        const hash = await getPasswordHash();
+        setCorrectPasswordHash(hash);
+      } catch (error) {
+        toast.error("Failed to initialize authentication");
+        console.error("Error fetching password hash:", error);
+      }
+    };
+
+    fetchPasswordHash();
+  }, []);
 
   const sha256 = async (message: string) => {
-    const msgBuffer = new TextEncoder().encode(message)
-    const hashBuffer = await crypto.subtle.digest("SHA-256", msgBuffer)
-    const hashArray = Array.from(new Uint8Array(hashBuffer))
-    const hashHex = hashArray.map((b) => b.toString(16).padStart(2, "0")).join("")
-    return hashHex
-  }
+    const msgBuffer = new TextEncoder().encode(message);
+    const hashBuffer = await crypto.subtle.digest("SHA-256", msgBuffer);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    const hashHex = hashArray
+      .map((b) => b.toString(16).padStart(2, "0"))
+      .join("");
+    return hashHex;
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsLoading(true)
+    e.preventDefault();
+    setIsLoading(true);
 
     try {
-      const correctPasswordHash = "960596e95046987cdee0c19fcb38235fa6602391acef6a2219c4f281e427aff3"
-      const inputHash = await sha256(password)
+      if (!correctPasswordHash) {
+        toast.error("System not ready. Please try again.");
+        return;
+      }
+
+      const inputHash = await sha256(password);
 
       if (inputHash === correctPasswordHash) {
-        toast.success("Welcome back!")
-        onAuthenticate()
+        toast.success("Welcome back!");
+        onAuthenticate();
       } else {
-        toast.error("Incorrect password")
+        toast.error("Incorrect password");
       }
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-[#f5f5f5] dark:bg-[#1a1a1a]">
@@ -56,12 +78,18 @@ export default function AuthForm({ onAuthenticate }: AuthFormProps) {
       >
         <Card className="overflow-hidden border-none bg-white/80 backdrop-blur-md dark:bg-black/80">
           <CardHeader className="space-y-4 pb-6 pt-8 text-center">
-            <motion.div initial={{ scale: 0.8 }} animate={{ scale: 1 }} transition={{ delay: 0.2 }}>
+            <motion.div
+              initial={{ scale: 0.8 }}
+              animate={{ scale: 1 }}
+              transition={{ delay: 0.2 }}
+            >
               <div className="mx-auto mb-3 h-16 w-16 rounded-full bg-gradient-to-tr from-blue-500 to-purple-500 flex items-center justify-center">
                 <Lock className="stroke-white" />
               </div>
             </motion.div>
-            <CardTitle className="text-2xl font-bold tracking-tight">Seat Booking System</CardTitle>
+            <CardTitle className="text-2xl font-bold tracking-tight">
+              Seat Booking System
+            </CardTitle>
           </CardHeader>
           <CardContent className="pb-8">
             <form onSubmit={handleSubmit} className="space-y-6">
@@ -110,6 +138,5 @@ export default function AuthForm({ onAuthenticate }: AuthFormProps) {
         </Card>
       </motion.div>
     </div>
-  )
+  );
 }
-

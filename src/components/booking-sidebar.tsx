@@ -87,7 +87,7 @@ export function BookingSidebar({
                       htmlFor={`received-${seat.id}`}
                       className="text-sm text-gray-700 cursor-pointer"
                     >
-                      Received
+                      Arrived
                     </label>
                   </div>
                   <div className="flex items-center space-x-2">
