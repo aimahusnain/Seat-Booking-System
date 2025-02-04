@@ -860,7 +860,7 @@ const SeatBooking = () => {
                 htmlFor="confirmText"
                 className="text-sm font-medium text-gray-700"
               >
-                Type "Delete Table {tableToDelete}" to confirm
+                Type &quot;<strong>Delete Table {tableToDelete}</strong>&quot; to confirm
               </label>
               <Input
                 id="confirmText"
