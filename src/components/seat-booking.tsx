@@ -48,6 +48,7 @@ import { PDFExport } from "./pdf-export";
 import { PersonSelector } from "./person-selector";
 import ChangePasswordForm from "./change-password-dialog";
 import { getPasswordHash } from "@/hooks/usePassword";
+import { HelpButton } from "./help-dropdown";
 
 const SeatBooking = () => {
   const { seats: initialSeats, loading, error } = useSeats();
@@ -291,7 +292,9 @@ const SeatBooking = () => {
     const msgBuffer = new TextEncoder().encode(message);
     const hashBuffer = await crypto.subtle.digest("SHA-256", msgBuffer);
     const hashArray = Array.from(new Uint8Array(hashBuffer));
-    const hashHex = hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
+    const hashHex = hashArray
+      .map((b) => b.toString(16).padStart(2, "0"))
+      .join("");
     return hashHex;
   }
 
@@ -642,6 +645,8 @@ const SeatBooking = () => {
                   />
                 </div>
 
+                <HelpButton />
+
                 <Link href="/client-view">
                   <Button size="icon">
                     <PersonStandingIcon className="w-10 h-10" />
@@ -860,7 +865,8 @@ const SeatBooking = () => {
                 htmlFor="confirmText"
                 className="text-sm font-medium text-gray-700"
               >
-                Type &quot;<strong>Delete Table {tableToDelete}</strong>&quot; to confirm
+                Type &quot;<strong>Delete Table {tableToDelete}</strong>&quot;
+                to confirm
               </label>
               <Input
                 id="confirmText"
