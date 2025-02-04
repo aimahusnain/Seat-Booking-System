@@ -47,7 +47,7 @@ export default function RootLayout({
                   <p
                     className="font-semibold text-black transition-colors duration-300"
                   >
-                    Create by Jodel Aristilde (2BrothersMovement)
+                    Created by Jodel Aristilde (2BrothersMovement)
                   </p>
                 </div>
                 <Link
