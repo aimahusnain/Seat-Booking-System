@@ -19,13 +19,13 @@ import {
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Switch } from "@/components/ui/switch";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { getPasswordHash } from "@/hooks/usePassword";
 import { AnimatePresence, motion } from "framer-motion";
 import {
   Check,
@@ -41,15 +41,14 @@ import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { useSeats } from "../hooks/useSeats";
 import type { Person, Seat, TableData } from "../types/booking";
+import { AddGuestForm } from "./add-guest-form";
 import { AddTableForm } from "./add-table-form";
 import { BookingSidebar } from "./booking-sidebar";
+import ChangePasswordForm from "./change-password-dialog";
+import { HelpButton } from "./help-dropdown";
+import { ImportGuestsforWeb } from "./import-guests-form";
 import { PDFExport } from "./pdf-export";
 import { PersonSelector } from "./person-selector";
-import ChangePasswordForm from "./change-password-dialog";
-import { getPasswordHash } from "@/hooks/usePassword";
-import { HelpButton } from "./help-dropdown";
-import { AddGuestForm } from "./add-guest-form";
-import { ImportGuestsforWeb } from "./import-guests-form";
 
 const SeatBooking = () => {
   const { seats: initialSeats, loading, error } = useSeats();
