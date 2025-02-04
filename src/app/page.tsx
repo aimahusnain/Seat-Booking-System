@@ -18,6 +18,7 @@ export default function Page() {
       ) : (
         <AuthForm onAuthenticate={handleAuthenticate} />
       )}
+      
     </main>
   );
 }

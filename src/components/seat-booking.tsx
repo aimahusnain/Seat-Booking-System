@@ -662,10 +662,16 @@ const SeatBooking = () => {
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
-                    <DropdownMenuItem className="cursor-pointer" onClick={() => setIsAddTableOpen(true)}>
+                    <DropdownMenuItem
+                      className="cursor-pointer"
+                      onClick={() => setIsAddTableOpen(true)}
+                    >
                       New Table
                     </DropdownMenuItem>
-                    <DropdownMenuItem className="cursor-pointer" onClick={() => setIsAddGuestOpen(true)}>
+                    <DropdownMenuItem
+                      className="cursor-pointer"
+                      onClick={() => setIsAddGuestOpen(true)}
+                    >
                       New Guest
                     </DropdownMenuItem>
                     <ImportGuestsforWeb />
@@ -718,60 +724,69 @@ const SeatBooking = () => {
                 className="sticky top-2 mx-5 bg-white rounded-2xl border-b border-zinc-200 z-40"
               >
                 <div className="flex justify-between items-center px-6 py-4">
-                  {/* <Tabs defaultValue="seat" className="w-[300px]">
-                    <TabsList className="grid w-full grid-cols-3">
-                      <TabsTrigger value="seat">Seats</TabsTrigger>
-                      <TabsTrigger value="available">Available</TabsTrigger>
-                      <TabsTrigger value="booked">Booked</TabsTrigger>
-                    </TabsList>
-                  </Tabs> */}
-<motion.div
-  initial={{ opacity: 1, y: 0 }}
-  exit={{ opacity: 0, y: -50 }}
-  transition={{ duration: 0.5 }}
-  className="sticky top-2 bg-white rounded-xl shadow-sm border-b border-zinc-100 z-40"
->
-      <div className="grid grid-cols-4 gap-3 w-full">
-        <div className="bg-zinc-50 rounded-lg border border-zinc-200 p-2 text-center hover:shadow-sm transition-all">
-          <div className="text-xs uppercase tracking-wider text-zinc-500 mb-1">
-            Seats
-          </div>
-          <div className="text-lg font-bold text-zinc-800">
-            {tables.reduce((total, table) => total + table.seats.length, 0)}
-          </div>
-        </div>
-        <div className="bg-red-50 rounded-lg border border-red-200 p-2 text-center hover:shadow-sm transition-all">
-          <div className="text-xs uppercase tracking-wider text-red-600 mb-1">
-            Booked
-          </div>
-          <div className="text-lg font-bold text-red-800">
-            {tables.reduce((booked, table) => 
-              booked + table.seats.filter(seat => seat.isBooked).length, 0)
-            }
-          </div>
-        </div>
-        <div className="bg-green-50 rounded-lg border border-green-200 p-2 text-center hover:shadow-sm transition-all">
-          <div className="text-xs uppercase tracking-wider text-green-600 mb-1">
-            Available
-          </div>
-          <div className="text-lg font-bold text-green-800">
-            {tables.reduce((available, table) => 
-              available + table.seats.filter(seat => !seat.isBooked).length, 0)
-            }
-          </div>
-        </div>
-        <div className="bg-blue-50 rounded-lg border border-blue-200 p-2 text-center hover:shadow-sm transition-all">
-          <div className="text-xs uppercase tracking-wider text-blue-600 mb-1">
-            Arrived
-          </div>
-          <div className="text-lg font-bold text-blue-800">
-            {tables.reduce((arrived, table) => 
-              arrived + table.seats.filter(seat => seat.isBooked && seat.isReceived).length, 0)
-            }
-          </div>
-        </div>
-  </div>
-</motion.div>
+                  <motion.div
+                    initial={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -50 }}
+                    transition={{ duration: 0.5 }}
+                    className="sticky top-2 bg-white rounded-xl shadow-sm border-b border-zinc-100 z-40"
+                  >
+                    <div className="grid grid-cols-4 gap-3 w-full">
+                      <div className="bg-zinc-50 rounded-lg border border-zinc-200 p-2 text-center hover:shadow-sm transition-all">
+                        <div className="text-xs uppercase tracking-wider text-zinc-500 mb-1">
+                          Seats
+                        </div>
+                        <div className="text-lg font-bold text-zinc-800">
+                          {tables.reduce(
+                            (total, table) => total + table.seats.length,
+                            0
+                          )}
+                        </div>
+                      </div>
+                      <div className="bg-red-50 rounded-lg border border-red-200 p-2 text-center hover:shadow-sm transition-all">
+                        <div className="text-xs uppercase tracking-wider text-red-600 mb-1">
+                          Booked
+                        </div>
+                        <div className="text-lg font-bold text-red-800">
+                          {tables.reduce(
+                            (booked, table) =>
+                              booked +
+                              table.seats.filter((seat) => seat.isBooked)
+                                .length,
+                            0
+                          )}
+                        </div>
+                      </div>
+                      <div className="bg-green-50 rounded-lg border border-green-200 p-2 text-center hover:shadow-sm transition-all">
+                        <div className="text-xs uppercase tracking-wider text-green-600 mb-1">
+                          Available
+                        </div>
+                        <div className="text-lg font-bold text-green-800">
+                          {tables.reduce(
+                            (available, table) =>
+                              available +
+                              table.seats.filter((seat) => !seat.isBooked)
+                                .length,
+                            0
+                          )}
+                        </div>
+                      </div>
+                      <div className="bg-blue-50 rounded-lg border border-blue-200 p-2 text-center hover:shadow-sm transition-all">
+                        <div className="text-xs uppercase tracking-wider text-blue-600 mb-1">
+                          Arrived
+                        </div>
+                        <div className="text-lg font-bold text-blue-800">
+                          {tables.reduce(
+                            (arrived, table) =>
+                              arrived +
+                              table.seats.filter(
+                                (seat) => seat.isBooked && seat.isReceived
+                              ).length,
+                            0
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </motion.div>
                   <div className="flex items-center space-x-4">
                     <div className="flex items-center space-x-2">
                       <div className="w-3 h-3 rounded-full bg-zinc-200"></div>
