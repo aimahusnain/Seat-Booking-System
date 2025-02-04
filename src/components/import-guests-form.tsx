@@ -8,13 +8,12 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Download, Plus } from "lucide-react";
+import { Progress } from "@/components/ui/progress";
+import { Download, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import * as XLSX from "xlsx";
 import { FileUpload } from "./ui/file-upload";
-import { Progress } from "@/components/ui/progress";
-import { Trash2 } from "lucide-react";
 
 interface Guest {
   firstname: string;
