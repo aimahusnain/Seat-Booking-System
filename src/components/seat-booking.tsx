@@ -719,13 +719,14 @@ const SeatBooking = () => {
                 className="sticky top-2 mx-5 bg-white rounded-2xl border-b border-zinc-200 z-40"
               >
                 <div className="flex justify-between items-center px-6 py-4">
-                  <Tabs defaultValue="seat" className="w-[300px]">
+                  {/* <Tabs defaultValue="seat" className="w-[300px]">
                     <TabsList className="grid w-full grid-cols-3">
                       <TabsTrigger value="seat">Seats</TabsTrigger>
                       <TabsTrigger value="available">Available</TabsTrigger>
                       <TabsTrigger value="booked">Booked</TabsTrigger>
                     </TabsList>
-                  </Tabs>
+                  </Tabs> */}
+                  <div className="font-bold text-md">All Seats</div>
 
                   <div className="flex items-center space-x-4">
                     <div className="flex items-center space-x-2">
