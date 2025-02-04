@@ -54,7 +54,7 @@ export default function RootLayout({
                   href="https://devkins.dev/"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-block text-zinc-500 hover:text-blue-600 transition-colors duration-300"
+                  className="inline-block underline text-zinc-500 hover:text-blue-600 transition-colors duration-300"
                 >
                   Design by: Devkins Private Limited Pakistan
                 </Link>
