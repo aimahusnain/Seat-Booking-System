@@ -48,6 +48,8 @@ import { PersonSelector } from "./person-selector";
 import ChangePasswordForm from "./change-password-dialog";
 import { getPasswordHash } from "@/hooks/usePassword";
 import { HelpButton } from "./help-dropdown";
+import { AddGuestForm } from "./add-guest-form";
+import { ImportGuestsforWeb } from "./import-guests-form";
 
 const SeatBooking = () => {
   const { seats: initialSeats, loading, error } = useSeats();
@@ -72,7 +74,6 @@ const SeatBooking = () => {
   const [deletePassword, setDeletePassword] = useState("");
   const [showDeletePassword, setShowDeletePassword] = useState(false);
   const [isAddGuestOpen, setIsAddGuestOpen] = useState(false);
-  const [isImportGuestsOpen, setIsImportGuestsOpen] = useState(false);
 
   useEffect(() => {
     if (initialSeats.length > 0) {
@@ -662,12 +663,13 @@ const SeatBooking = () => {
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
-                    <DropdownMenuItem onClick={() => setIsAddTableOpen(true)}>
+                    <DropdownMenuItem className="cursor-pointer" onClick={() => setIsAddTableOpen(true)}>
                       New Table
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => setIsAddGuestOpen(true)}>
+                    <DropdownMenuItem className="cursor-pointer" onClick={() => setIsAddGuestOpen(true)}>
                       New Guest
                     </DropdownMenuItem>
+                    <ImportGuestsforWeb />
                   </DropdownMenuContent>
                 </DropdownMenu>
 
@@ -934,6 +936,15 @@ const SeatBooking = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <AddGuestForm
+        isOpen={isAddGuestOpen}
+        onClose={() => setIsAddGuestOpen(false)}
+        onSuccess={() => {
+          setIsAddGuestOpen(false);
+          router.refresh();
+        }}
+      />
 
       <Dialog
         open={isChangePasswordOpen}
