@@ -172,26 +172,11 @@ const SeatBooking = () => {
       }`}
     >
       {/* Main Content */}
-      <div
-        className={`flex flex-col lg:flex-row ${
-          isFullScreen ? "h-screen" : "h-[calc(100vh-64px)]"
-        }`}
-      >
+      <div className="flex flex-col lg:flex-row">
         {/* Main Content - 80% on desktop, 100% on mobile */}
-        <motion.div
-          layout
-          className={`w-full ${
-            isFullScreen ? "" : "lg:w-3/4"
-          } bg-zinc-50 overflow-hidden`}
-          animate={{
-            width: isFullScreen ? "100%" : "75%",
-          }}
-          transition={{ duration: 0.5 }}
-        >
+        <motion.div layout className="w-full">
           {/* Scrollable Table Grid */}
-          <ScrollArea
-            className={`${isFullScreen ? "h-screen" : "h-[calc(100vh-144px)]"}`}
-          >
+          <ScrollArea className="h-screen">
             <motion.div
               layout
               className={`py-6 px-8 grid gap-12`}
