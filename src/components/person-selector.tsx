@@ -4,17 +4,18 @@ import { useState } from "react";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogFooter,
-  DialogDescription,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { useGuests } from "../hooks/useGuests";
 import { AddGuestForm } from "./add-guest-form";
 import type { Person } from "../types/booking";
-import { Search, UserPlus, Trash2 } from "lucide-react";
+import { Search, UserPlus, Trash2, LoaderCircle } from "lucide-react";
 import { toast } from "sonner";
 import { ImportGuests } from "./import-guests";
 
@@ -33,7 +34,9 @@ export function PersonSelector({
   const [searchTerm, setSearchTerm] = useState("");
   const [isAddGuestOpen, setIsAddGuestOpen] = useState(false);
   const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
-  const [guestToDelete, setGuestToDelete] = useState<Person | null>(null);
+  const [selectedGuests, setSelectedGuests] = useState<string[]>([]);
+  const [isDeletingGuests, setIsDeletingGuests] = useState(false);
+  const [deletedCount, setDeletedCount] = useState(0);
 
   if (loading) {
     return (
@@ -67,39 +70,63 @@ export function PersonSelector({
       .includes(searchTerm.toLowerCase())
   );
 
-  const handleDeleteGuest = async (guest: Person) => {
-    setGuestToDelete(guest);
-    setIsDeleteConfirmOpen(true);
+  const handleCheckboxChange = (guestId: string) => {
+    setSelectedGuests((prev) =>
+      prev.includes(guestId)
+        ? prev.filter((id) => id !== guestId)
+        : [...prev, guestId]
+    );
   };
 
-  const confirmDeleteGuest = async () => {
-    if (!guestToDelete) return;
+  const handleSelectAll = (checked: boolean) => {
+    if (checked) {
+      const allGuestIds = filteredGuests.map((guest) => guest.id);
+      setSelectedGuests(allGuestIds);
+    } else {
+      setSelectedGuests([]);
+    }
+  };
+
+  const handleBulkDelete = async () => {
+    setIsDeletingGuests(true);
+    setDeletedCount(0);
 
     try {
-      const response = await fetch(`/api/delete-guest`, {
-        method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ guestId: guestToDelete.id }),
+      const deletePromises = selectedGuests.map(async (guestId, index) => {
+        const response = await fetch(`/api/delete-guest`, {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ guestId }),
+        });
+        const result = await response.json();
+
+        if (result.success) {
+          setDeletedCount((prev) => prev + 1);
+        }
+        return result;
       });
 
-      const result = await response.json();
+      const results = await Promise.all(deletePromises);
+      const hasErrors = results.some((result) => !result.success);
 
-      if (result.success) {
-        toast.success("Guest deleted successfully");
-        mutate(); // Refresh the guests list
+      if (hasErrors) {
+        toast.error("Some guests could not be deleted");
       } else {
-        throw new Error(result.message || "Failed to delete guest");
+        toast.success(`Successfully deleted ${selectedGuests.length} guests`);
+        setSelectedGuests([]);
+        mutate();
       }
     } catch (error) {
-      toast.error("Failed to delete guest", {
+      toast.error("Failed to delete guests", {
         description:
           error instanceof Error ? error.message : "Unknown error occurred",
       });
     }
+    setIsDeletingGuests(false);
+    setDeletedCount(0);
     setIsDeleteConfirmOpen(false);
-    setGuestToDelete(null);
   };
 
   return (
@@ -115,6 +142,17 @@ export function PersonSelector({
                 </p>
               </div>
               <div className="flex items-center gap-2">
+                {selectedGuests.length > 0 && (
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    onClick={() => setIsDeleteConfirmOpen(true)}
+                    className="flex items-center gap-2"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                    <span>Delete ({selectedGuests.length})</span>
+                  </Button>
+                )}
                 <ImportGuests onSuccess={() => mutate()} />
                 <Button
                   variant="outline"
@@ -126,6 +164,7 @@ export function PersonSelector({
               </div>
             </div>
           </DialogHeader>
+
           <div className="relative mt-4">
             <Input
               type="text"
@@ -139,48 +178,77 @@ export function PersonSelector({
               size={20}
             />
           </div>
-          <div className="grid gap-4 mt-4">
+
+          {filteredGuests.length > 0 && (
+            <div className="mt-4 mb-2 px-1">
+              <div className="flex items-center justify-between border-b pb-3">
+                <div className="flex items-center space-x-3">
+                  <Checkbox
+                    checked={
+                      selectedGuests.length === filteredGuests.length &&
+                      filteredGuests.length > 0
+                    }
+                    onCheckedChange={handleSelectAll}
+                    className="h-5 w-5"
+                    id="select-all"
+                  />
+                  <label
+                    htmlFor="select-all"
+                    className="text-sm font-medium text-gray-700 cursor-pointer"
+                  >
+                    Select All Guests
+                  </label>
+                </div>
+                <div className="text-sm text-gray-500">
+                  {selectedGuests.length} of {filteredGuests.length} selected
+                </div>
+              </div>
+            </div>
+          )}
+
+          <div className="grid gap-2 mt-2">
             {filteredGuests.length > 0 ? (
               filteredGuests.map((guest) => (
                 <div
                   key={guest.id}
-                  className="relative p-4 border rounded-lg hover:bg-gray-50 transition-all group"
+                  className="relative p-3 border rounded-lg hover:bg-gray-50 transition-all group"
                 >
-                  <div className="flex justify-between items-center">
-                    <div
-                      className="flex-grow cursor-pointer"
-                      onClick={() =>
-                        onSelect({
-                          id: guest.id,
-                          firstName: guest.firstname,
-                          lastName: guest.lastname,
-                        })
-                      }
-                    >
-                      <div className="font-medium text-lg flex items-center gap-2">
-                        {guest.firstname} {guest.lastname}
-                      </div>
+                  <div className="flex items-center space-x-3">
+                    <div className="flex items-center space-x-3 flex-1">
+                      <Checkbox
+                        checked={selectedGuests.includes(guest.id)}
+                        onCheckedChange={() => handleCheckboxChange(guest.id)}
+                        className="h-4 w-4"
+                        id={`guest-${guest.id}`}
+                      />
+                      <label
+                        htmlFor={`guest-${guest.id}`}
+                        className="flex-grow cursor-pointer py-1"
+                        onClick={() =>
+                          onSelect({
+                            id: guest.id,
+                            firstName: guest.firstname,
+                            lastName: guest.lastname,
+                          })
+                        }
+                      >
+                        <div className="font-medium">
+                          {guest.firstname} {guest.lastname}
+                        </div>
+                      </label>
                     </div>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() =>
-                        handleDeleteGuest({
-                          id: guest.id,
-                          firstName: guest.firstname,
-                          lastName: guest.lastname,
-                        })
-                      }
-                      className="opacity-0 group-hover:opacity-100 transition-opacity"
-                    >
-                      <Trash2 className="h-4 w-4 text-red-500" />
-                    </Button>
                   </div>
-                  <div className="absolute inset-0 border-2 border-blue-500 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
+                  <div
+                    className={`absolute inset-0 border-2 rounded-lg transition-opacity pointer-events-none ${
+                      selectedGuests.includes(guest.id)
+                        ? "border-blue-500 opacity-100"
+                        : "border-blue-500 opacity-0 group-hover:opacity-50"
+                    }`}
+                  />
                 </div>
               ))
             ) : (
-              <div className="text-center py-4">
+              <div className="text-center py-6 bg-gray-50 rounded-lg">
                 <p className="text-gray-500">No available guests found.</p>
                 <p className="text-sm text-gray-400 mt-2">
                   All guests have been assigned seats or no guests match your
@@ -196,7 +264,7 @@ export function PersonSelector({
         isOpen={isAddGuestOpen}
         onClose={() => setIsAddGuestOpen(false)}
         onSuccess={() => {
-          mutate(); // Refresh the guests list
+          mutate();
         }}
       />
 
@@ -204,14 +272,14 @@ export function PersonSelector({
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle className="text-xl font-bold text-red-800">
-              Delete Guest
+              Delete Selected Guests
             </DialogTitle>
             <DialogDescription className="mt-2">
               <div className="space-y-2">
                 <div className="p-4 bg-red-50 rounded-lg">
                   <p className="font-medium text-red-700">
-                    Are you sure you want to delete {guestToDelete?.firstName}{" "}
-                    {guestToDelete?.lastName}?
+                    Are you sure you want to delete {selectedGuests.length}{" "}
+                    selected guests?
                   </p>
                   <p className="text-red-600 text-sm mt-2">
                     This action cannot be undone.
@@ -225,15 +293,26 @@ export function PersonSelector({
               variant="outline"
               onClick={() => setIsDeleteConfirmOpen(false)}
               className="w-full sm:w-auto"
+              disabled={isDeletingGuests}
             >
               Cancel
             </Button>
             <Button
               variant="destructive"
-              onClick={confirmDeleteGuest}
+              onClick={handleBulkDelete}
               className="w-full sm:w-auto"
+              disabled={isDeletingGuests}
             >
-              Delete Guest
+              {isDeletingGuests ? (
+                <span className="flex items-center gap-2">
+                  <span className="animate-spin">
+                    <LoaderCircle />
+                  </span>
+                  Deleting ({deletedCount}/{selectedGuests.length})
+                </span>
+              ) : (
+                "Delete Selected Guests"
+              )}
             </Button>
           </DialogFooter>
         </DialogContent>

@@ -124,15 +124,6 @@ export default function AuthForm({ onAuthenticate }: AuthFormProps) {
                   "Enter"
                 )}
               </Button>
-              {/* Remove this button */}
-              {/* <Button
-                type="button"
-                variant="outline"
-                onClick={() => setIsChangePasswordMode(!isChangePasswordMode)}
-                className="w-full"
-              >
-                {isChangePasswordMode ? "Back to Login" : "Change Password"}
-              </Button> */}
             </form>
           </CardContent>
         </Card>
