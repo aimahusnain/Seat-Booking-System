@@ -92,7 +92,7 @@ export function PersonSelector({
     setDeletedCount(0);
 
     try {
-      const deletePromises = selectedGuests.map(async (guestId, index) => {
+      const deletePromises = selectedGuests.map(async (guestId) => {
         const response = await fetch(`/api/delete-guest`, {
           method: "DELETE",
           headers: {
