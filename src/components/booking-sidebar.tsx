@@ -65,9 +65,13 @@ export function BookingSidebar({
                     </div>
                   </div>
                   <div className="flex-grow min-w-0">
-                    <h3 className="text-sm font-semibold text-gray-800 truncate">
+                    <h3
+                      className="text-sm w-[7rem] font-semibold text-gray-800 truncate"
+                      title={`${seat.user?.firstname} ${seat.user?.lastname}`}
+                    >
                       {seat.user?.firstname} {seat.user?.lastname}
                     </h3>
+
                     <p className="text-xs text-gray-500">{seat.table.name}</p>
                   </div>
                   <div className="flex-shrink-0 text-2xl font-bold text-indigo-600">
