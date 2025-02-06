@@ -77,7 +77,7 @@ const SeatBooking = () => {
   const [deleteAllPassword, setDeleteAllPassword] = useState("");
   const [showDeleteAllPassword, setShowDeleteAllPassword] = useState(false);
   const [deleteAllConfirmText, setDeleteAllConfirmText] = useState("");
-  
+
   const handleDeleteAllBookings = async () => {
     try {
       const storedHash = await getPasswordHash();
@@ -931,7 +931,7 @@ const SeatBooking = () => {
           <div className="space-y-4 py-4">
             <div className="space-y-2">
               <label className="text-sm font-medium text-gray-700">
-                Type "<strong>Delete All Bookings</strong>" to confirm
+                Type &quot;<strong>Delete All Bookings</strong>&quot; to confirm
               </label>
               <Input
                 value={deleteAllConfirmText}
