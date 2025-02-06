@@ -73,6 +73,69 @@ const SeatBooking = () => {
   const [deletePassword, setDeletePassword] = useState("");
   const [showDeletePassword, setShowDeletePassword] = useState(false);
   const [isAddGuestOpen, setIsAddGuestOpen] = useState(false);
+  const [isDeleteAllDialogOpen, setIsDeleteAllDialogOpen] = useState(false);
+  const [deleteAllPassword, setDeleteAllPassword] = useState("");
+  const [showDeleteAllPassword, setShowDeleteAllPassword] = useState(false);
+  const [deleteAllConfirmText, setDeleteAllConfirmText] = useState("");
+  
+  const handleDeleteAllBookings = async () => {
+    try {
+      const storedHash = await getPasswordHash();
+      const inputHash = await sha256(deleteAllPassword);
+
+      if (deleteAllConfirmText !== "Delete All Bookings") {
+        toast.error("Please type the exact confirmation text");
+        return;
+      }
+
+      if (inputHash !== storedHash) {
+        toast.error("Incorrect password");
+        return;
+      }
+
+      const toastId = toast.loading("Deleting all bookings...");
+      
+      const deletePromises = bookedSeats.map(seat => 
+        fetch("/api/delete-booking", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ seatId: seat.id })
+        })
+      );
+
+      const results = await Promise.all(deletePromises);
+      const allSuccessful = results.every(async (res) => {
+        const data = await res.json();
+        return data.success;
+      });
+
+      if (allSuccessful) {
+        const updatedTables = tables.map(table => ({
+          ...table,
+          seats: table.seats.map(seat => ({
+            ...seat,
+            isBooked: false,
+            userId: null,
+            user: null
+          }))
+        }));
+
+        setTables(updatedTables);
+        setBookedSeats([]);
+        setIsDeleteAllDialogOpen(false);
+        setDeleteAllConfirmText("");
+        setDeleteAllPassword("");
+        
+        toast.success("All bookings deleted successfully", { id: toastId });
+      } else {
+        throw new Error("Some bookings failed to delete");
+      }
+    } catch (error) {
+      toast.error("Failed to delete all bookings", {
+        description: error instanceof Error ? error.message : "Unknown error occurred"
+      });
+    }
+  };
 
   useEffect(() => {
     if (initialSeats.length > 0) {
@@ -826,20 +889,101 @@ const SeatBooking = () => {
         </motion.div>
 
         <AnimatePresence>
-          {!isFullScreen && (
-            <motion.div
-              initial={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: 100 }}
-              transition={{ duration: 0.5 }}
-              className="w-full lg:w-1/4 bg-white rounded-2xl overflow-hidden my-2 mr-5"
-            >
-              <BookingSidebar
-                bookedSeats={bookedSeats}
-                onDeleteBooking={handleDeleteBooking}
-                onToggleReceived={handleToggleReceived}
+      {/* Add Delete All button in the BookingSidebar props */}
+      {!isFullScreen && (
+        <motion.div className="w-full lg:w-1/4 bg-white rounded-2xl overflow-hidden my-2 mr-5">
+          <BookingSidebar
+            bookedSeats={bookedSeats}
+            onDeleteBooking={handleDeleteBooking}
+            onToggleReceived={handleToggleReceived}
+            onDeleteAll={() => setIsDeleteAllDialogOpen(true)}
+          />
+        </motion.div>
+      )}
+
+      {/* Delete All Dialog */}
+      <Dialog 
+        open={isDeleteAllDialogOpen} 
+        onOpenChange={(open) => {
+          setIsDeleteAllDialogOpen(open);
+          if (!open) {
+            setDeleteAllConfirmText("");
+            setDeleteAllPassword("");
+            setShowDeleteAllPassword(false);
+          }
+        }}
+      >
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-bold text-red-800">Delete All Bookings</DialogTitle>
+            <DialogDescription className="mt-2">
+              <div className="p-4 bg-red-50 rounded-lg">
+                <p className="font-medium text-red-700">
+                  Are you sure you want to delete all bookings?
+                </p>
+                <p className="text-red-600 text-sm mt-2">
+                  This will permanently delete all seat assignments. This action cannot be undone.
+                </p>
+              </div>
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-gray-700">
+                Type "<strong>Delete All Bookings</strong>" to confirm
+              </label>
+              <Input
+                value={deleteAllConfirmText}
+                onChange={(e) => setDeleteAllConfirmText(e.target.value)}
+                placeholder="Delete All Bookings"
+                className="w-full"
               />
-            </motion.div>
-          )}
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-gray-700">
+                Enter Password
+              </label>
+              <div className="relative">
+                <Input
+                  type={showDeleteAllPassword ? "text" : "password"}
+                  value={deleteAllPassword}
+                  onChange={(e) => setDeleteAllPassword(e.target.value)}
+                  placeholder="Enter your password"
+                  className="w-full pr-10"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowDeleteAllPassword(!showDeleteAllPassword)}
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                >
+                  {showDeleteAllPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <DialogFooter className="flex-col sm:flex-row gap-2">
+            <Button
+              variant="outline"
+              onClick={() => setIsDeleteAllDialogOpen(false)}
+              className="w-full sm:w-auto"
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleDeleteAllBookings}
+              className="w-full sm:w-auto"
+              disabled={deleteAllConfirmText !== "Delete All Bookings" || !deleteAllPassword}
+            >
+              Delete All Bookings
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
         </AnimatePresence>
       </div>
 

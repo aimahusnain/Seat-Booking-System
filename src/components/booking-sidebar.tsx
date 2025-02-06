@@ -11,12 +11,14 @@ interface BookingSidebarProps {
   bookedSeats: Seat[];
   onDeleteBooking: (seatId: string) => void;
   onToggleReceived: (seatId: string, isReceived: boolean) => void;
+  onDeleteAll: () => void;
 }
 
 export function BookingSidebar({
   bookedSeats,
   onDeleteBooking,
   onToggleReceived,
+  onDeleteAll
 }: BookingSidebarProps) {
   const [searchTerm, setSearchTerm] = useState("");
 
@@ -37,7 +39,19 @@ export function BookingSidebar({
   return (
     <div className="flex flex-col h-full w-full max-w-xs shadow-lg">
       <div className="p-4 bg-white shadow-sm">
-        <h2 className="text-xl font-bold text-gray-800 mb-4">Booked Seats</h2>
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-xl font-bold text-gray-800">Booked Seats</h2>
+          {bookedSeats.length > 0 && (
+            <Button
+              variant="destructive"
+              size="sm"
+              onClick={onDeleteAll}
+              className="text-xs"
+            >
+              Delete All
+            </Button>
+          )}
+        </div>
         <div className="relative">
           <Input
             placeholder="Search by name"
