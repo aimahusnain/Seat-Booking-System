@@ -57,7 +57,7 @@ export default function AuthForm({ onAuthenticate }: AuthFormProps) {
 
       const inputHash = await sha256(password);
 
-      console.log(inputHash)
+      console.log(correctPasswordHash)
 
       if (inputHash === correctPasswordHash) {
         toast.success("Welcome back!");
