@@ -9,7 +9,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Progress } from "@/components/ui/progress";
-import { Download, Trash2 } from "lucide-react";
+import { Download } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import * as XLSX from "xlsx";
@@ -181,29 +181,29 @@ export function ImportGuestsforWeb() {
     }
   };
 
-  const removeDuplicates = async () => {
-    try {
-      setIsLoading(true);
-      const response = await fetch("/api/remove-duplicates", {
-        method: "POST",
-      });
+  // const removeDuplicates = async () => {
+  //   try {
+  //     setIsLoading(true);
+  //     const response = await fetch("/api/remove-duplicates", {
+  //       method: "POST",
+  //     });
 
-      if (!response.ok) {
-        throw new Error("Failed to remove duplicates");
-      }
+  //     if (!response.ok) {
+  //       throw new Error("Failed to remove duplicates");
+  //     }
 
-      const data = await response.json();
-      toast.success(
-        `Successfully removed ${data.removedCount} duplicate users`
-      );
-    } catch (error) {
-      const errorMessage =
-        error instanceof Error ? error.message : "Unknown error occurred";
-      toast.error("Failed to remove duplicates", { description: errorMessage });
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  //     const data = await response.json();
+  //     toast.success(
+  //       `Successfully removed ${data.removedCount} duplicate users`
+  //     );
+  //   } catch (error) {
+  //     const errorMessage =
+  //       error instanceof Error ? error.message : "Unknown error occurred";
+  //     toast.error("Failed to remove duplicates", { description: errorMessage });
+  //   } finally {
+  //     setIsLoading(false);
+  //   }
+  // };
 
   return (
     <Dialog>
@@ -221,7 +221,7 @@ export function ImportGuestsforWeb() {
             <FileUpload onChange={handleFileUpload} />
           </div>
           <div className="flex items-center justify-between gap-4">
-            <div className="flex gap-2">
+            <div className="flex justify-between items-center w-full gap-2">
               <Button
                 variant="outline"
                 onClick={() => downloadSampleFile("xlsx")}
@@ -237,14 +237,14 @@ export function ImportGuestsforWeb() {
                 CSV Sample
               </Button>
             </div>
-            <Button
+            {/* <Button
               variant="destructive"
               onClick={removeDuplicates}
               disabled={isLoading}
             >
               <Trash2 className="h-4 w-4 mr-2" />
               Remove Duplicates
-            </Button>
+            </Button> */}
           </div>
           {isLoading && importProgress && (
             <div className="text-center">
