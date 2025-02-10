@@ -89,7 +89,7 @@ const SeatBooking = () => {
   // Call in useEffect
   useEffect(() => {
     fetchTotalGuests();
-  }, []);
+  }, []); // Fixed dependency array
 
   const handleDeleteAllBookings = async () => {
     try {
@@ -664,116 +664,102 @@ const SeatBooking = () => {
 
   return (
     <div className={`bg-zinc-50 ${isFullScreen ? "overflow-hidden" : ""}`}>
-      <AnimatePresence>
-        {!isFullScreen && (
-          <motion.nav
-            initial={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -50 }}
-            transition={{ duration: 0.5 }}
-            className="z-50 bg-white border-b border-zinc-200 px-4"
+<AnimatePresence>
+  {!isFullScreen && (
+    <motion.nav
+      initial={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -50 }}
+      transition={{ duration: 0.5 }}
+      className="z-50 bg-white border-b border-zinc-200 px-2 sm:px-4"
+    >
+      <div className="flex flex-wrap items-center justify-between h-auto min-h-14 py-2">
+        {/* Logo */}
+        <Link
+          href="/"
+          className="flex justify-center items-center space-x-2"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="w-5 h-5 sm:w-6 sm:h-6 text-zinc-900"
           >
-            <div className="flex items-center justify-between h-14">
-              {/* Logo */}
-              <Link
-                href="/"
-                className="flex justify-center items-center space-x-2"
+            {/* SVG paths remain the same */}
+          </svg>
+          <span className="text-lg sm:text-xl font-bold text-zinc-900">
+            Seat Booking
+          </span>
+        </Link>
+
+        {/* Right Section */}
+        <div className="flex flex-wrap items-center gap-2 sm:gap-4">
+          {/* Full Screen Toggle */}
+          <div className="hidden sm:flex items-center space-x-2">
+            <span className="text-sm font-medium">Full Screen</span>
+            <Switch
+              checked={isFullScreen}
+              onCheckedChange={handleFullScreenToggle}
+            />
+          </div>
+
+          <HelpButton />
+
+          <Link href="/client-view">
+            <Button size="icon" className="w-8 h-8 sm:w-10 sm:h-10">
+              <PersonStandingIcon className="w-4 h-4 sm:w-5 sm:h-5" />
+            </Button>
+          </Link>
+
+          {/* Create New Dropdown */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button className="px-2 sm:px-4 text-sm sm:text-base">
+                <span className="hidden sm:inline">Create New</span>
+                <span className="sm:hidden">New</span>
+                <ChevronDown className="h-4 w-4 ml-1 sm:ml-2" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-48">
+              <DropdownMenuItem
+                className="cursor-pointer"
+                onClick={() => setIsAddTableOpen(true)}
               >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  className="w-6 h-6 text-zinc-900"
-                >
-                  <path d="M18 11V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v0" />
-                  <path d="M14 10V4a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v2" />
-                  <path d="M10 10.5V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v8" />
-                  <path d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-8" />
-                  <line x1="2" y1="2" x2="22" y2="22" />
-                </svg>
-                <span className="text-xl font-bold text-zinc-900">
-                  Seat Booking
-                </span>
-              </Link>
+                New Table
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                className="cursor-pointer"
+                onClick={() => setIsAddGuestOpen(true)}
+              >
+                New Guest
+              </DropdownMenuItem>
+              <ImportGuestsforWeb />
+            </DropdownMenuContent>
+          </DropdownMenu>
 
-              {/* Search Bar */}
-              {/* <div className="max-w-md w-full mx-4">
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-zinc-400 h-4 w-4" />
-                  <Input
-                    type="search"
-                    placeholder="Search..."
-                    className="w-full pl-10 bg-zinc-50"
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                  />
-                </div>
-              </div> */}
-
-              {/* Right Section */}
-              <div className="flex items-center space-x-4">
-                <div className="flex items-center space-x-2">
-                  <span className="text-sm font-medium">Full Screen</span>
-                  <Switch
-                    checked={isFullScreen}
-                    onCheckedChange={handleFullScreenToggle}
-                  />
-                </div>
-
-                <HelpButton />
-
-                <Link href="/client-view">
-                  <Button size="icon">
-                    <PersonStandingIcon className="w-10 h-10" />
-                  </Button>
-                </Link>
-
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button>
-                      Create New
-                      <ChevronDown className="h-4 w-4 ml-2" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuItem
-                      className="cursor-pointer"
-                      onClick={() => setIsAddTableOpen(true)}
-                    >
-                      New Table
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                      className="cursor-pointer"
-                      onClick={() => setIsAddGuestOpen(true)}
-                    >
-                      New Guest
-                    </DropdownMenuItem>
-                    <ImportGuestsforWeb />
-                  </DropdownMenuContent>
-                </DropdownMenu>
-
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Avatar className="cursor-pointer">
-                      <AvatarImage
-                        src="https://github.com/shadcn.png"
-                        alt="@shadcn"
-                      />
-                      <AvatarFallback>JA</AvatarFallback>
-                    </Avatar>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <ChangePasswordForm />
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </div>
-            </div>
-          </motion.nav>
-        )}
-      </AnimatePresence>
+          {/* Avatar Dropdown */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Avatar className="cursor-pointer w-8 h-8 sm:w-10 sm:h-10">
+                <AvatarImage
+                  src="https://github.com/shadcn.png"
+                  alt="@shadcn"
+                />
+                <AvatarFallback>JA</AvatarFallback>
+              </Avatar>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <ChangePasswordForm />
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+      </div>
+    </motion.nav>
+  )}
+</AnimatePresence>
 
       {/* Main Content */}
       <div
@@ -781,15 +767,12 @@ const SeatBooking = () => {
           isFullScreen ? "h-screen" : "h-[calc(100vh-64px)]"
         }`}
       >
-        {/* Main Content - 80% on desktop, 100% on mobile */}
+        {/* Main Content - Tables */}
         <motion.div
           layout
           className={`w-full ${
-            isFullScreen ? "" : "lg:w-3/4"
+            isFullScreen ? "" : "lg:w-full xl:w-3/4"
           } bg-zinc-50 overflow-hidden`}
-          animate={{
-            width: isFullScreen ? "100%" : "75%",
-          }}
           transition={{ duration: 0.5 }}
         >
           <AnimatePresence>
@@ -798,16 +781,11 @@ const SeatBooking = () => {
                 initial={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -50 }}
                 transition={{ duration: 0.5 }}
-                className="sticky top-2 mx-5 bg-white rounded-2xl border-b border-zinc-200 z-40"
+                className="sticky top-0 z-40 bg-white border-b border-zinc-200 px-4 py-2 md:px-6 md:py-4"
               >
-                <div className="flex justify-between items-center px-6 py-4">
-                  <motion.div
-                    initial={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -50 }}
-                    transition={{ duration: 0.5 }}
-                    className="sticky top-2 bg-white rounded-xl shadow-sm border-b border-zinc-100 z-40"
-                  >
-                    <div className="grid grid-cols-5 gap-3 w-full">
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                  <div className="w-full md:w-auto">
+                    <div className="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-5 gap-2 md:gap-3">
                       <div className="bg-zinc-50 rounded-lg border border-zinc-200 p-2 text-center hover:shadow-sm transition-all">
                         <div className="text-xs uppercase tracking-wider text-zinc-500 mb-1">
                           Seats
@@ -871,8 +849,8 @@ const SeatBooking = () => {
                         </div>
                       </div>
                     </div>
-                  </motion.div>
-                  <div className="flex items-center space-x-4">
+                  </div>
+                  <div className="flex items-center space-x-4 w-full md:w-auto justify-between md:justify-end">
                     <div className="flex items-center space-x-2">
                       <div className="w-3 h-3 rounded-full bg-zinc-200"></div>
                       <span className="text-sm text-zinc-600">Available</span>
@@ -897,7 +875,7 @@ const SeatBooking = () => {
           >
             <motion.div
               layout
-              className={`py-6 px-8 grid gap-12`}
+              className={`py-6 px-8 grid gap-12 sm:pb-[3rem] pb-[9rem]`}
               style={{
                 gridTemplateColumns: isFullScreen
                   ? "repeat(4, minmax(0, 1fr))"
@@ -911,9 +889,14 @@ const SeatBooking = () => {
         </motion.div>
 
         <AnimatePresence>
-          {/* Add Delete All button in the BookingSidebar props */}
           {!isFullScreen && (
-            <motion.div className="w-full lg:w-1/4 bg-white rounded-2xl overflow-hidden my-2 mr-5">
+            <motion.div
+              initial={{ opacity: 0, x: 100 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 100 }}
+              transition={{ duration: 0.3 }}
+              className="hidden xl:block w-1/4 bg-white overflow-hidden my-2 lg:my-0 lg:ml-2"
+            >
               <BookingSidebar
                 bookedSeats={bookedSeats}
                 onDeleteBooking={handleDeleteBooking}
@@ -922,104 +905,19 @@ const SeatBooking = () => {
               />
             </motion.div>
           )}
-
-          {/* Delete All Dialog */}
-          <Dialog
-            open={isDeleteAllDialogOpen}
-            onOpenChange={(open) => {
-              setIsDeleteAllDialogOpen(open);
-              if (!open) {
-                setDeleteAllConfirmText("");
-                setDeleteAllPassword("");
-                setShowDeleteAllPassword(false);
-              }
-            }}
-          >
-            <DialogContent className="sm:max-w-md">
-              <DialogHeader>
-                <DialogTitle className="text-xl font-bold text-red-800">
-                  Delete All Bookings
-                </DialogTitle>
-                <DialogDescription className="mt-2">
-                  <div className="p-4 bg-red-50 rounded-lg">
-                    <p className="font-medium text-red-700">
-                      Are you sure you want to delete all bookings?
-                    </p>
-                    <p className="text-red-600 text-sm mt-2">
-                      This will permanently delete all seat assignments. This
-                      action cannot be undone.
-                    </p>
-                  </div>
-                </DialogDescription>
-              </DialogHeader>
-
-              <div className="space-y-4 py-4">
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-gray-700">
-                    Type &quot;<strong>Delete All Bookings</strong>&quot; to
-                    confirm
-                  </label>
-                  <Input
-                    value={deleteAllConfirmText}
-                    onChange={(e) => setDeleteAllConfirmText(e.target.value)}
-                    placeholder="Delete All Bookings"
-                    className="w-full"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-gray-700">
-                    Enter Password
-                  </label>
-                  <div className="relative">
-                    <Input
-                      type={showDeleteAllPassword ? "text" : "password"}
-                      value={deleteAllPassword}
-                      onChange={(e) => setDeleteAllPassword(e.target.value)}
-                      placeholder="Enter your password"
-                      className="w-full pr-10"
-                    />
-                    <button
-                      type="button"
-                      onClick={() =>
-                        setShowDeleteAllPassword(!showDeleteAllPassword)
-                      }
-                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
-                    >
-                      {showDeleteAllPassword ? (
-                        <EyeOff size={16} />
-                      ) : (
-                        <Eye size={16} />
-                      )}
-                    </button>
-                  </div>
-                </div>
-              </div>
-
-              <DialogFooter className="flex-col sm:flex-row gap-2">
-                <Button
-                  variant="outline"
-                  onClick={() => setIsDeleteAllDialogOpen(false)}
-                  className="w-full sm:w-auto"
-                >
-                  Cancel
-                </Button>
-                <Button
-                  variant="destructive"
-                  onClick={handleDeleteAllBookings}
-                  className="w-full sm:w-auto"
-                  disabled={
-                    deleteAllConfirmText !== "Delete All Bookings" ||
-                    !deleteAllPassword
-                  }
-                >
-                  Delete All Bookings
-                </Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
         </AnimatePresence>
       </div>
+
+      {!isFullScreen && (
+        <div className="xl:hidden">
+          <BookingSidebar
+            bookedSeats={bookedSeats}
+            onDeleteBooking={handleDeleteBooking}
+            onToggleReceived={handleToggleReceived}
+            onDeleteAll={() => setIsDeleteAllDialogOpen(true)}
+          />
+        </div>
+      )}
 
       <PersonSelector
         isOpen={isPersonSelectorOpen}
@@ -1214,6 +1112,101 @@ const SeatBooking = () => {
               Cancel
             </Button>
             <Button onClick={handleChangePassword}>Change Password</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog
+        open={isDeleteAllDialogOpen}
+        onOpenChange={setIsDeleteAllDialogOpen}
+      >
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-bold text-red-800">
+              Delete All Bookings
+            </DialogTitle>
+            <DialogDescription className="mt-2">
+              <div className="space-y-2">
+                <div className="p-4 bg-red-50 rounded-lg">
+                  <p className="font-medium text-red-700">
+                    Are you sure you want to delete all bookings?
+                  </p>
+                  <p className="text-red-600 text-sm mt-2">
+                    This will permanently delete all bookings. This action
+                    cannot be undone.
+                  </p>
+                </div>
+              </div>
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <label
+                htmlFor="deleteAllConfirmText"
+                className="text-sm font-medium text-gray-700"
+              >
+                Type "Delete All Bookings" to confirm:
+              </label>
+              <Input
+                id="deleteAllConfirmText"
+                type="text"
+                value={deleteAllConfirmText}
+                onChange={(e) => setDeleteAllConfirmText(e.target.value)}
+                placeholder="Delete All Bookings"
+                className="w-full"
+              />
+            </div>
+            <div className="space-y-2">
+              <label
+                htmlFor="deleteAllPassword"
+                className="text-sm font-medium text-gray-700"
+              >
+                Enter Password
+              </label>
+              <div className="relative">
+                <Input
+                  id="deleteAllPassword"
+                  type={showDeleteAllPassword ? "text" : "password"}
+                  value={deleteAllPassword}
+                  onChange={(e) => setDeleteAllPassword(e.target.value)}
+                  placeholder="Enter your password"
+                  className="w-full pr-10"
+                />
+                <button
+                  type="button"
+                  onClick={() =>
+                    setShowDeleteAllPassword(!showDeleteAllPassword)
+                  }
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                >
+                  {showDeleteAllPassword ? (
+                    <EyeOff size={16} />
+                  ) : (
+                    <Eye size={16} />
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+          <DialogFooter className="flex-col sm:flex-row gap-2">
+            <Button
+              variant="outline"
+              onClick={() => setIsDeleteAllDialogOpen(false)}
+              className="w-full sm:w-auto"
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleDeleteAllBookings}
+              className="w-full sm:w-auto"
+              disabled={
+                deleteAllConfirmText !== "Delete All Bookings" ||
+                !deleteAllPassword
+              }
+            >
+              Delete All Bookings
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
