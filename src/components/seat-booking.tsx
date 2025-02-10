@@ -1145,7 +1145,7 @@ const SeatBooking = () => {
                 htmlFor="deleteAllConfirmText"
                 className="text-sm font-medium text-gray-700"
               >
-                Type "Delete All Bookings" to confirm:
+                Type <strong>&quot;Delete All Bookings&quot;</strong> to confirm:
               </label>
               <Input
                 id="deleteAllConfirmText"
