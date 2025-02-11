@@ -6,10 +6,11 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 import type { Seat } from "@/types/booking"
 import { ChevronLeft, ChevronRight, Search, Trash2, User } from "lucide-react"
-import { useMemo, useState } from "react"
+import { useMemo, useState, useRef, useEffect } from "react"
 import PrintableBooking from "./single-seat-pdf"
 import { Checkbox } from "@/components/ui/checkbox"
 import { useMediaQuery } from "@/hooks/use-media-query"
+import type React from "react" // Added import for React
 
 interface BookingSidebarProps {
   bookedSeats: Seat[]
@@ -21,11 +22,23 @@ interface BookingSidebarProps {
 export function BookingSidebar({ bookedSeats, onDeleteBooking, onToggleReceived, onDeleteAll }: BookingSidebarProps) {
   const [searchTerm, setSearchTerm] = useState("")
   const [isOpen, setIsOpen] = useState(false)
-  const isTablet = useMediaQuery("(min-width: 200px) and (max-width: 1280px)")
+  const isTablet = useMediaQuery("(min-width: 768px) and (max-width: 1023px)")
+  const [inputValue, setInputValue] = useState("")
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("")
+  const inputRef = useRef<HTMLInputElement>(null)
+
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedSearchTerm(inputValue), 300)
+    return () => clearTimeout(timer)
+  }, [inputValue])
+
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setInputValue(e.target.value)
+  }
 
   const filteredBookings = useMemo(() => {
     return bookedSeats.filter((seat) => {
-      const searchString = searchTerm.toLowerCase()
+      const searchString = debouncedSearchTerm.toLowerCase()
       return (
         seat.user &&
         (seat.user.firstname.toLowerCase().includes(searchString) ||
@@ -33,7 +46,7 @@ export function BookingSidebar({ bookedSeats, onDeleteBooking, onToggleReceived,
           `${seat.user.firstname} ${seat.user.lastname}`.toLowerCase().includes(searchString))
       )
     })
-  }, [bookedSeats, searchTerm])
+  }, [bookedSeats, debouncedSearchTerm])
 
   const SidebarContent = () => (
     <div className="flex flex-col h-full w-full bg-white">
@@ -48,10 +61,12 @@ export function BookingSidebar({ bookedSeats, onDeleteBooking, onToggleReceived,
         </div>
         <div className="relative">
           <Input
+            ref={inputRef}
             placeholder="Search by name"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            value={inputValue}
+            onChange={handleSearchChange}
             className="pl-9 pr-4 py-2 w-full text-sm rounded-full border-gray-200 focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
+            autoComplete="off"
           />
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 h-4 w-4" />
         </div>
@@ -67,14 +82,14 @@ export function BookingSidebar({ bookedSeats, onDeleteBooking, onToggleReceived,
               >
                 <div className="p-4 flex items-center space-x-3">
                   <div className="flex-shrink-0">
-                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-400 to-indigo-500 flex items-center justify-center text-white font-bold text-lg truncate">
+                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-400 to-indigo-500 flex items-center justify-center text-white font-bold text-lg">
                       {seat.user?.firstname[0]}
                       {seat.user?.lastname[0]}
                     </div>
                   </div>
                   <div className="flex-grow min-w-0">
                     <h3
-                      className="text-sm font-semibold text-gray-900"
+                      className="text-sm font-semibold text-gray-800 truncate"
                       title={`${seat.user?.firstname} ${seat.user?.lastname}`}
                     >
                       {seat.user?.firstname} {seat.user?.lastname}
@@ -115,7 +130,7 @@ export function BookingSidebar({ bookedSeats, onDeleteBooking, onToggleReceived,
           ) : (
             <div className="text-center text-gray-500 py-8">
               <User className="h-12 w-12 mx-auto mb-3 text-gray-400" />
-              <p className="text-sm font-medium">No bookings found</p>
+              <p className="text-sm font-medium">{inputValue ? "No matches found" : "No bookings found"}</p>
             </div>
           )}
         </div>

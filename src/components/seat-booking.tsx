@@ -49,6 +49,7 @@ import { HelpButton } from "./help-dropdown";
 import { ImportGuestsforWeb } from "./import-guests-form";
 import { PDFExport } from "./pdf-export";
 import { PersonSelector } from "./person-selector";
+import Loader from "./loader";
 
 const SeatBooking = () => {
   const { seats: initialSeats, loading, error } = useSeats();
@@ -655,7 +656,7 @@ const SeatBooking = () => {
   };
 
   if (loading) {
-    return <div>Loading...</div>;
+    return <Loader />;
   }
 
   if (error) {
