@@ -32,6 +32,7 @@ import {
   ChevronDown,
   Eye,
   EyeOff,
+  FolderPen,
   PersonStandingIcon,
   ScanQrCode,
   Trash2,
@@ -48,9 +49,9 @@ import { BookingSidebar } from "./booking-sidebar";
 import ChangePasswordForm from "./change-password-dialog";
 import { HelpButton } from "./help-dropdown";
 import { ImportGuestsforWeb } from "./import-guests-form";
+import Loader from "./loader";
 import { PDFExport } from "./pdf-export";
 import { PersonSelector } from "./person-selector";
-import Loader from "./loader";
 
 const SeatBooking = () => {
   const { seats: initialSeats, loading, error } = useSeats();
@@ -80,6 +81,7 @@ const SeatBooking = () => {
   const [showDeleteAllPassword, setShowDeleteAllPassword] = useState(false);
   const [deleteAllConfirmText, setDeleteAllConfirmText] = useState("");
   const [totalGuests, setTotalGuests] = useState(0);
+  const [showNames, setShowNames] = useState(false);
 
   // Add fetch function
   const fetchTotalGuests = async () => {
@@ -576,6 +578,17 @@ const SeatBooking = () => {
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
+              {showNames && seat.isBooked && (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  className="absolute -bottom-6 left-1/2 transform -translate-x-1/2 whitespace-nowrap"
+                >
+                  <span className="text-[0.60rem] font-medium text-zinc-600">
+                    {seat.user?.firstname} {seat.user?.lastname}
+                  </span>
+                </motion.div>
+              )}
             </motion.div>
           );
         })}
@@ -700,6 +713,28 @@ const SeatBooking = () => {
 
               {/* Right Section */}
               <div className="flex flex-wrap items-center gap-2 sm:gap-4">
+                {/* Add this in the navbar's right section, before the HelpButton */}
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        size="icon"
+                        className={`w-8 h-8 sm:w-10 sm:h-10 ${
+                          showNames
+                            ? "bg-blue-100 text-blue-700 hover:bg-blue-200"
+                            : ""
+                        }`}
+                        onClick={() => setShowNames(!showNames)}
+                      >
+                        <FolderPen className="w-4 h-4 sm:w-5 sm:h-5" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      {showNames ? "Hide booked names" : "Show booked names"}
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+
                 {/* Full Screen Toggle */}
                 <div className="hidden sm:flex items-center space-x-2">
                   <span className="text-sm font-medium">Full Screen</span>
@@ -727,8 +762,7 @@ const SeatBooking = () => {
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button className="px-2 sm:px-4 text-sm sm:text-base">
-                      <span className="hidden sm:inline">Create New</span>
-                      <span className="sm:hidden">New</span>
+                      <span>New</span>
                       <ChevronDown className="h-4 w-4 ml-1 sm:ml-2" />
                     </Button>
                   </DropdownMenuTrigger>
