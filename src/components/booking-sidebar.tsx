@@ -226,13 +226,13 @@ export function BookingSidebar({
                       >
                         Arrived
                       </label>
-                    </div>
-                    <div className="flex items-center space-x-2">
                       <PrintableBooking
                         firstName={seat.user?.firstname || ""}
                         lastName={seat.user?.lastname || ""}
                         seats={[seat]}
                       />
+                    </div>
+                    <div className="flex items-center space-x-2">
                       <Button
                         variant="ghost"
                         size="sm"
