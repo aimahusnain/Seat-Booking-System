@@ -1,12 +1,10 @@
-"use client";
-
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import type { Seat } from "@/types/booking";
 import { ChevronLeft, ChevronRight, Search, Trash2, User } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useState, useMemo } from "react";
 import PrintableBooking from "./single-seat-pdf";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useMediaQuery } from "@/hooks/use-media-query";
@@ -25,35 +23,35 @@ export function BookingSidebar({
   onDeleteAll,
 }: BookingSidebarProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState({ name: "", seat: "" });
+  const [searchQueries, setSearchQueries] = useState({
+    name: "",
+    seat: ""
+  });
   const isTablet = useMediaQuery("(min-width: 200px) and (max-width: 1280px)");
 
+  // Move filtering logic to useMemo
   const filteredBookings = useMemo(() => {
-    if (!searchQuery.name && !searchQuery.seat) return bookedSeats;
-
     return bookedSeats.filter((seat) => {
-      const nameMatch = searchQuery.name
-        ? seat.user &&
-          (seat.user.firstname
-            .toLowerCase()
-            .includes(searchQuery.name.toLowerCase()) ||
-            seat.user.lastname
-              .toLowerCase()
-              .includes(searchQuery.name.toLowerCase()) ||
-            `${seat.user.firstname} ${seat.user.lastname}`
-              .toLowerCase()
-              .includes(searchQuery.name.toLowerCase()))
-        : true;
+      if (!searchQueries.name && !searchQueries.seat) return true;
 
-      const seatMatch = searchQuery.seat
-        ? seat.seat.toString().includes(searchQuery.seat)
-        : true;
+      const fullName = `${seat.user?.firstname} ${seat.user?.lastname}`.toLowerCase();
+      const nameMatch = !searchQueries.name || fullName.includes(searchQueries.name.toLowerCase());
+      const seatMatch = !searchQueries.seat || seat.seat.toString().includes(searchQueries.seat);
 
       return nameMatch && seatMatch;
     });
-  }, [bookedSeats, searchQuery]);
+  }, [bookedSeats, searchQueries]);
 
-  const SidebarContent = () => (
+  // Memoized search input handlers
+  const handleSearchChange = (field: 'name' | 'seat') => (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchQueries(prev => ({
+      ...prev,
+      [field]: e.target.value
+    }));
+  };
+
+  // Memoized sidebar content
+  const SidebarContent = useMemo(() => (
     <div className="flex flex-col h-full w-full bg-white">
       <div className="p-4 bg-white shadow-sm space-y-4">
         <div className="flex justify-between items-center">
@@ -75,22 +73,16 @@ export function BookingSidebar({
             <Search className="absolute left-2 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <Input
               placeholder="Search by name..."
-              value={searchQuery.name}
-              onChange={(e) => {
-                e.preventDefault();
-                setSearchQuery((prev) => ({ ...prev, name: e.target.value }));
-              }}
+              value={searchQueries.name}
+              onChange={handleSearchChange('name')}
               className="pl-8"
               autoComplete="off"
             />
           </div>
           <Input
             placeholder="Seat #"
-            value={searchQuery.seat}
-            onChange={(e) => {
-              e.preventDefault();
-              setSearchQuery((prev) => ({ ...prev, seat: e.target.value }));
-            }}
+            value={searchQueries.seat}
+            onChange={handleSearchChange('seat')}
             className="w-20"
             autoComplete="off"
           />
@@ -163,7 +155,7 @@ export function BookingSidebar({
             <div className="text-center text-gray-500 py-8">
               <User className="h-12 w-12 mx-auto mb-3 text-gray-400" />
               <p className="text-sm font-medium">No bookings found</p>
-              {(searchQuery.name || searchQuery.seat) && (
+              {(searchQueries.name || searchQueries.seat) && (
                 <p className="text-xs text-gray-400 mt-1">
                   Try adjusting your search criteria
                 </p>
@@ -173,7 +165,7 @@ export function BookingSidebar({
         </div>
       </ScrollArea>
     </div>
-  );
+  ), [bookedSeats, searchQueries, onDeleteBooking, onToggleReceived, onDeleteAll, filteredBookings]);
 
   if (isTablet) {
     return (
@@ -192,7 +184,7 @@ export function BookingSidebar({
           </Button>
         </SheetTrigger>
         <SheetContent side="right" className="w-[400px] sm:w-[540px] p-0">
-          <SidebarContent />
+          {SidebarContent}
         </SheetContent>
       </Sheet>
     );
@@ -200,7 +192,7 @@ export function BookingSidebar({
 
   return (
     <div className="w-full h-full max-w-xs lg:max-w-sm xl:max-w-md">
-      <SidebarContent />
+      {SidebarContent}
     </div>
   );
 }

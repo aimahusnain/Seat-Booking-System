@@ -1,95 +1,99 @@
-"use client"
-
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import type { Seat } from "@/types/booking"
 
 export function useSeats() {
   const [seats, setSeats] = useState<Seat[]>([])
+  const [bookedSeats, setBookedSeats] = useState<Seat[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [isInitialLoad, setIsInitialLoad] = useState(true)
+
+  const updateSeatsWithoutResetingBooked = useCallback((newSeats: Seat[]) => {
+    setSeats(newSeats)
+    
+    if (isInitialLoad) {
+      // On initial load, set booked seats
+      setBookedSeats(newSeats.filter(seat => seat.isBooked))
+      setIsInitialLoad(false)
+    } else {
+      // On subsequent updates, only add new bookings or update existing ones
+      setBookedSeats(prevBookedSeats => {
+        const updatedBookedSeats = [...prevBookedSeats]
+        
+        newSeats.forEach(newSeat => {
+          if (newSeat.isBooked) {
+            const existingIndex = updatedBookedSeats.findIndex(
+              booked => booked.id === newSeat.id
+            )
+            
+            if (existingIndex === -1) {
+              // Add new booking
+              updatedBookedSeats.push(newSeat)
+            } else {
+              // Update existing booking's status (e.g., isReceived)
+              updatedBookedSeats[existingIndex] = {
+                ...updatedBookedSeats[existingIndex],
+                isReceived: newSeat.isReceived
+              }
+            }
+          }
+        })
+        
+        return updatedBookedSeats
+      })
+    }
+  }, [isInitialLoad])
+
+  const fetchSeats = useCallback(async () => {
+    try {
+      const response = await fetch("/api/get-seat")
+      const data = await response.json()
+      if (data.success) {
+        updateSeatsWithoutResetingBooked(data.data)
+      } else {
+        setError(data.message)
+      }
+    } catch (error) {
+      setError(`Failed to fetch seats ${error}`)
+    } finally {
+      setLoading(false)
+    }
+  }, [updateSeatsWithoutResetingBooked])
 
   useEffect(() => {
-    async function fetchSeats() {
-      try {
-        const response = await fetch("/api/get-seat")
-        const data = await response.json()
-        if (data.success) {
-          setSeats(data.data)
-        } else {
-          setError(data.message)
-        }
-      } catch (error) {
-        setError(`Failed to fetch seats ${error}`)
-      } finally {
-        setLoading(false)
-      }
-    }
-
     // Initial fetch
     fetchSeats()
 
     // Set up polling every 5 seconds
-    const intervalId = setInterval(() => {
-      fetchSeats()
-    }, 5000)
+    const intervalId = setInterval(fetchSeats, 60000)
 
     // Cleanup function to clear the interval when component unmounts
-    return () => {
-      clearInterval(intervalId)
-    }
-  }, []) // Empty dependency array means this effect runs once on mount
+    return () => clearInterval(intervalId)
+  }, [fetchSeats])
 
-  return { seats, loading, error }
+  const addBookedSeat = (newSeat: Seat) => {
+    setBookedSeats(prev => [...prev, newSeat])
+  }
+
+  const removeBookedSeat = (seatId: string) => {
+    setBookedSeats(prev => prev.filter(seat => seat.id !== seatId))
+  }
+
+  const updateBookedSeat = (seatId: string, updates: Partial<Seat>) => {
+    setBookedSeats(prev => 
+      prev.map(seat => 
+        seat.id === seatId ? { ...seat, ...updates } : seat
+      )
+    )
+  }
+
+  return { 
+    seats, 
+    bookedSeats, 
+    loading, 
+    error,
+    addBookedSeat,
+    removeBookedSeat,
+    updateBookedSeat
+  }
 }
-
-
-// "use client"
-
-// import { useEffect, useState } from "react"
-// import type { Seat } from "../types/booking"
-
-// export const useSeats = () => {
-//   const [seats, setSeats] = useState<Seat[]>([])
-//   const [loading, setLoading] = useState(true)
-//   const [error, setError] = useState<string | null>(null)
-
-//   useEffect(() => {
-//     const fetchSeats = async () => {
-//       try {
-//         const response = await fetch("/api/get-seat")
-//         const result = await response.json()
-
-//         if (result.success) {
-//           const formattedSeats: Seat[] = result.data.map((seat: { id: string; tableId: string; table: { name: string }; seat: number; isBooked: boolean; userId: string; user: { id: string; firstname: string; lastname: string } | null }) => ({
-//             id: seat.id,
-//             tableId: seat.tableId,
-//             tableName: seat.table.name,
-//             tableNumber: Number.parseInt(seat.table.name.replace("Table", "")),
-//             seatNumber: seat.seat,
-//             isBooked: seat.isBooked,
-//             userId: seat.userId,
-//             user: seat.user
-//               ? {
-//                   id: seat.user.id,
-//                   firstname: seat.user.firstname,
-//                   lastname: seat.user.lastname,
-//                 }
-//               : null,
-//           }))
-//           setSeats(formattedSeats)
-//         } else {
-//           setError("Failed to fetch seats")
-//         }
-//       } catch (err) {
-//         setError(`Error fetching seats ${err}`)
-//       } finally {
-//         setLoading(false)
-//       }
-//     }
-
-//     fetchSeats()
-//   }, [])
-
-//   return { seats, loading, error }
-// }
-
