@@ -25,7 +25,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { getPasswordHash } from "@/hooks/usePassword";
+import { getPasswordHashes } from "@/hooks/usePassword";
 import { AnimatePresence, motion } from "framer-motion";
 import {
   Check,
@@ -94,7 +94,7 @@ const SeatBooking = () => {
 
   const handleDeleteAllBookings = async () => {
     try {
-      const storedHash = await getPasswordHash();
+      const storedHash = await getPasswordHashes();
       const inputHash = await sha256(deleteAllPassword);
 
       if (deleteAllConfirmText !== "Delete All Bookings") {
@@ -379,7 +379,7 @@ const SeatBooking = () => {
 
   const handleDeleteTable = async (tableNumber: number) => {
     try {
-      const storedHash = await getPasswordHash();
+      const storedHash = await getPasswordHashes();
       const inputHash = await sha256(deletePassword);
 
       if (deleteConfirmText !== `Delete Table ${tableNumber}`) {

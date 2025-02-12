@@ -1,4 +1,3 @@
-// components/change-password-dialog.tsx
 "use client";
 
 import { useState } from "react";
@@ -13,7 +12,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { getPasswordHash } from "@/hooks/usePassword";
+import { getPasswordHashes } from "@/hooks/usePassword";
 
 export default function ChangePasswordDialog() {
   const [isOpen, setIsOpen] = useState(false);
@@ -55,9 +54,9 @@ export default function ChangePasswordDialog() {
       }
 
       const currentHash = await sha256(currentPassword);
-      const storedHash = await getPasswordHash();
+      const storedHashes = await getPasswordHashes();
 
-      if (currentHash !== storedHash) {
+      if (!storedHashes.includes(currentHash)) {
         toast.error("Current password is incorrect");
         return;
       }
@@ -69,7 +68,10 @@ export default function ChangePasswordDialog() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ newPasswordHash }),
+        body: JSON.stringify({
+          newPasswordHash,
+          passwordId: "cm6qe7hna0000awj80t45jwfe",
+        }),
       });
 
       const data = await response.json();
@@ -90,134 +92,74 @@ export default function ChangePasswordDialog() {
   };
 
   return (
-    <Dialog
-      open={isOpen}
-      onOpenChange={(open) => {
-        setIsOpen(open);
-        if (!open) resetForm();
-      }}
-    >
+    <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button
-          variant="outline"
-          className="flex items-center gap-2 text-sm font-medium transition-colors hover:bg-gray-100 dark:hover:bg-gray-800"
-        >
-          <KeyRound className="h-4 w-4" />
-          Change Password
-        </Button>
+        <Button variant="ghost">Change Password</Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent>
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <KeyRound className="h-5 w-5 text-gray-500" />
-            Change Password
-          </DialogTitle>
+          <DialogTitle>Change Password</DialogTitle>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <label
-              htmlFor="currentPassword"
-              className="text-sm font-medium text-gray-700 dark:text-gray-300"
-            >
-              Current Password
-            </label>
-            <div className="relative">
+        <form onSubmit={handleSubmit}>
+          <div className="grid gap-4">
+            <div>
+              <label htmlFor="current-password">Current Password</label>
               <Input
-                id="currentPassword"
+                id="current-password"
                 type={showCurrentPassword ? "text" : "password"}
-                placeholder="Enter your current password"
+                placeholder="Current Password"
                 value={currentPassword}
                 onChange={(e) => setCurrentPassword(e.target.value)}
-                className="pr-10"
-                required
+                className="w-full"
               />
-              <button
-                type="button"
+              <Button
+                variant="ghost"
                 onClick={() => setShowCurrentPassword(!showCurrentPassword)}
-                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
+                className="absolute right-4 top-1/2 -translate-y-1/2"
               >
-                {showCurrentPassword ? <EyeOff size={16} /> : <Eye size={16} />}
-              </button>
+                {showCurrentPassword ? <EyeOff /> : <Eye />}
+              </Button>
             </div>
-          </div>
-
-          <div className="space-y-2">
-            <label
-              htmlFor="newPassword"
-              className="text-sm font-medium text-gray-700 dark:text-gray-300"
-            >
-              New Password
-            </label>
-            <div className="relative">
+            <div>
+              <label htmlFor="new-password">New Password</label>
               <Input
-                id="newPassword"
+                id="new-password"
                 type={showNewPassword ? "text" : "password"}
-                placeholder="Enter your new password"
+                placeholder="New Password"
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
-                className="pr-10"
-                required
+                className="w-full"
               />
-              <button
-                type="button"
+              <Button
+                variant="ghost"
                 onClick={() => setShowNewPassword(!showNewPassword)}
-                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
+                className="absolute right-4 top-1/2 -translate-y-1/2"
               >
-                {showNewPassword ? <EyeOff size={16} /> : <Eye size={16} />}
-              </button>
+                {showNewPassword ? <EyeOff /> : <Eye />}
+              </Button>
             </div>
-          </div>
-
-          <div className="space-y-2">
-            <label
-              htmlFor="confirmPassword"
-              className="text-sm font-medium text-gray-700 dark:text-gray-300"
-            >
-              Confirm New Password
-            </label>
-            <div className="relative">
+            <div>
+              <label htmlFor="confirm-password">Confirm Password</label>
               <Input
-                id="confirmPassword"
+                id="confirm-password"
                 type={showConfirmPassword ? "text" : "password"}
-                placeholder="Confirm your new password"
+                placeholder="Confirm Password"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
-                className="pr-10"
-                required
+                className="w-full"
               />
-              <button
-                type="button"
+              <Button
+                variant="ghost"
                 onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
+                className="absolute right-4 top-1/2 -translate-y-1/2"
               >
-                {showConfirmPassword ? <EyeOff size={16} /> : <Eye size={16} />}
-              </button>
+                {showConfirmPassword ? <EyeOff /> : <Eye />}
+              </Button>
             </div>
           </div>
-
-          <div className="flex justify-end space-x-2 pt-4">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => {
-                setIsOpen(false);
-                resetForm();
-              }}
-              disabled={isLoading}
-            >
-              Cancel
-            </Button>
-            <Button type="submit" disabled={isLoading}>
-              {isLoading ? (
-                <div className="flex items-center gap-2">
-                  <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
-                  <span>Changing...</span>
-                </div>
-              ) : (
-                "Change Password"
-              )}
-            </Button>
-          </div>
+          <Button type="submit" disabled={isLoading} className="mt-4 w-full">
+            Change Password
+          </Button>
         </form>
       </DialogContent>
     </Dialog>

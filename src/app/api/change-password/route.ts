@@ -1,54 +1,31 @@
-export const dynamic = "force-dynamic";
+import { type NextRequest, NextResponse } from "next/server"
+import { db } from "@/lib/db"
 
-import { db } from "@/lib/db";
-import { NextResponse } from "next/server";
-
-export async function POST(req: Request) {
+export async function POST(request: NextRequest) {
   try {
-    const body = await req.json();
-    const { newPasswordHash } = body;
+    const { newPasswordHash, passwordId } = await request.json()
 
-    if (!newPasswordHash) {
+    if (!newPasswordHash || !passwordId) {
       return NextResponse.json(
-        { success: false, message: "New password hash is required" },
-        { status: 400 }
-      );
+        { success: false, message: "New password hash and password ID are required" },
+        { status: 400 },
+      )
     }
 
-    // Get the first password record (assuming there's only one)
-    const passwordRecord = await db.password.findFirst();
-
-    if (!passwordRecord) {
-      // If no password exists, create one
-      await db.password.create({
-        data: {
-          passsword: newPasswordHash,
-        },
-      });
-    } else {
-      // Update existing password
-      await db.password.update({
-        where: {
-          id: passwordRecord.id,
-        },
-        data: {
-          passsword: newPasswordHash,
-        },
-      });
-    }
-
-    return NextResponse.json({
-      success: true,
-      message: "Password updated successfully",
-    });
-  } catch (error) {
-    console.error("Error changing password:", error);
-    return NextResponse.json(
-      {
-        success: false,
-        message: `Failed to change password: ${error}`,
+    // Update the specific password entry
+    await db.password.update({
+      where: {
+        id: passwordId,
       },
-      { status: 500 }
-    );
+      data: {
+        passsword: newPasswordHash,
+      },
+    })
+
+    return NextResponse.json({ success: true, message: "Password updated successfully" }, { status: 200 })
+  } catch (error) {
+    console.error("Error changing password:", error)
+    return NextResponse.json({ success: false, message: `Failed to change password: ${error}` }, { status: 500 })
   }
 }
+
