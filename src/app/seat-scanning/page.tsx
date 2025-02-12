@@ -243,7 +243,7 @@ export default function SeatScanning() {
                       <div className="space-y-2">
                         <h3 className="text-lg font-semibold text-zinc-800 dark:text-zinc-200">Seat Not Available</h3>
                         <p className="text-sm text-zinc-600 dark:text-zinc-400">
-                          Your seat hasn't been assigned yet. Please see someone at the front desk for assistance.
+                          Your seat hasn&apos;t been assigned yet. Please see someone at the front desk for assistance.
                         </p>
                       </div>
                       <Button
