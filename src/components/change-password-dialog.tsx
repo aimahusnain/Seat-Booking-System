@@ -1,10 +1,6 @@
 "use client";
 
-import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { toast } from "sonner";
-import { Eye, EyeOff, KeyRound } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -12,7 +8,13 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
 import { getPasswordHashes } from "@/hooks/usePassword";
+import { Eye, EyeOff } from "lucide-react";
+import { useState } from "react";
+import { toast } from "sonner";
+
+// Passwords are Jodel456, Jodel123
 
 export default function ChangePasswordDialog() {
   const [isOpen, setIsOpen] = useState(false);
