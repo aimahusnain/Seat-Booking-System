@@ -27,7 +27,7 @@ export function BookingSidebar({
     name: "",
     seat: ""
   });
-  const isTablet = useMediaQuery("(min-width: 200px) and (max-width: 1280px)");
+  const isTablet = useMediaQuery("(min-width: 200px) and (max-width: 1279px)");
 
   // Move filtering logic to useMemo
   const filteredBookings = useMemo(() => {
