@@ -99,6 +99,7 @@ export function BookingSidebar({
         setSeatToDelete(null);
       }
     } catch (error) {
+      console.log(error)
       toast.error("Delete Failed", {
         description: "An error occurred while processing your request",
       });
@@ -300,7 +301,7 @@ export function BookingSidebar({
                   htmlFor="confirmText"
                   className="text-sm font-medium text-gray-700"
                 >
-                  Type "<strong>Delete Booking</strong>" to confirm
+                  Type &quot;<strong>Delete Booking</strong>&quot; to confirm
                 </label>
                 <Input
                   id="confirmText"
