@@ -33,6 +33,7 @@ import {
   Eye,
   EyeOff,
   PersonStandingIcon,
+  ScanQrCode,
   Trash2,
 } from "lucide-react";
 import Link from "next/link";
@@ -709,6 +710,12 @@ const SeatBooking = () => {
                 </div>
 
                 <HelpButton />
+
+                <Link href="/seat-scanning">
+                  <Button size="icon" className="w-8 h-8 sm:w-10 sm:h-10">
+                    <ScanQrCode />
+                  </Button>
+                </Link>
 
                 <Link href="/client-view">
                   <Button size="icon" className="w-8 h-8 sm:w-10 sm:h-10">

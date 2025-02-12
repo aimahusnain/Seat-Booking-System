@@ -1,7 +1,7 @@
 "use client"
 
-import { useState } from "react"
-import { QrCode, Search, Sparkles } from "lucide-react"
+import { useEffect, useState, useMemo } from "react"
+import { QrCode, Search, Sparkles, Check } from "lucide-react"
 import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -12,52 +12,85 @@ import { toast } from "sonner"
 import { cn } from "@/lib/utils"
 import { motion, AnimatePresence } from "framer-motion"
 
+interface User {
+  id: string
+  firstname: string
+  lastname: string
+  seat: Array<{
+    id: string
+    seat: number
+    table: {
+      id: string
+      name: string
+    }
+  }>
+}
+
 export default function SeatScanning() {
-  const [name, setName] = useState("")
   const [isQrOpen, setIsQrOpen] = useState(false)
+  const [searchValue, setSearchValue] = useState("")
+  const [allUsers, setAllUsers] = useState<User[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+  const [selectedUser, setSelectedUser] = useState<User | null>(null)
   const [searchResult, setSearchResult] = useState<{
     table: string
     seat: number
     name: string
   } | null>(null)
-  const [isLoading, setIsLoading] = useState(false)
 
-  const handleSearch = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!name.trim()) {
-      toast.error("Please enter a name")
-      return
+  // Fetch all guests when component mounts
+  useEffect(() => {
+    const fetchGuests = async () => {
+      try {
+        const response = await fetch("/api/get-guests")
+        const data = await response.json()
+
+        if (data.success) {
+          setAllUsers(data.data)
+        } else {
+          toast.error("Failed to load guest list")
+        }
+      } catch (error) {
+        console.error("Error fetching guests:", error)
+        toast.error("Failed to load guest list")
+      } finally {
+        setIsLoading(false)
+      }
     }
 
-    setIsLoading(true)
-    try {
-      const response = await fetch("/api/search-seat", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ name: name.trim() }),
+    fetchGuests()
+  }, [])
+
+  // Filter users based on search input
+  const filteredUsers = useMemo(() => {
+    if (!searchValue) return []
+
+    const searchTerm = searchValue.toLowerCase()
+    return allUsers
+      .filter(
+        (user) =>
+          user.firstname.toLowerCase().includes(searchTerm) ||
+          user.lastname.toLowerCase().includes(searchTerm) ||
+          `${user.firstname} ${user.lastname}`.toLowerCase().includes(searchTerm),
+      )
+      .slice(0, 5) // Limit to 5 results
+  }, [searchValue, allUsers])
+
+  const handleUserSelect = (user: User) => {
+    setSelectedUser(user)
+    setSearchValue(`${user.firstname} ${user.lastname}`)
+
+    if (user.seat && user.seat.length > 0) {
+      const seat = user.seat[0] // Get first seat assignment
+      setSearchResult({
+        table: seat.table.name,
+        seat: seat.seat,
+        name: `${user.firstname} ${user.lastname}`,
       })
-
-      const data = await response.json()
-
-      if (data.success && data.seat) {
-        setSearchResult({
-          table: data.seat.table.name,
-          seat: data.seat.seat,
-          name: name,
-        })
-        toast.success("Seat found!")
-      } else {
-        setSearchResult(null)
-        toast.error("No seat booking found for this name")
-      }
-    } catch (error) {
-      console.error("Search error:", error)
-      toast.error("Error searching for seat")
+      toast.success("Seat found!")
+    } else {
       setSearchResult(null)
-    } finally {
-      setIsLoading(false)
+      toast.error("No seat booking found for this guest")
     }
   }
 
@@ -107,36 +140,60 @@ export default function SeatScanning() {
                 <CardTitle className="text-zinc-800 dark:text-zinc-200">Find Your Seat</CardTitle>
               </CardHeader>
               <CardContent>
-                <form onSubmit={handleSearch} className="space-y-4">
+                <div className="space-y-4">
                   <div className="space-y-2">
                     <Label htmlFor="name" className="text-zinc-600 dark:text-zinc-400">
-                      Enter your name
+                      Search your name
                     </Label>
                     <div className="relative">
                       <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-zinc-400" />
                       <Input
                         id="name"
-                        placeholder="John Doe"
-                        value={name}
-                        onChange={(e) => setName(e.target.value)}
+                        placeholder={isLoading ? "Loading guest list..." : "Start typing your name..."}
+                        value={searchValue}
+                        onChange={(e) => setSearchValue(e.target.value)}
+                        disabled={isLoading}
                         className="pl-9 h-12 border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 focus:ring-2 focus:ring-purple-500/20 transition-all rounded-xl"
                       />
                     </div>
-                  </div>
-                  <Button
-                    type="submit"
-                    className={cn(
-                      "w-full h-12 rounded-xl text-base font-medium",
-                      "bg-gradient-to-r from-violet-600 to-purple-600",
-                      "hover:from-violet-700 hover:to-purple-700",
-                      "shadow-lg shadow-purple-500/25 hover:shadow-purple-500/40",
-                      "transition-all duration-300",
+
+                    {/* Search Results */}
+                    {searchValue && !isLoading && (
+                      <Card className="mt-2 border-0 shadow-lg">
+                        <CardContent className="p-2">
+                          {filteredUsers.length > 0 ? (
+                            <div className="space-y-1">
+                              {filteredUsers.map((user) => (
+                                <button
+                                  key={user.id}
+                                  onClick={() => handleUserSelect(user)}
+                                  className={cn(
+                                    "w-full flex items-center px-4 py-2 rounded-lg text-left",
+                                    "hover:bg-purple-50 dark:hover:bg-purple-900/20",
+                                    "transition-colors duration-150",
+                                    selectedUser?.id === user.id && "bg-purple-50 dark:bg-purple-900/20",
+                                  )}
+                                >
+                                  <Check
+                                    className={cn(
+                                      "mr-2 h-4 w-4",
+                                      selectedUser?.id === user.id ? "opacity-100" : "opacity-0",
+                                    )}
+                                  />
+                                  <span className="flex-1">
+                                    {user.firstname} {user.lastname}
+                                  </span>
+                                </button>
+                              ))}
+                            </div>
+                          ) : (
+                            <div className="p-4 text-center text-sm text-zinc-500">No matching names found</div>
+                          )}
+                        </CardContent>
+                      </Card>
                     )}
-                    disabled={isLoading}
-                  >
-                    {isLoading ? "Searching..." : "Find Seat"}
-                  </Button>
-                </form>
+                  </div>
+                </div>
               </CardContent>
             </Card>
           </motion.div>
@@ -186,7 +243,7 @@ export default function SeatScanning() {
       <Dialog open={isQrOpen} onOpenChange={setIsQrOpen}>
         <DialogContent
           className={cn(
-            "flex flex-col p-0 bg-white dark:bg-zinc-900/80 backdrop-blur-xl",
+            "flex flex-col p-0 bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl",
             "w-[95vw] max-w-3xl rounded-2xl border-0",
             "sm:w-[85vw] md:w-[75vw] h-auto",
             "shadow-2xl shadow-purple-500/10",
@@ -206,4 +263,3 @@ export default function SeatScanning() {
     </div>
   )
 }
-
