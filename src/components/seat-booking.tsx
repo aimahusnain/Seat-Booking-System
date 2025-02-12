@@ -97,21 +97,27 @@ const SeatBooking = () => {
 
   const handleDeleteAllBookings = async () => {
     try {
-      const storedHash = await getPasswordHashes();
+      const passwordHashes = await getPasswordHashes(); // Get array of password hashes
       const inputHash = await sha256(deleteAllPassword);
-
+  
       if (deleteAllConfirmText !== "Delete All Bookings") {
         toast.error("Please type the exact confirmation text");
         return;
       }
-
-      if (inputHash !== storedHash) {
+  
+      if (passwordHashes.length === 0) {
+        toast.error("System not ready. Please try again.");
+        return;
+      }
+  
+      // Check if input hash matches any of the stored hashes
+      if (!passwordHashes.includes(inputHash)) {
         toast.error("Incorrect password");
         return;
       }
-
+  
       const toastId = toast.loading("Deleting all bookings...");
-
+  
       const deletePromises = bookedSeats.map((seat) =>
         fetch("/api/delete-booking", {
           method: "PUT",
@@ -119,13 +125,13 @@ const SeatBooking = () => {
           body: JSON.stringify({ seatId: seat.id }),
         })
       );
-
+  
       const results = await Promise.all(deletePromises);
       const allSuccessful = results.every(async (res) => {
         const data = await res.json();
         return data.success;
       });
-
+  
       if (allSuccessful) {
         const updatedTables = tables.map((table) => ({
           ...table,
@@ -136,21 +142,20 @@ const SeatBooking = () => {
             user: null,
           })),
         }));
-
+  
         setTables(updatedTables);
         setBookedSeats([]);
         setIsDeleteAllDialogOpen(false);
         setDeleteAllConfirmText("");
         setDeleteAllPassword("");
-
+  
         toast.success("All bookings deleted successfully", { id: toastId });
       } else {
         throw new Error("Some bookings failed to delete");
       }
     } catch (error) {
       toast.error("Failed to delete all bookings", {
-        description:
-          error instanceof Error ? error.message : "Unknown error occurred",
+        description: error instanceof Error ? error.message : "Unknown error occurred",
       });
     }
   };
