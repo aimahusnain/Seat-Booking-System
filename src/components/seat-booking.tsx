@@ -488,10 +488,11 @@ const SeatBooking = () => {
 
         {/* Circular Seats */}
         {table.seats.map((seat, index) => {
-          const angle = ((index - 2.5) * 2 * Math.PI) / 10;
-          const radius = 45; // Percentage of container width
-          const left = 43 + Math.cos(angle) * radius;
-          const top = 43 + Math.sin(angle) * radius;
+          const countofseats = table.seats.length;
+          const angle = ((index - 2.5) * 2 * Math.PI) / countofseats;
+          const radius = 45;
+          const left = 45 + Math.cos(angle) * radius;
+          const top = 45 + Math.sin(angle) * radius;
 
           return (
             <motion.div
@@ -665,102 +666,102 @@ const SeatBooking = () => {
 
   return (
     <div className={`bg-zinc-50 ${isFullScreen ? "overflow-hidden" : ""}`}>
-<AnimatePresence>
-  {!isFullScreen && (
-    <motion.nav
-      initial={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -50 }}
-      transition={{ duration: 0.5 }}
-      className="z-50 bg-white border-b border-zinc-200 px-2 sm:px-4"
-    >
-      <div className="flex flex-wrap items-center justify-between h-auto min-h-14 py-2">
-        {/* Logo */}
-        <Link
-          href="/"
-          className="flex justify-center items-center space-x-2"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            className="w-5 h-5 sm:w-6 sm:h-6 text-zinc-900"
+      <AnimatePresence>
+        {!isFullScreen && (
+          <motion.nav
+            initial={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -50 }}
+            transition={{ duration: 0.5 }}
+            className="z-50 bg-white border-b border-zinc-200 px-2 sm:px-4"
           >
-            {/* SVG paths remain the same */}
-          </svg>
-          <span className="text-lg sm:text-xl font-bold text-zinc-900">
-            Seat Booking
-          </span>
-        </Link>
-
-        {/* Right Section */}
-        <div className="flex flex-wrap items-center gap-2 sm:gap-4">
-          {/* Full Screen Toggle */}
-          <div className="hidden sm:flex items-center space-x-2">
-            <span className="text-sm font-medium">Full Screen</span>
-            <Switch
-              checked={isFullScreen}
-              onCheckedChange={handleFullScreenToggle}
-            />
-          </div>
-
-          <HelpButton />
-
-          <Link href="/client-view">
-            <Button size="icon" className="w-8 h-8 sm:w-10 sm:h-10">
-              <PersonStandingIcon className="w-4 h-4 sm:w-5 sm:h-5" />
-            </Button>
-          </Link>
-
-          {/* Create New Dropdown */}
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button className="px-2 sm:px-4 text-sm sm:text-base">
-                <span className="hidden sm:inline">Create New</span>
-                <span className="sm:hidden">New</span>
-                <ChevronDown className="h-4 w-4 ml-1 sm:ml-2" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-48">
-              <DropdownMenuItem
-                className="cursor-pointer"
-                onClick={() => setIsAddTableOpen(true)}
+            <div className="flex flex-wrap items-center justify-between h-auto min-h-14 py-2">
+              {/* Logo */}
+              <Link
+                href="/"
+                className="flex justify-center items-center space-x-2"
               >
-                New Table
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                className="cursor-pointer"
-                onClick={() => setIsAddGuestOpen(true)}
-              >
-                New Guest
-              </DropdownMenuItem>
-              <ImportGuestsforWeb />
-            </DropdownMenuContent>
-          </DropdownMenu>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="w-5 h-5 sm:w-6 sm:h-6 text-zinc-900"
+                >
+                  {/* SVG paths remain the same */}
+                </svg>
+                <span className="text-lg sm:text-xl font-bold text-zinc-900">
+                  Seat Booking
+                </span>
+              </Link>
 
-          {/* Avatar Dropdown */}
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Avatar className="cursor-pointer w-8 h-8 sm:w-10 sm:h-10">
-                <AvatarImage
-                  src="https://github.com/shadcn.png"
-                  alt="@shadcn"
-                />
-                <AvatarFallback>JA</AvatarFallback>
-              </Avatar>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <ChangePasswordForm />
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
-      </div>
-    </motion.nav>
-  )}
-</AnimatePresence>
+              {/* Right Section */}
+              <div className="flex flex-wrap items-center gap-2 sm:gap-4">
+                {/* Full Screen Toggle */}
+                <div className="hidden sm:flex items-center space-x-2">
+                  <span className="text-sm font-medium">Full Screen</span>
+                  <Switch
+                    checked={isFullScreen}
+                    onCheckedChange={handleFullScreenToggle}
+                  />
+                </div>
+
+                <HelpButton />
+
+                <Link href="/client-view">
+                  <Button size="icon" className="w-8 h-8 sm:w-10 sm:h-10">
+                    <PersonStandingIcon className="w-4 h-4 sm:w-5 sm:h-5" />
+                  </Button>
+                </Link>
+
+                {/* Create New Dropdown */}
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button className="px-2 sm:px-4 text-sm sm:text-base">
+                      <span className="hidden sm:inline">Create New</span>
+                      <span className="sm:hidden">New</span>
+                      <ChevronDown className="h-4 w-4 ml-1 sm:ml-2" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-48">
+                    <DropdownMenuItem
+                      className="cursor-pointer"
+                      onClick={() => setIsAddTableOpen(true)}
+                    >
+                      New Table
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      className="cursor-pointer"
+                      onClick={() => setIsAddGuestOpen(true)}
+                    >
+                      New Guest
+                    </DropdownMenuItem>
+                    <ImportGuestsforWeb />
+                  </DropdownMenuContent>
+                </DropdownMenu>
+
+                {/* Avatar Dropdown */}
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Avatar className="cursor-pointer w-8 h-8 sm:w-10 sm:h-10">
+                      <AvatarImage
+                        src="https://github.com/shadcn.png"
+                        alt="@shadcn"
+                      />
+                      <AvatarFallback>JA</AvatarFallback>
+                    </Avatar>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <ChangePasswordForm />
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
+            </div>
+          </motion.nav>
+        )}
+      </AnimatePresence>
 
       {/* Main Content */}
       <div
@@ -1146,7 +1147,8 @@ const SeatBooking = () => {
                 htmlFor="deleteAllConfirmText"
                 className="text-sm font-medium text-gray-700"
               >
-                Type <strong>&quot;Delete All Bookings&quot;</strong> to confirm:
+                Type <strong>&quot;Delete All Bookings&quot;</strong> to
+                confirm:
               </label>
               <Input
                 id="deleteAllConfirmText"
