@@ -10,13 +10,6 @@ import { useMemo, useState } from "react";
 import PrintableBooking from "./single-seat-pdf";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useMediaQuery } from "@/hooks/use-media-query";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 
 interface BookingSidebarProps {
   bookedSeats: Seat[];
@@ -31,9 +24,6 @@ export function BookingSidebar({
   onToggleReceived,
   onDeleteAll,
 }: BookingSidebarProps) {
-  const [nameSearchTerm, setNameSearchTerm] = useState("");
-  const [seatSearchTerm, setSeatSearchTerm] = useState("");
-  const [selectedFilter, setSelectedFilter] = useState("name"); // "name" or "seat"
   const [isOpen, setIsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState({ name: "", seat: "" });
   const isTablet = useMediaQuery("(min-width: 200px) and (max-width: 1280px)");
@@ -56,30 +46,17 @@ export function BookingSidebar({
         : true;
 
       const seatMatch = searchQuery.seat
-        ? seat.seat.toString() === searchQuery.seat
+        ? seat.seat.toString().includes(searchQuery.seat)
         : true;
 
       return nameMatch && seatMatch;
     });
   }, [bookedSeats, searchQuery]);
 
-  const handleSearch = () => {
-    setSearchQuery({
-      name: selectedFilter === "name" ? nameSearchTerm : "",
-      seat: selectedFilter === "seat" ? seatSearchTerm : "",
-    });
-  };
-
-  const resetSearch = () => {
-    setNameSearchTerm("");
-    setSeatSearchTerm("");
-    setSearchQuery({ name: "", seat: "" });
-  };
-
   const SidebarContent = () => (
     <div className="flex flex-col h-full w-full bg-white">
-      <div className="p-4 bg-white shadow-sm">
-        <div className="flex justify-between items-center mb-4">
+      <div className="p-4 bg-white shadow-sm space-y-4">
+        <div className="flex justify-between items-center">
           <h2 className="text-xl font-bold text-gray-800">Booked Seats</h2>
           {bookedSeats.length > 0 && (
             <Button
@@ -93,56 +70,30 @@ export function BookingSidebar({
           )}
         </div>
 
-        <div className="space-y-4">
-          <Select value={selectedFilter} onValueChange={setSelectedFilter}>
-            <SelectTrigger className="w-full">
-              <SelectValue placeholder="Select search filter" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="name">Search by Name</SelectItem>
-              <SelectItem value="seat">Search by Seat Number</SelectItem>
-            </SelectContent>
-          </Select>
-
-          <div className="space-y-4">
-            {selectedFilter === "name" && (
-              <div className="relative">
-                <Input
-                  placeholder="Enter name to search"
-                  value={nameSearchTerm}
-                  onChange={(e) => setNameSearchTerm(e.target.value)}
-                  className="pl-9 pr-4 py-2 w-full text-sm rounded-full border-gray-200 focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
-                />
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 h-4 w-4" />
-              </div>
-            )}
-
-            {selectedFilter === "seat" && (
-              <div className="relative">
-                <Input
-                  placeholder="Enter seat number"
-                  value={seatSearchTerm}
-                  onChange={(e) => setSeatSearchTerm(e.target.value)}
-                  type="number"
-                  className="pl-9 pr-4 py-2 w-full text-sm rounded-full border-gray-200 focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
-                />
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 h-4 w-4" />
-              </div>
-            )}
-
-            <div className="flex space-x-2">
-              <Button
-                onClick={handleSearch}
-                className="flex-1"
-                variant="default"
-              >
-                Search
-              </Button>
-              <Button onClick={resetSearch} variant="outline">
-                Reset
-              </Button>
-            </div>
+        <div className="flex gap-2">
+          <div className="relative flex-1">
+            <Search className="absolute left-2 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              placeholder="Search by name..."
+              value={searchQuery.name}
+              onChange={(e) => {
+                e.preventDefault();
+                setSearchQuery((prev) => ({ ...prev, name: e.target.value }));
+              }}
+              className="pl-8"
+              autoComplete="off"
+            />
           </div>
+          <Input
+            placeholder="Seat #"
+            value={searchQuery.seat}
+            onChange={(e) => {
+              e.preventDefault();
+              setSearchQuery((prev) => ({ ...prev, seat: e.target.value }));
+            }}
+            className="w-20"
+            autoComplete="off"
+          />
         </div>
       </div>
 

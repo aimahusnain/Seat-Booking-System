@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState, useMemo } from "react"
-import { QrCode, Search, Sparkles, Check } from "lucide-react"
+import { QrCode, Search, Sparkles, Check, HelpCircle } from "lucide-react"
 import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -37,6 +37,7 @@ export default function SeatScanning() {
     seat: number
     name: string
   } | null>(null)
+  const [noSeatFound, setNoSeatFound] = useState(false)
 
   // Fetch all guests when component mounts
   useEffect(() => {
@@ -79,6 +80,7 @@ export default function SeatScanning() {
   const handleUserSelect = (user: User) => {
     setSelectedUser(user)
     setSearchValue(`${user.firstname} ${user.lastname}`)
+    setNoSeatFound(false)
 
     if (user.seat && user.seat.length > 0) {
       const seat = user.seat[0] // Get first seat assignment
@@ -90,6 +92,7 @@ export default function SeatScanning() {
       toast.success("Seat found!")
     } else {
       setSearchResult(null)
+      setNoSeatFound(true)
       toast.error("No seat booking found for this guest")
     }
   }
@@ -188,9 +191,9 @@ export default function SeatScanning() {
             </Card>
           </motion.div>
 
-          {/* Search Result */}
+          {/* Search Result or No Seat Message */}
           <AnimatePresence mode="wait">
-            {searchResult && (
+            {searchResult ? (
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -224,7 +227,37 @@ export default function SeatScanning() {
                   </CardContent>
                 </Card>
               </motion.div>
-            )}
+            ) : noSeatFound ? (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                transition={{ duration: 0.3 }}
+              >
+                <Card className="border-0 shadow-2xl shadow-purple-500/10 bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl">
+                  <CardContent className="p-6">
+                    <div className="flex flex-col items-center text-center space-y-4">
+                      <div className="h-12 w-12 rounded-full bg-amber-100 dark:bg-amber-900/20 flex items-center justify-center">
+                        <HelpCircle className="h-6 w-6 text-amber-600 dark:text-amber-400" />
+                      </div>
+                      <div className="space-y-2">
+                        <h3 className="text-lg font-semibold text-zinc-800 dark:text-zinc-200">Seat Not Available</h3>
+                        <p className="text-sm text-zinc-600 dark:text-zinc-400">
+                          Your seat hasn't been assigned yet. Please see someone at the front desk for assistance.
+                        </p>
+                      </div>
+                      <Button
+                        variant="outline"
+                        className="mt-4 bg-white dark:bg-zinc-900 hover:bg-amber-50 dark:hover:bg-amber-900/20"
+                        onClick={() => setNoSeatFound(false)}
+                      >
+                        Search Again
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            ) : null}
           </AnimatePresence>
         </div>
       </div>
