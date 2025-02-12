@@ -96,16 +96,6 @@ export default function SeatScanning() {
 
   return (
     <div className="min-h-screen bg-[#fafafa] dark:bg-zinc-950">
-      {/* Decorative Elements */}
-      <div className="fixed inset-0 -z-10 overflow-hidden">
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[800px] opacity-30">
-          <div className="absolute inset-0 blur-[120px] bg-gradient-to-r from-violet-400 to-purple-400" />
-        </div>
-        <div className="absolute bottom-0 left-0 w-[800px] h-[800px] opacity-30">
-          <div className="absolute inset-0 blur-[120px] bg-gradient-to-r from-blue-400 to-cyan-400" />
-        </div>
-      </div>
-
       {/* Main Content */}
       <div className="relative min-h-screen flex flex-col items-center justify-center p-4 sm:p-6 lg:p-8">
         <div className="w-full max-w-md mx-auto space-y-6">
@@ -127,7 +117,7 @@ export default function SeatScanning() {
               variant="outline"
               size="icon"
               onClick={() => setIsQrOpen(true)}
-              className="h-12 w-12 rounded-xl bg-white dark:bg-zinc-900 hover:bg-purple-50 dark:hover:bg-zinc-800 border-0 shadow-lg shadow-purple-500/10 hover:shadow-purple-500/20 transition-all duration-300"
+              className="sm:flex hidden h-12 w-12 rounded-xl bg-white dark:bg-zinc-900 hover:bg-purple-50 dark:hover:bg-zinc-800 border-0 shadow-lg shadow-purple-500/10 hover:shadow-purple-500/20 transition-all duration-300"
             >
               <QrCode className="h-5 w-5 text-purple-600" />
             </Button>
@@ -243,7 +233,7 @@ export default function SeatScanning() {
       <Dialog open={isQrOpen} onOpenChange={setIsQrOpen}>
         <DialogContent
           className={cn(
-            "flex flex-col p-0 bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl",
+            "flex flex-col p-0 bg-white dark:bg-zinc-900 backdrop-blur-xl",
             "w-[95vw] max-w-3xl rounded-2xl border-0",
             "sm:w-[85vw] md:w-[75vw] h-auto",
             "shadow-2xl shadow-purple-500/10",
