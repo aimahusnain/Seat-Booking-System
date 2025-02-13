@@ -17,9 +17,10 @@ interface AddTableFormProps {
   isOpen: boolean
   onClose: () => void
   onSuccess: () => void
+  onTableAdded: () => void // New prop for refetching data
 }
 
-export function AddTableForm({ isOpen, onClose, onSuccess }: AddTableFormProps) {
+export function AddTableForm({ isOpen, onClose, onSuccess, onTableAdded }: AddTableFormProps) {
   const [tableName, setTableName] = useState("")
   const [numberOfSeats, setNumberOfSeats] = useState(6)
   const [seatNumbers, setSeatNumbers] = useState<string[]>([])
@@ -56,6 +57,7 @@ export function AddTableForm({ isOpen, onClose, onSuccess }: AddTableFormProps) 
       if (data.success) {
         toast.success("Table added successfully")
         onSuccess()
+        onTableAdded() // Call the new function to refetch data
         onClose()
         setTableName("")
         setNumberOfSeats(6)

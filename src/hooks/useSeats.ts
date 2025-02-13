@@ -12,11 +12,9 @@ export function useSeats() {
     setSeats(newSeats)
     
     if (isInitialLoad) {
-      // On initial load, set booked seats
       setBookedSeats(newSeats.filter(seat => seat.isBooked))
       setIsInitialLoad(false)
     } else {
-      // On subsequent updates, only add new bookings or update existing ones
       setBookedSeats(prevBookedSeats => {
         const updatedBookedSeats = [...prevBookedSeats]
         
@@ -27,10 +25,8 @@ export function useSeats() {
             )
             
             if (existingIndex === -1) {
-              // Add new booking
               updatedBookedSeats.push(newSeat)
             } else {
-              // Update existing booking's status (e.g., isReceived)
               updatedBookedSeats[existingIndex] = {
                 ...updatedBookedSeats[existingIndex],
                 isReceived: newSeat.isReceived
@@ -61,13 +57,8 @@ export function useSeats() {
   }, [updateSeatsWithoutResetingBooked])
 
   useEffect(() => {
-    // Initial fetch
     fetchSeats()
-
-    // Set up polling every 5 seconds
     const intervalId = setInterval(fetchSeats, 60000)
-
-    // Cleanup function to clear the interval when component unmounts
     return () => clearInterval(intervalId)
   }, [fetchSeats])
 
@@ -94,6 +85,7 @@ export function useSeats() {
     error,
     addBookedSeat,
     removeBookedSeat,
-    updateBookedSeat
+    updateBookedSeat,
+    fetchSeats // Export the fetchSeats function
   }
 }

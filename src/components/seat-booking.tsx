@@ -1,10 +1,10 @@
-"use client"
+"use client";
 
-import { useState, useEffect, useRef } from "react"
-import { useRouter } from "next/navigation"
-import Link from "next/link"
-import { toast } from "sonner"
-import { AnimatePresence, motion } from "framer-motion"
+import { useState, useEffect, useRef } from "react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { toast } from "sonner";
+import { AnimatePresence, motion } from "framer-motion";
 import {
   Check,
   ChevronDown,
@@ -12,15 +12,16 @@ import {
   EyeOff,
   FolderPen,
   PersonStandingIcon,
+  RefreshCcw,
   QrCodeIcon as ScanQrCode,
   Trash,
   Trash2,
-} from "lucide-react"
-import { useSeats } from "../hooks/useSeats"
-import { getPasswordHashes } from "@/hooks/usePassword"
-import type { Person, Seat, TableData } from "../types/booking"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Button } from "@/components/ui/button"
+} from "lucide-react";
+import { useSeats } from "../hooks/useSeats";
+import { getPasswordHashes } from "@/hooks/usePassword";
+import type { Person, Seat, TableData } from "../types/booking";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -28,25 +29,40 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { Input } from "@/components/ui/input"
-import { ScrollArea } from "@/components/ui/scroll-area"
-import { Switch } from "@/components/ui/switch"
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
-import { AddGuestForm } from "./add-guest-form"
-import { AddTableForm } from "./add-table-form"
-import { BookingSidebar } from "./booking-sidebar"
-import ChangePasswordForm from "./change-password-dialog"
-import { HelpButton } from "./help-dropdown"
-import { ImportGuestsforWeb } from "./import-guests-form"
-import Loader from "./loader"
-import { PDFExport } from "./pdf-export"
-import { PersonSelector } from "./person-selector"
-import { sha256 } from "@/utils/sha256"
+} from "@/components/ui/dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Input } from "@/components/ui/input";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Switch } from "@/components/ui/switch";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { AddGuestForm } from "./add-guest-form";
+import { AddTableForm } from "./add-table-form";
+import { BookingSidebar } from "./booking-sidebar";
+import ChangePasswordForm from "./change-password-dialog";
+import { HelpButton } from "./help-dropdown";
+import { ImportGuestsforWeb } from "./import-guests-form";
+import Loader from "./loader";
+import { PDFExport } from "./pdf-export";
+import { PersonSelector } from "./person-selector";
+import { sha256 } from "@/utils/sha256";
 
 const SeatBooking = () => {
-  const { seats: initialSeats, loading, error } = useSeats();
+  const {
+    seats: initialSeats,
+    loading,
+    error,
+    fetchSeats: refreshSeats,
+  } = useSeats();
   const [tables, setTables] = useState<TableData[]>([]);
   const [selectedSeat, setSelectedSeat] = useState<Seat | null>(null);
   const [isPersonSelectorOpen, setIsPersonSelectorOpen] = useState(false);
@@ -73,7 +89,8 @@ const SeatBooking = () => {
   const [deleteAllConfirmText, setDeleteAllConfirmText] = useState("");
   const [totalGuests, setTotalGuests] = useState(0);
   const [showNames, setShowNames] = useState(false);
-  const [isDeleteAllTablesDialogOpen, setIsDeleteAllTablesDialogOpen] = useState(false);
+  const [isDeleteAllTablesDialogOpen, setIsDeleteAllTablesDialogOpen] =
+    useState(false);
 
   // Add fetch function
   const fetchTotalGuests = async () => {
@@ -662,7 +679,7 @@ const SeatBooking = () => {
 
   const handleDeleteAllTables = async () => {
     try {
-      const passwordHashes = "Jodel123";
+      const passwordHashes = await getPasswordHashes();
       const inputHash = await sha256(deleteAllPassword);
 
       if (deleteAllConfirmText !== "Delete All Tables") {
@@ -670,10 +687,15 @@ const SeatBooking = () => {
         return;
       }
 
-      // if (!passwordHashes == inputHash) {
-      //   toast.error("Incorrect password");
-      //   return;
-      // }
+      if (passwordHashes.length === 0) {
+        toast.error("System not ready. Please try again.");
+        return;
+      }
+
+      if (!passwordHashes.includes(inputHash)) {
+        toast.error("Incorrect password");
+        return;
+      }
 
       const toastId = toast.loading("Deleting all tables...");
 
@@ -695,7 +717,8 @@ const SeatBooking = () => {
       }
     } catch (error) {
       toast.error("Failed to delete all tables", {
-        description: error instanceof Error ? error.message : "Unknown error occurred",
+        description:
+          error instanceof Error ? error.message : "Unknown error occurred",
       });
     }
   };
@@ -704,9 +727,9 @@ const SeatBooking = () => {
     return <Loader />;
   }
 
-  // if (error) {
-  //   return <div>Error: {error}</div>;
-  // }
+  if (error) {
+    return <div>Error: {error}</div>;
+  }
 
   return (
     <div className={`bg-zinc-50 ${isFullScreen ? "overflow-hidden" : ""}`}>
@@ -731,6 +754,10 @@ const SeatBooking = () => {
 
               {/* Right Section */}
               <div className="flex flex-wrap items-center gap-2 sm:gap-4">
+                <Button onClick={refreshSeats} size="icon">
+                  <RefreshCcw />
+                </Button>
+
                 <TooltipProvider>
                   <Tooltip>
                     <TooltipTrigger asChild>
@@ -819,8 +846,7 @@ const SeatBooking = () => {
                     </Avatar>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
-                    <ChangePasswordForm
-                    />
+                    <ChangePasswordForm />
                   </DropdownMenuContent>
                 </DropdownMenu>
               </div>
@@ -848,7 +874,8 @@ const SeatBooking = () => {
               <motion.div
                 initial={{ opacity: 1, y: 0 }}
                 exit={{
-                  opacity: 0, y: -50
+                  opacity: 0,
+                  y: -50,
                 }}
                 transition={{ duration: 0.5 }}
                 className="sticky top-0 z-40 bg-white border-b border-zinc-200 px-4 py-2 md:px-6 md:py-4"
@@ -921,20 +948,22 @@ const SeatBooking = () => {
                     </div>
                   </div>
                   <div className="flex items-center space-x-4 w-full md:w-auto justify-between md:justify-end">
-                    <div className="flex items-center space-x-2">                    <div className="flex items-center space-x-2">
-                      <div className="w-3 h-3 rounded-full bg-zinc-200"></div>
-                      <span className="text-sm text-zinc-600">Available</span>
-                    </div>
                     <div className="flex items-center space-x-2">
-                      <div className="w-3 h-3 rounded-full bg-red-200"></div>
-                      <span className="text-sm text-zinc-600">Booked</span>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <div className="w-3 h-3 rounded-full bg-green-200"></div>
-                      <span className="text-sm text-zinc-600">Arrived</span>
+                      {" "}
+                      <div className="flex items-center space-x-2">
+                        <div className="w-3 h-3 rounded-full bg-zinc-200"></div>
+                        <span className="text-sm text-zinc-600">Available</span>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <div className="w-3 h-3 rounded-full bg-red-200"></div>
+                        <span className="text-sm text-zinc-600">Booked</span>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <div className="w-3 h-3 rounded-full bg-green-200"></div>
+                        <span className="text-sm text-zinc-600">Arrived</span>
+                      </div>
                     </div>
                   </div>
-                </div>
                 </div>
               </motion.div>
             )}
@@ -1034,6 +1063,7 @@ const SeatBooking = () => {
       </Dialog>
 
       <AddTableForm
+        onTableAdded={refreshSeats}
         isOpen={isAddTableOpen}
         onClose={() => setIsAddTableOpen(false)}
         onSuccess={() => {
@@ -1289,13 +1319,18 @@ const SeatBooking = () => {
       >
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle className="text-xl font-bold text-red-800">Delete All Tables</DialogTitle>
+            <DialogTitle className="text-xl font-bold text-red-800">
+              Delete All Tables
+            </DialogTitle>
             <DialogDescription className="mt-2">
               <div className="space-y-2">
                 <div className="p-4 bg-red-50 rounded-lg">
-                  <p className="font-medium text-red-700">Are you sure you want to delete all tables?</p>
+                  <p className="font-medium text-red-700">
+                    Are you sure you want to delete all tables?
+                  </p>
                   <p className="text-red-600 text-sm mt-2">
-                    This will permanently delete all tables and their seat assignments. This action cannot be undone.
+                    This will permanently delete all tables and their seat
+                    assignments. This action cannot be undone.
                   </p>
                 </div>
               </div>
@@ -1303,8 +1338,11 @@ const SeatBooking = () => {
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div className="space-y-2">
-              <label htmlFor="deleteAllTablesConfirmText" className="text-sm font-medium text-gray-700">
-                Type <strong>"Delete All Tables"</strong> to confirm:
+              <label
+                htmlFor="deleteAllTablesConfirmText"
+                className="text-sm font-medium text-gray-700"
+              >
+                Type <strong>&quot;Delete All Tables&quot;</strong> to confirm:
               </label>
               <Input
                 id="deleteAllTablesConfirmText"
@@ -1316,7 +1354,10 @@ const SeatBooking = () => {
               />
             </div>
             <div className="space-y-2">
-              <label htmlFor="deleteAllTablesPassword" className="text-sm font-medium text-gray-700">
+              <label
+                htmlFor="deleteAllTablesPassword"
+                className="text-sm font-medium text-gray-700"
+              >
                 Enter Password
               </label>
               <div className="relative">
@@ -1330,10 +1371,16 @@ const SeatBooking = () => {
                 />
                 <button
                   type="button"
-                  onClick={() => setShowDeleteAllPassword(!showDeleteAllPassword)}
+                  onClick={() =>
+                    setShowDeleteAllPassword(!showDeleteAllPassword)
+                  }
                   className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
                 >
-                  {showDeleteAllPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                  {showDeleteAllPassword ? (
+                    <EyeOff size={16} />
+                  ) : (
+                    <Eye size={16} />
+                  )}
                 </button>
               </div>
             </div>
@@ -1350,7 +1397,10 @@ const SeatBooking = () => {
               variant="destructive"
               onClick={handleDeleteAllTables}
               className="w-full sm:w-auto"
-              disabled={deleteAllConfirmText !== "Delete All Tables" || !deleteAllPassword}
+              disabled={
+                deleteAllConfirmText !== "Delete All Tables" ||
+                !deleteAllPassword
+              }
             >
               Delete All Tables
             </Button>
@@ -1362,4 +1412,3 @@ const SeatBooking = () => {
 };
 
 export default SeatBooking;
-
