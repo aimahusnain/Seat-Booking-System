@@ -139,7 +139,7 @@ export function AddTableForm({ isOpen, onClose, onSuccess }: AddTableFormProps) 
                           onChange={(e) => setTableName(`Table ${e.target.value}`)}
                           required
                           className="h-12 text-base transition-all duration-200 focus-visible:ring-2 focus-visible:ring-indigo-500 w-52"
-                          min="1"
+                          min={1}
                         />
                       </div>
                     </div>
@@ -236,7 +236,7 @@ export function AddTableForm({ isOpen, onClose, onSuccess }: AddTableFormProps) 
                                     value={seatNumbers[index] || ""}
                                     onChange={(e) => handleSeatNumberChange(index, e.target.value)}
                                     className={cn(
-                                      "h-12 text-center rounded-full bg-white shadow-md transition-all duration-200",
+                                      "w-20 h-12 text-center rounded-full bg-white shadow-md transition-all duration-200",
                                       "text-sm font-medium focus-visible:ring-2 focus-visible:ring-indigo-500",
                                       "sm:w-20 sm:h-14",
                                       "relative",
