@@ -727,9 +727,9 @@ const SeatBooking = () => {
     return <Loader />;
   }
 
-  if (error) {
-    return <div>Error: {error}</div>;
-  }
+  // if (error) {
+  //   return <div>Error: {error}</div>;
+  // }
 
   return (
     <div className={`bg-zinc-50 ${isFullScreen ? "overflow-hidden" : ""}`}>
