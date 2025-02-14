@@ -92,6 +92,8 @@ const SeatBooking = () => {
   const [isDeleteAllTablesDialogOpen, setIsDeleteAllTablesDialogOpen] =
     useState(false);
 
+  console.log(error)
+
   // Add fetch function
   const fetchTotalGuests = async () => {
     const response = await fetch("/api/get-total-guests");
