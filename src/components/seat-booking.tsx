@@ -98,6 +98,36 @@ const SeatBooking = () => {
 
   console.log(error);
 
+  useEffect(() => {
+    if (initialSeats.length > 0) {
+      const groupedSeats = initialSeats.reduce((acc: { [key: string]: Seat[] }, seat) => {
+        if (!acc[seat.table.name]) {
+          acc[seat.table.name] = []
+        }
+        acc[seat.table.name].push(seat)
+        return acc
+      }, {})
+
+      const formattedTables: TableData[] = Object.entries(groupedSeats)
+        .map(([tableName, seats]) => ({
+          tableNumber: Number.parseInt(tableName.replace("Table", "")),
+          seats: seats.sort((a, b) => a.seat - b.seat),
+        }))
+        .sort((a, b) => a.tableNumber - b.tableNumber)
+
+      setTables(formattedTables)
+      setBookedSeats(initialSeats.filter((seat) => seat.isBooked))
+    }
+  }, [initialSeats])
+
+  const handleBulkTableCreation = () => {
+    setBulkTableDialogOpen(true)
+  }
+
+  const handleBulkTableSuccess = () => {
+    refreshSeats()
+    toast.success("Tables created successfully")
+  }
 
   // Add fetch function
   const fetchTotalGuests = async () => {
@@ -820,7 +850,7 @@ const SeatBooking = () => {
                     >
                       New Table
                     </DropdownMenuItem>
-                    <DropdownMenuItem className="cursor-pointer" onClick={() => setBulkTableDialogOpen(true)}>
+                    <DropdownMenuItem className="cursor-pointer" onClick={handleBulkTableCreation}>
           Bulk Create Tables
         </DropdownMenuItem>
                     <DropdownMenuItem
@@ -1183,10 +1213,7 @@ const SeatBooking = () => {
       <BulkTableForm
         isOpen={isBulkTableDialogOpen}
         onClose={() => setBulkTableDialogOpen(false)}
-        onSuccess={() => {
-          refreshSeats()
-          router.refresh()
-        }}
+        onSuccess={handleBulkTableSuccess}
       />
 
       <AddGuestForm

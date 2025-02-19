@@ -1,24 +1,14 @@
 "use client"
 
-import type React from "react"
-
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { toast } from "sonner"
-import { Minus, Plus, Trash2 } from "lucide-react"
+import { Minus, Plus, Trash2 } from 'lucide-react'
 import { ScrollArea } from "@/components/ui/scroll-area"
-
 
 interface BulkTableFormProps {
   isOpen: boolean
@@ -37,6 +27,7 @@ export function BulkTableForm({ isOpen, onClose, onSuccess }: BulkTableFormProps
   const [endNumber, setEndNumber] = useState("")
   const [defaultSeats, setDefaultSeats] = useState("8")
   const [isLoading, setIsLoading] = useState(false)
+  const [progress, setProgress] = useState({ current: 0, total: 0 })
 
   const generateTables = () => {
     const start = Number.parseInt(startNumber)
@@ -88,34 +79,35 @@ export function BulkTableForm({ isOpen, onClose, onSuccess }: BulkTableFormProps
 
     try {
       setIsLoading(true)
-      const toastId = toast.loading(`Creating ${tables.length} tables...`)
+      setProgress({ current: 0, total: tables.length })
+      const toastId = toast.loading(`Creating tables... (0/${tables.length})`)
 
-      const response = await fetch("/api/create-bulk-tables", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ tables }),
-      })
+      for (const table of tables) {
+        await fetch("/api/create-table", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(table),
+        })
 
-      const data = await response.json()
-
-      if (data.success) {
-        toast.success(`Successfully created ${tables.length} tables`, { id: toastId })
-        onSuccess()
-        onClose()
-        setTables([])
-        setStartNumber("")
-        setEndNumber("")
-      } else {
-        throw new Error(data.message || "Failed to create tables")
+        setProgress((prev) => ({ ...prev, current: prev.current + 1 }))
+        toast.loading(`Creating tables... (${progress.current + 1}/${tables.length})`, { id: toastId })
       }
+
+      toast.success(`Successfully created ${tables.length} tables`, { id: toastId })
+      onSuccess()
+      onClose()
+      setTables([])
+      setStartNumber("")
+      setEndNumber("")
     } catch (error) {
       toast.error("Failed to create tables", {
         description: error instanceof Error ? error.message : "An unexpected error occurred",
       })
     } finally {
       setIsLoading(false)
+      setProgress({ current: 0, total: 0 })
     }
   }
 
@@ -130,7 +122,6 @@ export function BulkTableForm({ isOpen, onClose, onSuccess }: BulkTableFormProps
         </DialogHeader>
 
         <div className="space-y-6">
-          {/* Table Generation Controls */}
           <div className="grid grid-cols-3 gap-4">
             <div className="space-y-2">
               <Label htmlFor="startNumber">Start Number</Label>
@@ -172,7 +163,6 @@ export function BulkTableForm({ isOpen, onClose, onSuccess }: BulkTableFormProps
             Generate Tables
           </Button>
 
-          {/* Tables Configuration */}
           {tables.length > 0 && (
             <ScrollArea className="h-[300px] rounded-md border">
               <Table>
@@ -243,11 +233,10 @@ export function BulkTableForm({ isOpen, onClose, onSuccess }: BulkTableFormProps
             Cancel
           </Button>
           <Button onClick={handleSubmit} disabled={isLoading || tables.length === 0}>
-            {isLoading ? "Creating..." : "Create Tables"}
+            {isLoading ? `Creating... (${progress.current}/${progress.total})` : "Create Tables"}
           </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
   )
 }
-
