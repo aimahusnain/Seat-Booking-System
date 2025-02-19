@@ -1,4 +1,6 @@
-import { useState, useEffect } from "react";
+"use client"
+
+import { useState, useEffect } from "react"
 
 export async function getPasswordHashes() {
   try {
@@ -7,45 +9,46 @@ export async function getPasswordHashes() {
       headers: {
         "Content-Type": "application/json",
       },
-    });
+    })
 
     if (!response.ok) {
-      throw new Error("Failed to fetch passwords");
+      throw new Error("Failed to fetch password")
     }
 
-    const data = await response.json();
+    const data = await response.json()
     if (!data.success || !data.data || data.data.length === 0) {
-      throw new Error("No passwords found");
+      throw new Error("No password found")
     }
 
     // Return an array of password hashes
-    return data.data.map((item: { passsword: string }) => item.passsword);
+    return data.data.map((item: { password: string }) => item.password)
   } catch (error) {
-    console.error("Error fetching password hashes:", error);
-    throw error;
+    console.error("Error fetching password hash:", error)
+    throw error
   }
 }
 
 export function usePassword() {
-  const [passwords, setPasswords] = useState<string[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [passwordHash, setPasswordHash] = useState<string | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    const fetchPasswords = async () => {
+    const fetchPassword = async () => {
       try {
-        const fetchedPasswords = await getPasswordHashes();
-        setPasswords(fetchedPasswords);
+        const fetchedPasswords = await getPasswordHashes()
+        setPasswordHash(fetchedPasswords[0] || null)
       } catch (err) {
-        setError((err as Error).message);
+        setError((err as Error).message)
+        setPasswordHash(null)
       } finally {
-        setLoading(false);
+        setLoading(false)
       }
-    };
+    }
 
-    fetchPasswords();
-  }, []);
+    fetchPassword()
+  }, [])
 
-  return { passwords, loading, error };
+  return { passwordHash, loading, error }
 }
 

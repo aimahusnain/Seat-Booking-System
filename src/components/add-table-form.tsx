@@ -148,18 +148,18 @@ export function AddTableForm({ isOpen, onClose, onSuccess, onTableAdded }: AddTa
 
               <form onSubmit={handleSubmit} className="space-y-8">
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
-                  <div className="space-y-6 bg-white/50 backdrop-blur-sm rounded-2xl p-6 border border-gray-100 shadow-sm">
+                  <div className="space-y-6 bg-white/50 backdrop-blur-sm rounded-2xl p-6 border border-zinc-100 shadow-sm">
                     <div className="space-y-2">
-                      <Label className="text-base font-medium text-gray-700">Table Number</Label>
+                      <Label className="text-base font-medium text-zinc-700">Table Number</Label>
                       <div className="flex items-center space-x-2">
-                        <span className="text-lg font-semibold text-gray-600">
+                        <span className="text-lg font-semibold text-zinc-600">
                           {isLoading ? "Loading..." : `Table ${tableNumber}`}
                         </span>
                       </div>
                     </div>
 
                     <div className="space-y-4">
-                      <Label className="text-base font-medium text-gray-700">
+                      <Label className="text-base font-medium text-zinc-700">
                         Number of Seats: <span className="text-indigo-600 font-semibold">{numberOfSeats}</span>
                       </Label>
                       <div className="flex items-center gap-4">
@@ -195,7 +195,7 @@ export function AddTableForm({ isOpen, onClose, onSuccess, onTableAdded }: AddTa
                     </div>
 
                     <div className="space-y-4">
-                      <Label className="text-base font-medium text-gray-700">Quick Fill Options</Label>
+                      <Label className="text-base font-medium text-zinc-700">Quick Fill Options</Label>
                       <Button
                         type="button"
                         onClick={handleMagicFill}
@@ -207,7 +207,7 @@ export function AddTableForm({ isOpen, onClose, onSuccess, onTableAdded }: AddTa
                     </div>
                   </div>
 
-                  <div className="relative bg-white rounded-2xl p-6 border border-gray-100 shadow-sm w-full aspect-square flex items-center justify-center max-w-[500px] mx-auto lg:mx-0">
+                  <div className="relative bg-white rounded-2xl p-6 border border-zinc-100 shadow-sm w-full aspect-square flex items-center justify-center max-w-[500px] mx-auto lg:mx-0">
                     <div className="relative w-full h-full flex items-center justify-center">
                       <motion.div
                         className="w-32 h-32 rounded-full bg-gradient-to-br from-indigo-100 to-blue-100 border-2 border-indigo-200 flex items-center justify-center shadow-lg z-10"

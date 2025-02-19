@@ -1,75 +1,59 @@
-import { NextAuthOptions } from "next-auth";
+// app/api/auth/[...nextauth]/route.ts
+import NextAuth, { User } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
-import { PrismaClient } from "@prisma/client";
-import bcrypt from "bcryptjs";
-import NextAuth from "next-auth/next";
 
-const prisma = new PrismaClient();
+declare module "next-auth" {
+  interface Session {
+    user: User & { id: string };
+  }
+}
 
-const authOptions: NextAuthOptions = {
+const handler = NextAuth({
   providers: [
     CredentialsProvider({
-      name: "credentials",
+      name: "Credentials",
       credentials: {
-        email: { label: "Email", type: "email" },
-        password: { label: "Password", type: "password" }
+        username: { label: "Username", type: "text" },
+        password: { label: "Password", type: "password" },
       },
       async authorize(credentials) {
-        if (!credentials?.email || !credentials?.password) {
-          throw new Error("Invalid credentials");
+        // Replace with your custom authentication logic
+        // Example authentication, replace with actual logic
+        const user = { id: "1", name: "Test User", email: "test@example.com" }; // id is now a string
+
+        if (user) {
+          return user; // return user object on successful authentication
+        } else {
+          return null; // return null if authentication fails
         }
-
-        const user = await prisma.user.findUnique({
-          where: {
-            email: credentials.email
-          }
-        });
-
-        if (!user || !user?.password) {
-          throw new Error("Invalid credentials");
-        }
-
-        const isCorrectPassword = await bcrypt.compare(
-          credentials.password,
-          user.password
-        );
-
-        if (!isCorrectPassword) {
-          throw new Error("Invalid credentials");
-        }
-
-        return user;
-      }
-    })
+      },
+    }),
   ],
-  pages: {
-    signIn: "/login",
+  session: {
+    strategy: "jwt", // Use JWT for session management
+    maxAge: 60 * 60,  // Session expiration (1 hour)
+  },
+  jwt: {
+    maxAge: 60 * 60, // JWT expiration (1 hour)
   },
   callbacks: {
-    session: ({ session, token }) => {
-      return {
-        ...session,
-        user: {
-          ...session.user,
-          id: token.id,
-        },
-      };
-    },
-    jwt: ({ token, user }) => {
+    async jwt({ token, user }) {
       if (user) {
-        return {
-          ...token,
-          id: user.id,
-        };
+        token.id = user.id;
+        token.email = user.email;
       }
       return token;
     },
+    async session({ session, token }: { session: any, token: any }) {
+      if (session.user) {
+        session.user.id = token.id;
+      }
+      if (session.user) {
+        session.user.email = token.email;
+      }
+      return session;
+    },
   },
-  session: {
-    strategy: "jwt",
-  },
-  secret: process.env.NEXTAUTH_SECRET,
-};
+});
 
-const handler = NextAuth(authOptions);
 export { handler as GET, handler as POST };
