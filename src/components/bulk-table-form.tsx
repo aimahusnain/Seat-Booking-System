@@ -1,3 +1,4 @@
+// app/components/bulk-table-form.tsx
 "use client"
 
 import type React from "react"
@@ -15,7 +16,6 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { toast } from "sonner"
-import { Minus, Plus } from "lucide-react"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Card, CardContent } from "@/components/ui/card"
 
@@ -27,7 +27,8 @@ interface BulkTableFormProps {
 
 interface TableConfig {
   tableNumber: number
-  seats: number
+  seats: number[]
+  numberOfSeats: number
 }
 
 export function BulkTableForm({ isOpen, onClose, onSuccess }: BulkTableFormProps) {
@@ -65,21 +66,34 @@ export function BulkTableForm({ isOpen, onClose, onSuccess }: BulkTableFormProps
     }
   }, [isLoadingStartNumber, tablesToCreate, defaultSeats])
 
+  const updateTableSeats = (tableNumber: number, newSeatCount: number) => {
+    setTables(prevTables => 
+      prevTables.map(table => {
+        if (table.tableNumber === tableNumber) {
+          const seats = Array.from({ length: newSeatCount }, (_, seatIndex) =>
+            Number.parseInt(`${tableNumber}${(seatIndex + 1).toString().padStart(2, "0")}`)
+          )
+          return { ...table, seats, numberOfSeats: newSeatCount }
+        }
+        return table
+      })
+    )
+  }
+
   const generateTables = () => {
     const newTables: TableConfig[] = []
     for (let i = 0; i < tablesToCreate; i++) {
+      const tableNumber = startNumber + i
+      const seats = Array.from({ length: defaultSeats }, (_, seatIndex) =>
+        Number.parseInt(`${tableNumber}${(seatIndex + 1).toString().padStart(2, "0")}`)
+      )
       newTables.push({
-        tableNumber: startNumber + i,
-        seats: defaultSeats,
+        tableNumber,
+        seats,
+        numberOfSeats: defaultSeats
       })
     }
     setTables(newTables)
-  }
-
-  const updateTableSeats = (index: number, value: number) => {
-    if (value < 1 || value > 10) return
-
-    setTables((prev) => prev.map((table, i) => (i === index ? { ...table, seats: value } : table)))
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -90,23 +104,21 @@ export function BulkTableForm({ isOpen, onClose, onSuccess }: BulkTableFormProps
       return
     }
 
-    if (tables.some((table) => table.seats < 1)) {
-      toast.error("All tables must have at least 1 seat")
-      return
-    }
-
     try {
       setIsLoading(true)
       setProgress({ current: 0, total: tables.length })
       const toastId = toast.loading(`Creating tables...`)
 
       for (const table of tables) {
-        await fetch("/api/create-table", {
+        await fetch("/api/create-bulk-tables", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify(table),
+          body: JSON.stringify({
+            name: `Table${table.tableNumber}`,
+            seats: table.seats,
+          }),
         })
 
         setProgress((prev) => ({ ...prev, current: prev.current + 1 }))
@@ -174,36 +186,31 @@ export function BulkTableForm({ isOpen, onClose, onSuccess }: BulkTableFormProps
                     <TableHeader>
                       <TableRow>
                         <TableHead className="w-[100px]">Table No.</TableHead>
-                        <TableHead>Seats</TableHead>
+                        <TableHead className="w-[150px]">Seats Count</TableHead>
+                        <TableHead>Seat Numbers</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {tables.map((table, index) => (
+                      {tables.map((table) => (
                         <TableRow key={table.tableNumber}>
                           <TableCell className="font-medium">Table {table.tableNumber}</TableCell>
                           <TableCell>
-                            <div className="flex items-center space-x-2">
-                              <Button
-                                type="button"
-                                variant="outline"
-                                size="icon"
-                                className="h-8 w-8"
-                                onClick={() => updateTableSeats(index, table.seats - 1)}
-                                disabled={table.seats <= 1}
-                              >
-                                <Minus className="h-4 w-4" />
-                              </Button>
-                              <span className="w-8 text-center">{table.seats}</span>
-                              <Button
-                                type="button"
-                                variant="outline"
-                                size="icon"
-                                className="h-8 w-8"
-                                onClick={() => updateTableSeats(index, table.seats + 1)}
-                                disabled={table.seats >= 10}
-                              >
-                                <Plus className="h-4 w-4" />
-                              </Button>
+                            <Input
+                              type="number"
+                              value={table.numberOfSeats}
+                              onChange={(e) => updateTableSeats(table.tableNumber, Number(e.target.value))}
+                              min="1"
+                              max="10"
+                              className="w-20"
+                            />
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex flex-wrap gap-2">
+                              {table.seats.map((seatNumber, index) => (
+                                <span key={index} className="px-2 py-1 bg-gray-100 rounded-md text-sm">
+                                  {seatNumber}
+                                </span>
+                              ))}
                             </div>
                           </TableCell>
                         </TableRow>
@@ -228,4 +235,3 @@ export function BulkTableForm({ isOpen, onClose, onSuccess }: BulkTableFormProps
     </Dialog>
   )
 }
-
