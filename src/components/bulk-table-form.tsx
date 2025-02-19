@@ -1,14 +1,23 @@
 "use client"
 
-import { useState } from "react"
+import type React from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { toast } from "sonner"
-import { Minus, Plus, Trash2 } from 'lucide-react'
+import { Minus, Plus } from "lucide-react"
 import { ScrollArea } from "@/components/ui/scroll-area"
+import { Card, CardContent } from "@/components/ui/card"
 
 interface BulkTableFormProps {
   isOpen: boolean
@@ -23,45 +32,54 @@ interface TableConfig {
 
 export function BulkTableForm({ isOpen, onClose, onSuccess }: BulkTableFormProps) {
   const [tables, setTables] = useState<TableConfig[]>([])
-  const [startNumber, setStartNumber] = useState("")
-  const [endNumber, setEndNumber] = useState("")
-  const [defaultSeats, setDefaultSeats] = useState("8")
+  const [startNumber, setStartNumber] = useState(0)
+  const [tablesToCreate, setTablesToCreate] = useState(1)
+  const [defaultSeats, setDefaultSeats] = useState(8)
   const [isLoading, setIsLoading] = useState(false)
   const [progress, setProgress] = useState({ current: 0, total: 0 })
+  const [isLoadingStartNumber, setIsLoadingStartNumber] = useState(true)
+
+  const fetchLastTableNumber = async () => {
+    setIsLoadingStartNumber(true)
+    try {
+      const response = await fetch("/api/get-last-table-number")
+      const data = await response.json()
+      setStartNumber(data.lastTableNumber + 1)
+    } catch (error) {
+      console.error("Failed to fetch last table number:", error)
+      toast.error("Failed to fetch last table number")
+    } finally {
+      setIsLoadingStartNumber(false)
+    }
+  }
+
+  useEffect(() => {
+    if (isOpen) {
+      fetchLastTableNumber()
+    }
+  }, [isOpen])
+
+  useEffect(() => {
+    if (!isLoadingStartNumber) {
+      generateTables()
+    }
+  }, [isLoadingStartNumber, tablesToCreate, defaultSeats])
 
   const generateTables = () => {
-    const start = Number.parseInt(startNumber)
-    const end = Number.parseInt(endNumber)
-
-    if (isNaN(start) || isNaN(end)) {
-      toast.error("Please enter valid numbers")
-      return
-    }
-
-    if (start >= end) {
-      toast.error("Start number must be less than end number")
-      return
-    }
-
     const newTables: TableConfig[] = []
-    for (let i = start; i <= end; i++) {
+    for (let i = 0; i < tablesToCreate; i++) {
       newTables.push({
-        tableNumber: i,
-        seats: Number.parseInt(defaultSeats) || 8,
+        tableNumber: startNumber + i,
+        seats: defaultSeats,
       })
     }
     setTables(newTables)
   }
 
-  const updateTableSeats = (index: number, value: string) => {
-    const seats = Number.parseInt(value)
-    if (isNaN(seats) || seats < 1) return
+  const updateTableSeats = (index: number, value: number) => {
+    if (value < 1 || value > 10) return
 
-    setTables((prev) => prev.map((table, i) => (i === index ? { ...table, seats } : table)))
-  }
-
-  const removeTable = (index: number) => {
-    setTables((prev) => prev.filter((_, i) => i !== index))
+    setTables((prev) => prev.map((table, i) => (i === index ? { ...table, seats: value } : table)))
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -80,7 +98,7 @@ export function BulkTableForm({ isOpen, onClose, onSuccess }: BulkTableFormProps
     try {
       setIsLoading(true)
       setProgress({ current: 0, total: tables.length })
-      const toastId = toast.loading(`Creating tables... (0/${tables.length})`)
+      const toastId = toast.loading(`Creating tables...`)
 
       for (const table of tables) {
         await fetch("/api/create-table", {
@@ -92,15 +110,14 @@ export function BulkTableForm({ isOpen, onClose, onSuccess }: BulkTableFormProps
         })
 
         setProgress((prev) => ({ ...prev, current: prev.current + 1 }))
-        toast.loading(`Creating tables... (${progress.current + 1}/${tables.length})`, { id: toastId })
+        toast.loading(`Creating tables...`, { id: toastId })
       }
 
       toast.success(`Successfully created ${tables.length} tables`, { id: toastId })
       onSuccess()
       onClose()
       setTables([])
-      setStartNumber("")
-      setEndNumber("")
+      setTablesToCreate(1)
     } catch (error) {
       toast.error("Failed to create tables", {
         description: error instanceof Error ? error.message : "An unexpected error occurred",
@@ -116,115 +133,86 @@ export function BulkTableForm({ isOpen, onClose, onSuccess }: BulkTableFormProps
       <DialogContent className="sm:max-w-[800px]">
         <DialogHeader>
           <DialogTitle>Create Multiple Tables</DialogTitle>
-          <DialogDescription>
-            Generate tables and customize the number of seats for each table.
-          </DialogDescription>
+          <DialogDescription>Customize the number of tables and seats to create.</DialogDescription>
         </DialogHeader>
 
         <div className="space-y-6">
-          <div className="grid grid-cols-3 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="startNumber">Start Number</Label>
-              <Input
-                id="startNumber"
-                type="number"
-                value={startNumber}
-                onChange={(e) => setStartNumber(e.target.value)}
-                placeholder="1"
-                min="1"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="endNumber">End Number</Label>
-              <Input
-                id="endNumber"
-                type="number"
-                value={endNumber}
-                onChange={(e) => setEndNumber(e.target.value)}
-                placeholder="10"
-                min="1"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="defaultSeats">Default Seats</Label>
-              <Input
-                id="defaultSeats"
-                type="number"
-                value={defaultSeats}
-                onChange={(e) => setDefaultSeats(e.target.value)}
-                placeholder="8"
-                max={10}
-                min="1"
-              />
-            </div>
-          </div>
-
-          <Button type="button" onClick={generateTables} className="w-full">
-            Generate Tables
-          </Button>
+          <Card>
+            <CardContent className="pt-6">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="tablesToCreate">Number of Tables</Label>
+                  <Input
+                    id="tablesToCreate"
+                    type="number"
+                    value={tablesToCreate}
+                    onChange={(e) => setTablesToCreate(Number(e.target.value))}
+                    min="1"
+                    max="50"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="defaultSeats">Default Seats per Table</Label>
+                  <Input
+                    id="defaultSeats"
+                    type="number"
+                    value={defaultSeats}
+                    onChange={(e) => setDefaultSeats(Number(e.target.value))}
+                    min="1"
+                    max="10"
+                  />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
 
           {tables.length > 0 && (
-            <ScrollArea className="h-[300px] rounded-md border">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="w-[100px]">Table No.</TableHead>
-                    <TableHead>Seats</TableHead>
-                    <TableHead className="w-[100px] text-right">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {tables.map((table, index) => (
-                    <TableRow key={table.tableNumber}>
-                      <TableCell className="font-medium">Table {table.tableNumber}</TableCell>
-                      <TableCell>
-                        <div className="flex items-center space-x-2">
-                          <Button
-                            type="button"
-                            variant="outline"
-                            size="icon"
-                            className="h-8 w-8"
-                            onClick={() => updateTableSeats(index, (table.seats - 1).toString())}
-                            disabled={table.seats <= 1}
-                          >
-                            <Minus className="h-4 w-4" />
-                          </Button>
-                          <Input
-                            type="number"
-                            value={table.seats}
-                            onChange={(e) => updateTableSeats(index, e.target.value)}
-                            className="w-20 text-center"
-                            max={10}
-                            min="1"
-                          />
-                          <Button
-                            type="button"
-                            variant="outline"
-                            size="icon"
-                            className="h-8 w-8"
-                            disabled={table.seats >= 10}
-                            onClick={() => updateTableSeats(index, (table.seats + 1).toString())}
-                          >
-                            <Plus className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8 text-red-600 hover:text-red-700 hover:bg-red-50"
-                          onClick={() => removeTable(index)}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </ScrollArea>
+            <Card>
+              <CardContent className="p-0">
+                <ScrollArea className="h-[300px] rounded-md">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="w-[100px]">Table No.</TableHead>
+                        <TableHead>Seats</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {tables.map((table, index) => (
+                        <TableRow key={table.tableNumber}>
+                          <TableCell className="font-medium">Table {table.tableNumber}</TableCell>
+                          <TableCell>
+                            <div className="flex items-center space-x-2">
+                              <Button
+                                type="button"
+                                variant="outline"
+                                size="icon"
+                                className="h-8 w-8"
+                                onClick={() => updateTableSeats(index, table.seats - 1)}
+                                disabled={table.seats <= 1}
+                              >
+                                <Minus className="h-4 w-4" />
+                              </Button>
+                              <span className="w-8 text-center">{table.seats}</span>
+                              <Button
+                                type="button"
+                                variant="outline"
+                                size="icon"
+                                className="h-8 w-8"
+                                onClick={() => updateTableSeats(index, table.seats + 1)}
+                                disabled={table.seats >= 10}
+                              >
+                                <Plus className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </ScrollArea>
+              </CardContent>
+            </Card>
           )}
         </div>
 
@@ -240,3 +228,4 @@ export function BulkTableForm({ isOpen, onClose, onSuccess }: BulkTableFormProps
     </Dialog>
   )
 }
+

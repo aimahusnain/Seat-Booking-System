@@ -285,4 +285,3 @@ export function AddTableForm({ isOpen, onClose, onSuccess, onTableAdded }: AddTa
     </Sheet>
   )
 }
-
