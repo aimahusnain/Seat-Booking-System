@@ -4,7 +4,7 @@ import React from "react";
 const Footer = () => {
   return (
     <footer className="bg-white dark:bg-zinc-900 py-6 sm:py-8 border-t border-zinc-100 dark:border-zinc-800">
-      <div className="container mx-auto max-w-6xl flex flex-col sm:flex-row items-center justify-between gap-4 sm:gap-6">
+      <div className="mx-16 flex flex-col sm:flex-row items-center justify-between gap-4 sm:gap-6">
         {/* Logo Section */}
         <Link
           href="https://devkins.dev/"
