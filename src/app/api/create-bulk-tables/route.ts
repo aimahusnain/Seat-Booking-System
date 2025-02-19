@@ -40,7 +40,7 @@ export async function POST(req: Request) {
 
           const batchResults = await Promise.all(batchPromises)
           createdTables.push(...batchResults)
-        }
+        }   
 
         return createdTables
       },

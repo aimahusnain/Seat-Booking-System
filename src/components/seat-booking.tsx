@@ -16,6 +16,7 @@ import {
   QrCodeIcon as ScanQrCode,
   Trash,
   Trash2,
+  Users,
 } from "lucide-react";
 import { useSeats } from "../hooks/useSeats";
 import { getPasswordHashes } from "@/hooks/usePassword";
@@ -56,6 +57,7 @@ import Loader from "./loader";
 import { PDFExport } from "./pdf-export";
 import { PersonSelector } from "./person-selector";
 import { sha256 } from "@/utils/sha256";
+import { AssignGuestsDialog } from "./assign-guests-dialog";
 
 const SeatBooking = () => {
   const {
@@ -95,6 +97,7 @@ const SeatBooking = () => {
     useState(false);
 
   console.log(error);
+
 
   // Add fetch function
   const fetchTotalGuests = async () => {
@@ -1194,6 +1197,14 @@ const SeatBooking = () => {
           router.refresh();
         }}
       />
+
+{/* <AssignGuestsDialog
+        isOpen={isAssignGuestsDialogOpen}
+        onClose={() => setIsAssignGuestsDialogOpen(false)}
+        guests={guests}
+        tables={getTableInfo()}
+        onAssignGuests={handleAssignGuests}
+      /> */}
 
       <Dialog
         open={isChangePasswordOpen}
