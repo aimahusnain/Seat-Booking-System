@@ -1,6 +1,5 @@
 // app/api/auth/[...nextauth]/route.ts
-import NextAuth, { User, Session } from "next-auth";
-import { JWT } from "next-auth/jwt";
+import NextAuth, { User } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 
 declare module "next-auth" {
@@ -60,3 +59,4 @@ const handler = NextAuth({
 });
 
 export { handler as GET, handler as POST };
+
