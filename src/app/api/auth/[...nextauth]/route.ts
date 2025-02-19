@@ -1,5 +1,5 @@
 // app/api/auth/[...nextauth]/route.ts
-import NextAuth, { User } from "next-auth";
+import NextAuth, { User, Session } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 
 declare module "next-auth" {
@@ -16,7 +16,7 @@ const handler = NextAuth({
         username: { label: "Username", type: "text" },
         password: { label: "Password", type: "password" },
       },
-      async authorize(credentials) {
+      async authorize() {
         // Replace with your custom authentication logic
         // Example authentication, replace with actual logic
         const user = { id: "1", name: "Test User", email: "test@example.com" }; // id is now a string
@@ -44,7 +44,8 @@ const handler = NextAuth({
       }
       return token;
     },
-    async session({ session, token }: { session: any, token: any }) {
+      // eslint-disable-next-line no-var, no-unused-vars
+    async session({ session, token }: { session: Session; token: any }) {
       if (session.user) {
         session.user.id = token.id;
       }
