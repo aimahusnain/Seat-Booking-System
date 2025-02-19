@@ -1,29 +1,7 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
-import { useRouter } from "next/navigation";
-import Link from "next/link";
-import { toast } from "sonner";
-import { AnimatePresence, motion } from "framer-motion";
-import {
-  Check,
-  ChevronDown,
-  Eye,
-  EyeOff,
-  FolderPen,
-  PersonStandingIcon,
-  RefreshCcw,
-  QrCodeIcon as ScanQrCode,
-  Trash,
-  Trash2,
-  Users,
-} from "lucide-react";
-import { useSeats } from "../hooks/useSeats";
-import { getPasswordHashes } from "@/hooks/usePassword";
-import type { Person, Seat, TableData } from "../types/booking";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { BulkTableForm } from "./bulk-table-form"
 import {
   Dialog,
   DialogContent,
@@ -47,17 +25,37 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { getPasswordHashes } from "@/hooks/usePassword";
+import { sha256 } from "@/utils/sha256";
+import { AnimatePresence, motion } from "framer-motion";
+import {
+  Check,
+  ChevronDown,
+  Eye,
+  EyeOff,
+  FolderPen,
+  PersonStandingIcon,
+  RefreshCcw,
+  QrCodeIcon as ScanQrCode,
+  Trash,
+  Trash2
+} from "lucide-react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
+import { toast } from "sonner";
+import { useSeats } from "../hooks/useSeats";
+import type { Person, Seat, TableData } from "../types/booking";
 import { AddGuestForm } from "./add-guest-form";
 import { AddTableForm } from "./add-table-form";
 import { BookingSidebar } from "./booking-sidebar";
+import { BulkTableForm } from "./bulk-table-form";
 import ChangePasswordForm from "./change-password-dialog";
 import { HelpButton } from "./help-dropdown";
 import { ImportGuestsforWeb } from "./import-guests-form";
 import Loader from "./loader";
 import { PDFExport } from "./pdf-export";
 import { PersonSelector } from "./person-selector";
-import { sha256 } from "@/utils/sha256";
-import { AssignGuestsDialog } from "./assign-guests-dialog";
 
 const SeatBooking = () => {
   const {
