@@ -14,8 +14,6 @@ import { Eye, EyeOff } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
-// Passwords are Jodel456, Jodel123
-
 export default function ChangePasswordDialog() {
   const [isOpen, setIsOpen] = useState(false);
   const [currentPassword, setCurrentPassword] = useState("");
