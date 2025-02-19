@@ -38,7 +38,7 @@ import {
   RefreshCcw,
   QrCodeIcon as ScanQrCode,
   Trash,
-  Trash2
+  Trash2,
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -56,6 +56,7 @@ import { ImportGuestsforWeb } from "./import-guests-form";
 import Loader from "./loader";
 import { PDFExport } from "./pdf-export";
 import { PersonSelector } from "./person-selector";
+import { signOut, useSession } from "next-auth/react";
 
 const SeatBooking = () => {
   const {
@@ -64,8 +65,8 @@ const SeatBooking = () => {
     error,
     fetchSeats: refreshSeats,
   } = useSeats();
-  const [isBulkTableDialogOpen, setBulkTableDialogOpen] = useState(false)
-  const [isAddTableOpen, setIsAddTableOpen] = useState(false)
+  const [isBulkTableDialogOpen, setBulkTableDialogOpen] = useState(false);
+  const [isAddTableOpen, setIsAddTableOpen] = useState(false);
   const [tables, setTables] = useState<TableData[]>([]);
   const [selectedSeat, setSelectedSeat] = useState<Seat | null>(null);
   const [isPersonSelectorOpen, setIsPersonSelectorOpen] = useState(false);
@@ -96,36 +97,44 @@ const SeatBooking = () => {
 
   console.log(error);
 
+  const handleSignOut = async () => {
+    await signOut({ redirect: false });
+    router.push("/login");
+  };
+
   useEffect(() => {
     if (initialSeats.length > 0) {
-      const groupedSeats = initialSeats.reduce((acc: { [key: string]: Seat[] }, seat) => {
-        if (!acc[seat.table.name]) {
-          acc[seat.table.name] = []
-        }
-        acc[seat.table.name].push(seat)
-        return acc
-      }, {})
+      const groupedSeats = initialSeats.reduce(
+        (acc: { [key: string]: Seat[] }, seat) => {
+          if (!acc[seat.table.name]) {
+            acc[seat.table.name] = [];
+          }
+          acc[seat.table.name].push(seat);
+          return acc;
+        },
+        {}
+      );
 
       const formattedTables: TableData[] = Object.entries(groupedSeats)
         .map(([tableName, seats]) => ({
           tableNumber: Number.parseInt(tableName.replace("Table", "")),
           seats: seats.sort((a, b) => a.seat - b.seat),
         }))
-        .sort((a, b) => a.tableNumber - b.tableNumber)
+        .sort((a, b) => a.tableNumber - b.tableNumber);
 
-      setTables(formattedTables)
-      setBookedSeats(initialSeats.filter((seat) => seat.isBooked))
+      setTables(formattedTables);
+      setBookedSeats(initialSeats.filter((seat) => seat.isBooked));
     }
-  }, [initialSeats])
+  }, [initialSeats]);
 
   const handleBulkTableCreation = () => {
-    setBulkTableDialogOpen(true)
-  }
+    setBulkTableDialogOpen(true);
+  };
 
   const handleBulkTableSuccess = () => {
-    refreshSeats()
-    toast.success("Tables created successfully")
-  }
+    refreshSeats();
+    toast.success("Tables created successfully");
+  };
 
   // Add fetch function
   const fetchTotalGuests = async () => {
@@ -848,9 +857,12 @@ const SeatBooking = () => {
                     >
                       New Table
                     </DropdownMenuItem>
-                    <DropdownMenuItem className="cursor-pointer" onClick={handleBulkTableCreation}>
-          Bulk Create Tables
-        </DropdownMenuItem>
+                    <DropdownMenuItem
+                      className="cursor-pointer"
+                      onClick={handleBulkTableCreation}
+                    >
+                      Bulk Create Tables
+                    </DropdownMenuItem>
                     <DropdownMenuItem
                       className="cursor-pointer"
                       onClick={() => setIsAddGuestOpen(true)}
@@ -879,8 +891,15 @@ const SeatBooking = () => {
                       <AvatarFallback>JA</AvatarFallback>
                     </Avatar>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
+                  <DropdownMenuContent align="end" className="flex flex-col">
                     <ChangePasswordForm />
+                    <Button
+                      variant="destructive"
+                      onClick={handleSignOut}
+                      className="mt-4"
+                    >
+                      Sign out
+                    </Button>
                   </DropdownMenuContent>
                 </DropdownMenu>
               </div>
@@ -1223,7 +1242,7 @@ const SeatBooking = () => {
         }}
       />
 
-{/* <AssignGuestsDialog
+      {/* <AssignGuestsDialog
         isOpen={isAssignGuestsDialogOpen}
         onClose={() => setIsAssignGuestsDialogOpen(false)}
         guests={guests}
