@@ -62,7 +62,8 @@ export default function LoginPage() {
         router.push("/dashboard");
         router.refresh();
       } catch (error) {
-        toast.error((error as any)?.message || "Something went wrong");
+        const errorMessage = (error instanceof Error) ? error.message : "Something went wrong";
+        toast.error(errorMessage);
       }
     }
     setLoading(false);
