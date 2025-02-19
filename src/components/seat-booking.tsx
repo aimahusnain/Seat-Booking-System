@@ -22,6 +22,7 @@ import { getPasswordHashes } from "@/hooks/usePassword";
 import type { Person, Seat, TableData } from "../types/booking";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
+import { BulkTableForm } from "./bulk-table-form"
 import {
   Dialog,
   DialogContent,
@@ -63,6 +64,8 @@ const SeatBooking = () => {
     error,
     fetchSeats: refreshSeats,
   } = useSeats();
+  const [isBulkTableDialogOpen, setBulkTableDialogOpen] = useState(false)
+  const [isAddTableOpen, setIsAddTableOpen] = useState(false)
   const [tables, setTables] = useState<TableData[]>([]);
   const [selectedSeat, setSelectedSeat] = useState<Seat | null>(null);
   const [isPersonSelectorOpen, setIsPersonSelectorOpen] = useState(false);
@@ -70,7 +73,6 @@ const SeatBooking = () => {
   const [isConfirmationOpen, setIsConfirmationOpen] = useState(false);
   const [personToBook, setPersonToBook] = useState<Person | null>(null);
   const [hoveredSeat, setHoveredSeat] = useState<string | null>(null);
-  const [isAddTableOpen, setIsAddTableOpen] = useState(false);
   const pdfExportRef = useRef<{ generatePDF: () => void } | null>(null);
   const router = useRouter();
   const [hoveredTable, setHoveredTable] = useState<number | null>(null);
@@ -92,7 +94,7 @@ const SeatBooking = () => {
   const [isDeleteAllTablesDialogOpen, setIsDeleteAllTablesDialogOpen] =
     useState(false);
 
-  console.log(error)
+  console.log(error);
 
   // Add fetch function
   const fetchTotalGuests = async () => {
@@ -729,10 +731,6 @@ const SeatBooking = () => {
     return <Loader />;
   }
 
-  // if (error) {
-  //   return <div>Error: {error}</div>;
-  // }
-
   return (
     <div className={`bg-zinc-50 ${isFullScreen ? "overflow-hidden" : ""}`}>
       <AnimatePresence>
@@ -819,6 +817,9 @@ const SeatBooking = () => {
                     >
                       New Table
                     </DropdownMenuItem>
+                    <DropdownMenuItem className="cursor-pointer" onClick={() => setBulkTableDialogOpen(true)}>
+          Bulk Create Tables
+        </DropdownMenuItem>
                     <DropdownMenuItem
                       className="cursor-pointer"
                       onClick={() => setIsAddGuestOpen(true)}
@@ -1175,6 +1176,15 @@ const SeatBooking = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <BulkTableForm
+        isOpen={isBulkTableDialogOpen}
+        onClose={() => setBulkTableDialogOpen(false)}
+        onSuccess={() => {
+          refreshSeats()
+          router.refresh()
+        }}
+      />
 
       <AddGuestForm
         isOpen={isAddGuestOpen}
