@@ -18,6 +18,7 @@ model Seat {
   userId     String?
 }
 
+// Not Users It's guests but don't change the name of it now please.
 model Users {
   id        String   @id @default(cuid()) @map("_id")
   firstname String

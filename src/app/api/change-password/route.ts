@@ -1,31 +1,60 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { db } from "@/lib/db"
+import { PrismaClient } from "@prisma/client"
+import bcrypt from "bcrypt"
+import { getServerSession } from "next-auth/next"
+import { authOptions } from "@/lib/auth"
+
+const prisma = new PrismaClient()
 
 export async function POST(request: NextRequest) {
   try {
-    const { newPasswordHash, passwordId } = await request.json()
+    const session = await getServerSession(authOptions)
+    if (!session || !session.user) {
+      return NextResponse.json({ success: false, message: "Unauthorized" }, { status: 401 })
+    }
 
-    if (!newPasswordHash || !passwordId) {
+    const { currentPassword, newPassword } = await request.json()
+
+    if (!currentPassword || !newPassword) {
       return NextResponse.json(
-        { success: false, message: "New password hash and password ID are required" },
+        { success: false, message: "Current password and new password are required" },
         { status: 400 },
       )
     }
 
-    // Update the specific password entry
-    await db.password.update({
+    const user = await prisma.user.findUnique({
       where: {
-        id: passwordId,
+        email: session.user.email!,
+      },
+    })
+
+    if (!user) {
+      return NextResponse.json({ success: false, message: "User not found" }, { status: 404 })
+    }
+
+    const isPasswordValid = await bcrypt.compare(currentPassword, user.password)
+
+    if (!isPasswordValid) {
+      return NextResponse.json({ success: false, message: "Current password is incorrect" }, { status: 400 })
+    }
+
+    const hashedNewPassword = await bcrypt.hash(newPassword, 10)
+
+    await prisma.user.update({
+      where: {
+        id: user.id,
       },
       data: {
-        passsword: newPasswordHash,
+        password: hashedNewPassword,
       },
     })
 
     return NextResponse.json({ success: true, message: "Password updated successfully" }, { status: 200 })
   } catch (error) {
     console.error("Error changing password:", error)
-    return NextResponse.json({ success: false, message: `Failed to change password: ${error}` }, { status: 500 })
+    return NextResponse.json({ success: false, message: "Failed to change password" }, { status: 500 })
+  } finally {
+    await prisma.$disconnect()
   }
 }
 

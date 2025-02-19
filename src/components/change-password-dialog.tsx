@@ -1,67 +1,42 @@
-"use client";
+"use client"
 
-import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { getPasswordHashes } from "@/hooks/usePassword";
-import { Eye, EyeOff } from "lucide-react";
-import { useState } from "react";
-import { toast } from "sonner";
+import type React from "react"
+
+import { Button } from "@/components/ui/button"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import { Input } from "@/components/ui/input"
+import { Eye, EyeOff } from "lucide-react"
+import { useState } from "react"
+import { toast } from "sonner"
 
 export default function ChangePasswordDialog() {
-  const [isOpen, setIsOpen] = useState(false);
-  const [currentPassword, setCurrentPassword] = useState("");
-  const [newPassword, setNewPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
-  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
-  const [showNewPassword, setShowNewPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-
-  const sha256 = async (message: string) => {
-    const msgBuffer = new TextEncoder().encode(message);
-    const hashBuffer = await crypto.subtle.digest("SHA-256", msgBuffer);
-    const hashArray = Array.from(new Uint8Array(hashBuffer));
-    const hashHex = hashArray
-      .map((b) => b.toString(16).padStart(2, "0"))
-      .join("");
-    return hashHex;
-  };
+  const [isOpen, setIsOpen] = useState(false)
+  const [currentPassword, setCurrentPassword] = useState("")
+  const [newPassword, setNewPassword] = useState("")
+  const [confirmPassword, setConfirmPassword] = useState("")
+  const [isLoading, setIsLoading] = useState(false)
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false)
+  const [showNewPassword, setShowNewPassword] = useState(false)
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
 
   const resetForm = () => {
-    setCurrentPassword("");
-    setNewPassword("");
-    setConfirmPassword("");
-    setShowCurrentPassword(false);
-    setShowNewPassword(false);
-    setShowConfirmPassword(false);
-  };
+    setCurrentPassword("")
+    setNewPassword("")
+    setConfirmPassword("")
+    setShowCurrentPassword(false)
+    setShowNewPassword(false)
+    setShowConfirmPassword(false)
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
+    e.preventDefault()
+    setIsLoading(true)
 
     try {
       if (newPassword !== confirmPassword) {
-        toast.error("New passwords don't match");
-        return;
+        toast.error("New passwords don't match")
+        return
       }
-
-      const currentHash = await sha256(currentPassword);
-      const storedHashes = await getPasswordHashes();
-
-      if (!storedHashes.includes(currentHash)) {
-        toast.error("Current password is incorrect");
-        return;
-      }
-
-      const newPasswordHash = await sha256(newPassword);
 
       const response = await fetch("/api/change-password", {
         method: "POST",
@@ -69,27 +44,27 @@ export default function ChangePasswordDialog() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          newPasswordHash,
-          passwordId: "cm6qe7hna0000awj80t45jwfe",
+          currentPassword,
+          newPassword,
         }),
-      });
+      })
 
-      const data = await response.json();
+      const data = await response.json()
 
       if (data.success) {
-        toast.success("Password changed successfully");
-        setIsOpen(false);
-        resetForm();
+        toast.success("Password changed successfully")
+        setIsOpen(false)
+        resetForm()
       } else {
-        toast.error(data.message || "Failed to change password");
+        toast.error(data.message || "Failed to change password")
       }
     } catch (error) {
-      toast.error("An error occurred while changing the password");
-      console.error(error);
+      toast.error("An error occurred while changing the password")
+      console.error(error)
     } finally {
-      setIsLoading(false);
+      setIsLoading(false)
     }
-  };
+  }
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
@@ -113,6 +88,7 @@ export default function ChangePasswordDialog() {
                 className="w-full"
               />
               <Button
+                type="button"
                 variant="ghost"
                 onClick={() => setShowCurrentPassword(!showCurrentPassword)}
                 className="absolute right-4 top-1/2 -translate-y-1/2"
@@ -131,6 +107,7 @@ export default function ChangePasswordDialog() {
                 className="w-full"
               />
               <Button
+                type="button"
                 variant="ghost"
                 onClick={() => setShowNewPassword(!showNewPassword)}
                 className="absolute right-4 top-1/2 -translate-y-1/2"
@@ -149,6 +126,7 @@ export default function ChangePasswordDialog() {
                 className="w-full"
               />
               <Button
+                type="button"
                 variant="ghost"
                 onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                 className="absolute right-4 top-1/2 -translate-y-1/2"
@@ -163,5 +141,5 @@ export default function ChangePasswordDialog() {
         </form>
       </DialogContent>
     </Dialog>
-  );
+  )
 }
