@@ -40,6 +40,7 @@ import {
   Trash,
   Trash2,
 } from "lucide-react";
+import { signOut } from "next-auth/react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
@@ -56,7 +57,6 @@ import { ImportGuestsforWeb } from "./import-guests-form";
 import Loader from "./loader";
 import { PDFExport } from "./pdf-export";
 import { PersonSelector } from "./person-selector";
-import { signOut, useSession } from "next-auth/react";
 
 const SeatBooking = () => {
   const {
