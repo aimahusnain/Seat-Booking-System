@@ -2,6 +2,7 @@ import { PrismaClient } from "@prisma/client"
 import type { NextAuthOptions } from "next-auth"
 import NextAuth from "next-auth/next"
 import CredentialsProvider from "next-auth/providers/credentials"
+import bcrypt from "bcryptjs"
 
 const prisma = new PrismaClient()
 
@@ -19,12 +20,10 @@ export const authOptions: NextAuthOptions = {
         }
 
         const user = await prisma.user.findUnique({
-          where: {
-            email: credentials.email,
-          },
+          where: { email: credentials.email },
         })
 
-        if (!user || user.password !== credentials.password) {
+        if (!user || !(await bcrypt.compare(credentials.password, user.password))) {
           throw new Error("Invalid credentials")
         }
 
@@ -47,29 +46,14 @@ export const authOptions: NextAuthOptions = {
     },
     async session({ session, token }) {
       if (session.user) {
-        ;(session.user ).id = token.id
+        (session.user as any).id = token.id
       }
       return session
     },
   },
 }
-declare module "next-auth" {
-  interface Session {
-    user: {
-      id: string
-      name?: string | null
-      email?: string | null
-      image?: string | null
-    }
-  }
-}
 
-declare module "next-auth/jwt" {
-  interface JWT {
-    id: string
-  }
-}
-
+// Fix: Correct export of NextAuth handler
 const handler = NextAuth(authOptions)
 
 export { handler as GET, handler as POST }
