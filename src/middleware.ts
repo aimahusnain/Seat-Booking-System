@@ -6,6 +6,7 @@ export default withAuth(
     const token = req.nextauth.token;
     const path = req.nextUrl.pathname;
 
+    // If user is logged in and tries to access pages other than the allowed ones
     if (token) {
       const allowedAuthPaths = ['/dashboard', '/client-view', '/seat-scanning'];
       if (!allowedAuthPaths.some(p => path.startsWith(p))) {
@@ -25,6 +26,7 @@ export default withAuth(
           return !!token;
         }
         
+        // Allow access to client-view and seat-scanning without auth
         return true;
       },
     },
@@ -33,6 +35,7 @@ export default withAuth(
 
 export const config = {
   matcher: [
+    "/",
     '/dashboard/:path*',
     '/client-view/:path*',
     '/seat-scanning/:path*',
