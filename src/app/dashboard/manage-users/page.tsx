@@ -41,6 +41,7 @@ export default function ManageUsers() {
       const data = await response.json()
       setUsers(data)
     } catch (error) {
+      console.log(error)
       toast.error("Failed to fetch users")
     } finally {
       setLoading(false)
@@ -83,6 +84,7 @@ export default function ManageUsers() {
       fetchUsers()
       ;(e.target as HTMLFormElement).reset()
     } catch (error) {
+      console.log(error)
       toast.error("Failed to register user")
     } finally {
       setIsRegistering(false)
@@ -104,7 +106,7 @@ export default function ManageUsers() {
       toast.success("User deleted successfully")
       fetchUsers()
     } catch (error) {
-      toast.error("Failed to delete user")
+      toast.error(`Failed to delete user - ${error}`)
     }
   }
 
@@ -132,6 +134,7 @@ export default function ManageUsers() {
       setNewPassword("")
       fetchUsers()
     } catch (error) {
+      console.log(error)
       toast.error("Failed to update password")
     }
   }
