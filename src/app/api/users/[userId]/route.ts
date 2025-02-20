@@ -1,11 +1,15 @@
 import { PrismaClient } from "@prisma/client"
-import { type NextRequest, NextResponse } from "next/server"
+import { type NextRequest } from "next/server"
+import { NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth.config"
 
 const prisma = new PrismaClient()
 
-export async function DELETE(req: NextRequest, { params }: { params: { userId: string } }) {
+export async function DELETE(
+  req: NextRequest,
+  context: { params: { userId: string } }
+) {
   try {
     console.log(req)
     const session = await getServerSession(authOptions)
@@ -16,7 +20,7 @@ export async function DELETE(req: NextRequest, { params }: { params: { userId: s
 
     await prisma.user.delete({
       where: {
-        id: params.userId,
+        id: context.params.userId,
       },
     })
 
@@ -26,7 +30,10 @@ export async function DELETE(req: NextRequest, { params }: { params: { userId: s
   }
 }
 
-export async function PATCH(req: NextRequest, { params }: { params: { userId: string } }) {
+export async function PATCH(
+  req: NextRequest,
+  context: { params: { userId: string } }
+) {
   try {
     const session = await getServerSession(authOptions)
 
@@ -39,7 +46,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { userId: st
 
     const updatedUser = await prisma.user.update({
       where: {
-        id: params.userId,
+        id: context.params.userId,
       },
       data: {
         password,
@@ -51,4 +58,3 @@ export async function PATCH(req: NextRequest, { params }: { params: { userId: st
     return new NextResponse("Internal error", { status: 500 })
   }
 }
-
