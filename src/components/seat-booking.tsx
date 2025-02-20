@@ -40,7 +40,7 @@ import {
   Trash,
   Trash2,
 } from "lucide-react";
-import { signOut } from "next-auth/react";
+import { signOut, useSession } from "next-auth/react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
@@ -94,6 +94,7 @@ const SeatBooking = () => {
   const [showNames, setShowNames] = useState(false);
   const [isDeleteAllTablesDialogOpen, setIsDeleteAllTablesDialogOpen] =
     useState(false);
+  const { data: session } = useSession();
 
   console.log(error);
 
@@ -842,6 +843,15 @@ const SeatBooking = () => {
                   </Button>
                 </Link>
 
+                {session?.user?.email === "jodel123@gmail.com" && (
+        <Link
+          href="/dashboard/manage-users"
+          className="block mt-4 bg-green-500 text-white rounded-md px-4 py-2 hover:bg-green-600"
+        >
+          Manage Users
+        </Link>
+      )}
+
                 {/* Create New Dropdown */}
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
@@ -882,6 +892,7 @@ const SeatBooking = () => {
 
                 {/* Avatar Dropdown */}
                 <DropdownMenu>
+                  
                   <DropdownMenuTrigger asChild>
                     <Avatar className="cursor-pointer w-8 h-8 sm:w-10 sm:h-10">
                       <AvatarImage

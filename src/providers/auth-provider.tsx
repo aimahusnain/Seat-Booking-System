@@ -1,24 +1,27 @@
-"use client";
+"use client"
 
-import { SessionProvider, signOut } from "next-auth/react";
-import { useEffect } from "react";
+import type React from "react"
+
+import { SessionProvider } from "next-auth/react"
+import { useEffect } from "react"
 
 export default function AuthProvider({
   children,
 }: {
-  children: React.ReactNode;
+  children: React.ReactNode
 }) {
   useEffect(() => {
-    const handleWindowClose = async () => {
-      await signOut({ redirect: false });
-    };
+    const handleTabClose = () => {
+      localStorage.setItem("lastCloseTime", Date.now().toString())
+    }
 
-    window.addEventListener("beforeunload", handleWindowClose);
+    window.addEventListener("beforeunload", handleTabClose)
 
     return () => {
-      window.removeEventListener("beforeunload", handleWindowClose);
-    };
-  }, []);
+      window.removeEventListener("beforeunload", handleTabClose)
+    }
+  }, [])
 
-  return <SessionProvider>{children}</SessionProvider>;
+  return <SessionProvider>{children}</SessionProvider>
 }
+

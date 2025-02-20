@@ -1,62 +1,58 @@
-// app/api/auth/[...nextauth]/route.ts
-import NextAuth, { User } from "next-auth";
-import CredentialsProvider from "next-auth/providers/credentials";
+import type { NextAuthOptions } from "next-auth"
+import CredentialsProvider from "next-auth/providers/credentials"
+import { PrismaClient } from "@prisma/client"
+import NextAuth from "next-auth/next"
 
-declare module "next-auth" {
-  interface Session {
-    user: User & { id: string };
-  }
-}
+const prisma = new PrismaClient()
 
-declare module "next-auth/jwt" {
-  interface JWT {
-    id?: string;
-    email?: string;
-  }
-}
-
-const handler = NextAuth({
+export const authOptions: NextAuthOptions = {
   providers: [
     CredentialsProvider({
-      name: "Credentials",
+      name: "credentials",
       credentials: {
-        username: { label: "Username", type: "text" },
+        email: { label: "Email", type: "email" },
         password: { label: "Password", type: "password" },
       },
-      async authorize() {
-        const user = { id: "1", name: "Test User", email: "test@example.com" };
-        if (user) {
-          return user;
-        } else {
-          return null;
+      async authorize(credentials) {
+        if (!credentials?.email || !credentials?.password) {
+          throw new Error("Invalid credentials")
         }
+
+        const user = await prisma.user.findUnique({
+          where: {
+            email: credentials.email,
+          },
+        })
+
+        if (!user || user.password !== credentials.password) {
+          throw new Error("Invalid credentials")
+        }
+
+        return user
       },
     }),
   ],
   session: {
     strategy: "jwt",
-    maxAge: 2,
   },
-  jwt: {
-    maxAge: 2,
+  pages: {
+    signIn: "/login",
   },
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
-        token.id = user.id;
-        token.email = user.email ?? '';
+        token.id = user.id
       }
-      return token;
+      return token
     },
     async session({ session, token }) {
-      if (session.user && token) {
-        session.user.id = token.id ?? ''; // Provide default empty string if null/undefined
-        session.user.email = token.email ?? session.user.email ?? ''; // Use existing email or empty string as fallback
+      if (session.user) {
+        ;(session.user as any).id = token.id
       }
-      return session;
+      return session
     },
   },
-});
+}
 
-export { handler as GET, handler as POST };
-
+const handler = NextAuth(authOptions)
+export { handler as GET, handler as POST }

@@ -1,68 +1,82 @@
-// app/auth/signin/page.tsx
-'use client';
+"use client";
 
 import { signIn } from "next-auth/react";
-import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { toast } from "sonner";
 
-const SignInPage = () => {
-  const [username, setUsername] = useState<string>("");
-  const [password, setPassword] = useState<string>("");
-  const [error, setError] = useState<string | null>(null);
+export default function LoginPage() {
   const router = useRouter();
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    setLoading(true);
+    const formData = new FormData(e.currentTarget);
 
-    const res = await signIn("credentials", {
+    const response = await signIn("credentials", {
+      email: formData.get("email"),
+      password: formData.get("password"),
       redirect: false,
-      username,
-      password,
     });
 
-    if (res?.error) {
-      setError("Invalid credentials");
-    } else {
-      // Redirect to the dashboard on successful login
-      router.push("/dashboard");
+    if (response?.error) {
+      toast.error("Invalid credentials");
+      setLoading(false);
+      return;
     }
+
+    toast.success("Logged in successfully!");
+    router.push("/dashboard");
+    router.refresh();
+    setLoading(false);
   };
 
   return (
-    <div className="flex justify-center items-center h-screen bg-gray-100">
-      <div className="p-8 bg-white rounded-lg shadow-md w-96">
-        <h1 className="text-2xl font-bold mb-4">Sign In</h1>
-        <form onSubmit={handleSubmit}>
-          <div className="mb-4">
-            <label htmlFor="username" className="block text-sm font-semibold">Username</label>
+    <div className="flex min-h-screen items-center justify-center bg-gray-50">
+      <div className="w-full max-w-md space-y-8 p-10 rounded-xl bg-white shadow-lg">
+        <div className="text-center">
+          <h2 className="mt-6 text-3xl font-bold tracking-tight">
+            Sign in to your account
+          </h2>
+        </div>
+
+        <form onSubmit={handleSubmit} className="mt-8 space-y-6">
+          <div>
+            <label htmlFor="email" className="block text-sm font-medium">
+              Email
+            </label>
             <input
-              id="username"
-              type="text"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              className="mt-2 p-2 w-full border rounded"
+              name="email"
+              type="email"
               required
+              className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-blue-500"
             />
           </div>
-          <div className="mb-4">
-            <label htmlFor="password" className="block text-sm font-semibold">Password</label>
+
+          <div>
+            <label htmlFor="password" className="block text-sm font-medium">
+              Password
+            </label>
             <input
-              id="password"
+              name="password"
               type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="mt-2 p-2 w-full border rounded"
               required
+              className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-blue-500"
             />
           </div>
-          {error && <div className="text-red-500 text-sm mb-4">{error}</div>}
-          <button type="submit" className="w-full p-2 bg-blue-500 text-white rounded">
-            Sign In
-          </button>
+
+          <div>
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {loading ? "Loading..." : "Sign in"}
+            </button>
+          </div>
         </form>
       </div>
     </div>
   );
-};
-
-export default SignInPage;
+}

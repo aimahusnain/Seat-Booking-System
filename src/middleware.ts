@@ -1,44 +1,32 @@
-import { withAuth } from "next-auth/middleware";
-import { NextResponse } from "next/server";
+import { withAuth } from "next-auth/middleware"
+import { NextResponse } from "next/server"
 
 export default withAuth(
   function middleware(req) {
-    const token = req.nextauth.token;
-    const path = req.nextUrl.pathname;
-
-    // If user is logged in and tries to access pages other than the allowed ones
-    if (token) {
-      const allowedAuthPaths = ['/dashboard', '/client-view', '/seat-scanning'];
-      if (!allowedAuthPaths.some(p => path.startsWith(p))) {
-        return NextResponse.redirect(new URL('/dashboard', req.url));
-      }
-    }
-
-    return NextResponse.next();
+    return NextResponse.next()
   },
   {
     callbacks: {
       authorized: ({ token, req }) => {
-        const path = req.nextUrl.pathname;
-        
-        // Only require authentication for dashboard page
-        if (path.startsWith('/dashboard')) {
-          return !!token;
+        // Allow access to auth-related pages without a token
+        const publicPaths = ["/login", "/register", "/forgot-password"]
+        if (publicPaths.includes(req.nextUrl.pathname)) {
+          return true
         }
-        
-        // Allow access to client-view and seat-scanning without auth
-        return true;
+
+        return !!token
       },
     },
-  }
-);
+  },
+)
 
 export const config = {
   matcher: [
-    '/dashboard/:path*',
-    '/client-view/:path*',
-    '/seat-scanning/:path*',
-    // Add other paths you want to protect/check
-    '/((?!api|_next/static|_next/image|favicon.ico).*)',
-  ]
-};
+    "/dashboard/:path*",
+    "/client-view/:path*",
+    "/seat-scanning/:path*",
+    // Exclude auth pages and static assets
+    "/((?!api|_next/static|_next/image|favicon.ico|login|register|forgot-password).*)",
+  ],
+}
+
