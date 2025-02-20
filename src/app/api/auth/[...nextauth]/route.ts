@@ -46,30 +46,16 @@ export const authOptions: NextAuthOptions = {
     },
     async session({ session, token }) {
       if (session.user) {
-        session.user = { ...session.user, id: token.id }
+        // ✅ Explicitly type session.user to include id
+        session.user = { ...session.user, id: token.id } as { id: string; name?: string | null; email?: string | null; image?: string | null }
       }
       return session
     },
   },
 }
 
-declare module "next-auth" {
-  interface Session {
-    user: {
-      id: string
-      name?: string | null
-      email?: string | null
-      image?: string | null
-    }
-  }
-}
-
-declare module "next-auth/jwt" {
-  interface JWT {
-    id: string
-  }
-}
-
+// ✅ Correct export for Next.js App Router
 const handler = NextAuth(authOptions)
 
-export { handler as GET, handler as POST }
+export const GET = handler
+export const POST = handler
