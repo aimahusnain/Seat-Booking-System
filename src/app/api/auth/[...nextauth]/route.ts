@@ -46,14 +46,30 @@ export const authOptions: NextAuthOptions = {
     },
     async session({ session, token }) {
       if (session.user) {
-        (session.user as any).id = token.id
+        session.user = { ...session.user, id: token.id }
       }
       return session
     },
   },
 }
 
-// Fix: Correct export of NextAuth handler
+declare module "next-auth" {
+  interface Session {
+    user: {
+      id: string
+      name?: string | null
+      email?: string | null
+      image?: string | null
+    }
+  }
+}
+
+declare module "next-auth/jwt" {
+  interface JWT {
+    id: string
+  }
+}
+
 const handler = NextAuth(authOptions)
 
 export { handler as GET, handler as POST }
