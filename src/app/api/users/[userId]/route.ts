@@ -1,12 +1,13 @@
 import { PrismaClient } from "@prisma/client"
-import { NextResponse } from "next/server"
+import { type NextRequest, NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth.config"
 
 const prisma = new PrismaClient()
 
-export async function DELETE( context: { params: { userId: string } }) {
+export async function DELETE(req: NextRequest, { params }: { params: { userId: string } }) {
   try {
+    console.log(req)
     const session = await getServerSession(authOptions)
 
     if (session?.user?.email !== "jodel123@gmail.com") {
@@ -15,7 +16,7 @@ export async function DELETE( context: { params: { userId: string } }) {
 
     await prisma.user.delete({
       where: {
-        id: context.params.userId,
+        id: params.userId,
       },
     })
 
@@ -25,7 +26,7 @@ export async function DELETE( context: { params: { userId: string } }) {
   }
 }
 
-export async function PATCH(request: Request, context: { params: { userId: string } }) {
+export async function PATCH(req: NextRequest, { params }: { params: { userId: string } }) {
   try {
     const session = await getServerSession(authOptions)
 
@@ -33,12 +34,12 @@ export async function PATCH(request: Request, context: { params: { userId: strin
       return new NextResponse("Unauthorized", { status: 401 })
     }
 
-    const body = await request.json()
+    const body = await req.json()
     const { password } = body
 
     const updatedUser = await prisma.user.update({
       where: {
-        id: context.params.userId,
+        id: params.userId,
       },
       data: {
         password,
