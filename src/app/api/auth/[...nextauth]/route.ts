@@ -1,8 +1,7 @@
-import type { NextAuthOptions, Session } from "next-auth"
-import type { JWT } from "next-auth/jwt"
-import CredentialsProvider from "next-auth/providers/credentials"
 import { PrismaClient } from "@prisma/client"
+import type { NextAuthOptions } from "next-auth"
 import NextAuth from "next-auth/next"
+import CredentialsProvider from "next-auth/providers/credentials"
 
 const prisma = new PrismaClient()
 
