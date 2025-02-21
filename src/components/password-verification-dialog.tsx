@@ -75,6 +75,7 @@ const PasswordVerificationDialog = ({
         toast.error("Incorrect password");
       }
     } catch (error) {
+        console.log(error)
       toast.error("Failed to verify password");
     } finally {
       setIsVerifying(false);

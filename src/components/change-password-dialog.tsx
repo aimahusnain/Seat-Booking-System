@@ -60,6 +60,7 @@ export function ChangePasswordDialog() {
         toast.error(data.message || "Failed to change password")
       }
     } catch (error) {
+      console.log(error)
       toast.error("An error occurred while changing the password")
     } finally {
       setLoading(false)
