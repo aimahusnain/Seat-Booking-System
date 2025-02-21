@@ -117,7 +117,7 @@ export default function ManageUsers() {
     }
 
     try {
-      const res = await fetch(`/api/users?id=${userId}`, {
+      const res = await fetch(`/api/users/delete?id=${userId}`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",

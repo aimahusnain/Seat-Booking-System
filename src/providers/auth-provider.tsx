@@ -11,6 +11,19 @@ export default function AuthProvider({
   children: React.ReactNode
 }) {
   useEffect(() => {
+    const storeLastActive = () => {
+      localStorage.setItem("lastActiveTime", Date.now().toString())
+    }
+
+    // Store initial active time
+    storeLastActive()
+
+    // Update last active time while the user is on the site
+    const activityEvents = ["mousedown", "keydown", "scroll", "touchstart"]
+    activityEvents.forEach((event) => {
+      window.addEventListener(event, storeLastActive)
+    })
+
     const handleTabClose = () => {
       localStorage.setItem("lastCloseTime", Date.now().toString())
     }
@@ -18,6 +31,9 @@ export default function AuthProvider({
     window.addEventListener("beforeunload", handleTabClose)
 
     return () => {
+      activityEvents.forEach((event) => {
+        window.removeEventListener(event, storeLastActive)
+      })
       window.removeEventListener("beforeunload", handleTabClose)
     }
   }, [])
