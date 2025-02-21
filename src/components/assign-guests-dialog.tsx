@@ -1,70 +1,51 @@
 "use client"
 
 import { useState } from "react"
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog"
-import { ScrollArea } from "@/components/ui/scroll-area"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { ScrollArea } from "@/components/ui/scroll-area"
 import { Checkbox } from "@/components/ui/checkbox"
-import { Search, Users } from "lucide-react"
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
+import { Label } from "@/components/ui/label"
 import { toast } from "sonner"
-import { cn } from "@/lib/utils"
+import { AlertCircle } from "lucide-react"
+import { Alert, AlertDescription } from "@/components/ui/alert"
 
-interface Person {
+interface Guest {
   id: string
-  firstName: string
-  lastName: string
+  firstname: string
+  lastname: string
+  seat: any[]
 }
 
-interface TableInfo {
-  tableNumber: number
-  availableSeats: number
-  totalSeats: number
+interface Table {
+  id: string
+  name: string
+  seats: {
+    id: string
+    seat: number
+    isBooked: boolean
+  }[]
 }
 
 interface AssignGuestsDialogProps {
   isOpen: boolean
   onClose: () => void
-  guests: Person[]
-  tables: TableInfo[]
-  onAssignGuests: (tableNumber: number, guestIds: string[]) => Promise<void>
+  guests: Guest[]
+  tables: Table[]
+  onAssignGuests: (guestIds: string[], tableId: string) => Promise<void>
 }
 
 export function AssignGuestsDialog({ isOpen, onClose, guests, tables, onAssignGuests }: AssignGuestsDialogProps) {
-  const [searchQuery, setSearchQuery] = useState("")
-  const [selectedGuests, setSelectedGuests] = useState<Set<string>>(new Set())
-  const [selectedTable, setSelectedTable] = useState<number | null>(null)
-  const [isLoading, setIsLoading] = useState(false)
+  const [selectedGuests, setSelectedGuests] = useState<string[]>([])
+  const [selectedTable, setSelectedTable] = useState<string>("")
+  const [isAssigning, setIsAssigning] = useState(false)
 
-  const filteredGuests = guests.filter((guest) =>
-    `${guest.firstName} ${guest.lastName}`.toLowerCase().includes(searchQuery.toLowerCase()),
-  )
+  const availableGuests = guests.filter((guest) => guest.seat.length === 0)
+  const availableTables = tables.filter((table) => table.seats.some((seat) => !seat.isBooked))
 
-  const handleSelectGuest = (guestId: string) => {
-    setSelectedGuests((prev) => {
-      const next = new Set(prev)
-      if (next.has(guestId)) {
-        next.delete(guestId)
-      } else {
-        if (next.size >= 10) {
-          toast.error("Maximum 10 guests can be selected at once")
-          return prev
-        }
-        next.add(guestId)
-      }
-      return next
-    })
-  }
-
-  const handleSelectTable = (tableNumber: number) => {
-    setSelectedTable(tableNumber === selectedTable ? null : tableNumber)
+  const handleGuestToggle = (guestId: string) => {
+    setSelectedGuests((prev) => (prev.includes(guestId) ? prev.filter((id) => id !== guestId) : [...prev, guestId]))
   }
 
   const handleAssign = async () => {
@@ -73,151 +54,115 @@ export function AssignGuestsDialog({ isOpen, onClose, guests, tables, onAssignGu
       return
     }
 
-    if (selectedGuests.size === 0) {
+    if (selectedGuests.length === 0) {
       toast.error("Please select at least one guest")
       return
     }
 
-    const selectedTableInfo = tables.find((t) => t.tableNumber === selectedTable)
-    if (!selectedTableInfo) {
-      toast.error("Selected table not found")
+    const selectedTableData = tables.find((t) => t.id === selectedTable)
+    if (!selectedTableData) return
+
+    const availableSeats = selectedTableData.seats.filter((seat) => !seat.isBooked).length
+
+    if (selectedGuests.length > availableSeats) {
+      toast.error(
+        <div className="flex flex-col gap-1">
+          <div className="font-semibold">Not enough seats available</div>
+          <div className="text-sm">{selectedGuests.length - availableSeats} guest(s) cannot be assigned</div>
+        </div>,
+      )
       return
     }
 
-    if (selectedGuests.size > selectedTableInfo.availableSeats) {
-      toast.error(`Table ${selectedTable} only has ${selectedTableInfo.availableSeats} seats available`)
-      return
-    }
-
+    setIsAssigning(true)
     try {
-      setIsLoading(true)
-      await onAssignGuests(selectedTable, Array.from(selectedGuests))
-      toast.success(`Successfully assigned ${selectedGuests.size} guests to Table ${selectedTable}`)
-      setSelectedGuests(new Set())
-      setSelectedTable(null)
+      await onAssignGuests(selectedGuests, selectedTable)
+      toast.success("Guests assigned successfully")
+      setSelectedGuests([])
+      setSelectedTable("")
       onClose()
     } catch (error) {
-      toast.error("Failed to assign guests", {
-        description: error instanceof Error ? error.message : "An unexpected error occurred",
-      })
+      toast.error("Failed to assign guests")
     } finally {
-      setIsLoading(false)
+      setIsAssigning(false)
     }
   }
 
-  const handleClose = () => {
-    setSelectedGuests(new Set())
-    setSelectedTable(null)
-    setSearchQuery("")
-    onClose()
+  const getTableAvailability = (table: Table) => {
+    const totalSeats = table.seats.length
+    const bookedSeats = table.seats.filter((seat) => seat.isBooked).length
+    return `${totalSeats - bookedSeats} of ${totalSeats} seats available`
   }
 
   return (
-    <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-[900px]">
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="max-w-4xl">
         <DialogHeader>
-          <DialogTitle>Assign Guests to Table</DialogTitle>
-          <DialogDescription>
-            Select up to 10 guests and a table to assign them to. The table must have enough available seats.
-          </DialogDescription>
+          <DialogTitle>Assign Multiple Guests</DialogTitle>
         </DialogHeader>
 
-        <div className="grid grid-cols-2 gap-6 py-4">
-          {/* Guest Selection */}
+        <div className="grid grid-cols-2 gap-6 mt-4">
+          {/* Left side - Guest selection */}
           <div className="space-y-4">
-            <div className="font-medium flex items-center justify-between">
-              <span>Select Guests</span>
-              <span className="text-sm text-muted-foreground">{selectedGuests.size}/10 selected</span>
-            </div>
-            <div className="relative">
-              <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Search guests..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-8"
-              />
-            </div>
-            <ScrollArea className="h-[400px] rounded-md border">
-              <div className="p-4 space-y-2">
-                {filteredGuests.map((guest) => (
-                  <div
-                    key={guest.id}
-                    className={cn(
-                      "flex items-center space-x-2 p-2 rounded-md transition-colors",
-                      selectedGuests.has(guest.id) ? "bg-accent" : "hover:bg-accent/50",
-                    )}
-                  >
+            <h3 className="font-semibold">Select Guests</h3>
+            <ScrollArea className="h-[400px] border rounded-lg p-4">
+              {availableGuests.length > 0 ? (
+                availableGuests.map((guest) => (
+                  <div key={guest.id} className="flex items-center space-x-3 py-2 px-2 hover:bg-muted rounded-lg">
                     <Checkbox
-                      id={guest.id}
-                      checked={selectedGuests.has(guest.id)}
-                      onCheckedChange={() => handleSelectGuest(guest.id)}
-                      disabled={!selectedGuests.has(guest.id) && selectedGuests.size >= 10}
+                      checked={selectedGuests.includes(guest.id)}
+                      onCheckedChange={() => handleGuestToggle(guest.id)}
                     />
-                    <label htmlFor={guest.id} className="flex-1 text-sm cursor-pointer">
-                      {guest.firstName} {guest.lastName}
-                    </label>
+                    <Label className="cursor-pointer flex-1">
+                      {guest.firstname} {guest.lastname}
+                    </Label>
                   </div>
-                ))}
-              </div>
+                ))
+              ) : (
+                <div className="text-center py-8 text-muted-foreground">No available guests found</div>
+              )}
             </ScrollArea>
+            <div className="text-sm text-muted-foreground">{selectedGuests.length} guests selected</div>
           </div>
 
-          {/* Table Selection */}
+          {/* Right side - Table selection */}
           <div className="space-y-4">
-            <div className="font-medium">Select Table</div>
-            <ScrollArea className="h-[400px] rounded-md border">
-              <div className="p-4 grid gap-3">
-                {tables.map((table) => (
-                  <button
-                    key={table.tableNumber}
-                    onClick={() => handleSelectTable(table.tableNumber)}
-                    className={cn(
-                      "w-full p-4 rounded-lg border-2 text-left transition-all",
-                      selectedTable === table.tableNumber
-                        ? "border-primary bg-primary/5"
-                        : "border-border hover:border-primary/50",
-                      table.availableSeats === 0 && "opacity-50 cursor-not-allowed",
-                    )}
-                    disabled={table.availableSeats === 0}
-                  >
-                    <div className="font-medium">Table {table.tableNumber}</div>
-                    <div className="text-sm text-muted-foreground mt-1">
-                      {table.availableSeats} of {table.totalSeats} seats available
-                    </div>
-                    {selectedTable === table.tableNumber && selectedGuests.size > table.availableSeats && (
-                      <div className="text-sm text-destructive mt-2">Not enough seats for selected guests</div>
-                    )}
-                  </button>
+            <h3 className="font-semibold">Select Table</h3>
+            <ScrollArea className="h-[400px] border rounded-lg p-4">
+              <RadioGroup value={selectedTable} onValueChange={setSelectedTable}>
+                {availableTables.map((table) => (
+                  <div key={table.id} className="flex items-center space-x-3 py-2 px-2 hover:bg-muted rounded-lg">
+                    <RadioGroupItem value={table.id} id={table.id} />
+                    <Label htmlFor={table.id} className="flex-1">
+                      <div className="flex justify-between items-center">
+                        <span>{table.name}</span>
+                        <span className="text-sm text-muted-foreground">{getTableAvailability(table)}</span>
+                      </div>
+                    </Label>
+                  </div>
                 ))}
-              </div>
+              </RadioGroup>
             </ScrollArea>
           </div>
         </div>
 
-        <DialogFooter>
-          <Button variant="outline" onClick={handleClose}>
+        {selectedGuests.length > 0 && selectedTable && (
+          <Alert className="mt-4">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>
+              Selected guests will be assigned to the first available seats at the table.
+            </AlertDescription>
+          </Alert>
+        )}
+
+        <div className="flex justify-end gap-2 mt-6">
+          <Button variant="outline" onClick={onClose}>
             Cancel
           </Button>
-          <Button
-            onClick={handleAssign}
-            disabled={
-              isLoading ||
-              selectedGuests.size === 0 ||
-              !selectedTable ||
-              selectedGuests.size > (tables.find((t) => t.tableNumber === selectedTable)?.availableSeats || 0)
-            }
-          >
-            {isLoading ? (
-              "Assigning..."
-            ) : (
-              <>
-                <Users className="mr-2 h-4 w-4" />
-                Assign {selectedGuests.size} Guest{selectedGuests.size !== 1 ? "s" : ""}
-              </>
-            )}
+          <Button onClick={handleAssign} disabled={isAssigning || !selectedTable || selectedGuests.length === 0}>
+            {isAssigning ? "Assigning..." : "Assign Guests"}
           </Button>
-        </DialogFooter>
+        </div>
       </DialogContent>
     </Dialog>
   )

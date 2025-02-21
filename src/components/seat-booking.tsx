@@ -14,6 +14,8 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
@@ -34,6 +36,7 @@ import {
   Eye,
   EyeOff,
   FolderPen,
+  MoreHorizontal,
   PersonStandingIcon,
   RefreshCcw,
   QrCodeIcon as ScanQrCode,
@@ -47,6 +50,7 @@ import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { useSeats } from "../hooks/useSeats";
 import type { Person, Seat, TableData } from "../types/booking";
+import { useGuests } from "../hooks/useGuests"
 import { AddGuestForm } from "./add-guest-form";
 import { AddTableForm } from "./add-table-form";
 import { BookingSidebar } from "./booking-sidebar";
@@ -57,6 +61,7 @@ import { ImportGuestsforWeb } from "./import-guests-form";
 import Loader from "./loader";
 import { PDFExport } from "./pdf-export";
 import { PersonSelector } from "./person-selector";
+import { AssignGuestsDialog } from "./assign-guests-dialog";
 
 const SeatBooking = () => {
   const {
@@ -95,7 +100,35 @@ const SeatBooking = () => {
   const [isDeleteAllTablesDialogOpen, setIsDeleteAllTablesDialogOpen] =
     useState(false);
   const { data: session } = useSession();
+  const { guests: allGuests, loading: guestsLoading, error: guestsError } = useGuests()
+  const [isAssignGuestsDialogOpen, setIsAssignGuestsDialogOpen] = useState(false)
 
+  const getTableInfo = () => {
+    return tables.map((table) => ({
+      id: table.seats[0].tableId,
+      name: `Table ${table.tableNumber}`,
+      seats: table.seats,
+    }))
+  }
+
+  const handleAssignGuests = async (guestIds: string[], tableId: string) => {
+    try {
+      const response = await fetch("/api/assign-guests", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ guestIds, tableId }),
+      })
+
+      const data = await response.json()
+      if (data.success) {
+        refreshSeats()
+      } else {
+        throw new Error(data.message)
+      }
+    } catch (error) {
+      throw error
+    }
+  }
   console.log(error);
 
   const handleSignOut = async () => {
@@ -829,6 +862,28 @@ const SeatBooking = () => {
                   />
                 </div>
 
+                <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button variant="ghost" className="ml-auto">
+            <MoreHorizontal className="h-4 w-4" />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end">
+          <DropdownMenuLabel>Actions</DropdownMenuLabel>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem className="cursor-pointer" onClick={() => toast.info("Not implemented yet")}>
+            Edit
+          </DropdownMenuItem>
+          <DropdownMenuItem className="cursor-pointer" onClick={() => toast.info("Not implemented yet")}>
+            Delete
+          </DropdownMenuItem>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem className="cursor-pointer" onClick={() => setIsAssignGuestsDialogOpen(true)}>
+            Assign Multiple Guests
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+
                 <HelpButton />
 
                 <Link href="/seat-scanning">
@@ -1253,13 +1308,13 @@ const SeatBooking = () => {
         }}
       />
 
-      {/* <AssignGuestsDialog
+<AssignGuestsDialog
         isOpen={isAssignGuestsDialogOpen}
         onClose={() => setIsAssignGuestsDialogOpen(false)}
-        guests={guests}
+        guests={allGuests || []}
         tables={getTableInfo()}
         onAssignGuests={handleAssignGuests}
-      /> */}
+      />
 
       <Dialog
         open={isChangePasswordOpen}
