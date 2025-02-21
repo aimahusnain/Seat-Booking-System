@@ -14,9 +14,7 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
+  DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -36,24 +34,24 @@ import {
   Eye,
   EyeOff,
   FolderPen,
-  MoreHorizontal,
   PersonStandingIcon,
   RefreshCcw,
   QrCodeIcon as ScanQrCode,
   Trash,
   Trash2,
-  UserCheck2,
+  UserCheck2
 } from "lucide-react";
 import { signOut, useSession } from "next-auth/react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
+import { useGuests } from "../hooks/useGuests";
 import { useSeats } from "../hooks/useSeats";
 import type { Person, Seat, TableData } from "../types/booking";
-import { useGuests } from "../hooks/useGuests";
 import { AddGuestForm } from "./add-guest-form";
 import { AddTableForm } from "./add-table-form";
+import { AssignGuestsDialog } from "./assign-guests-dialog";
 import { BookingSidebar } from "./booking-sidebar";
 import { BulkTableForm } from "./bulk-table-form";
 import ChangePasswordForm from "./change-password-dialog";
@@ -62,7 +60,6 @@ import { ImportGuestsforWeb } from "./import-guests-form";
 import Loader from "./loader";
 import { PDFExport } from "./pdf-export";
 import { PersonSelector } from "./person-selector";
-import { AssignGuestsDialog } from "./assign-guests-dialog";
 
 const SeatBooking = () => {
   const {
