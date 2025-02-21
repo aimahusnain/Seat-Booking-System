@@ -5,13 +5,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useMediaQuery } from "@/hooks/use-media-query";
 import type { Seat } from "@/types/booking";
-import {
-  ChevronLeft,
-  ChevronRight,
-  Search,
-  Trash2,
-  User
-} from "lucide-react";
+import { ChevronLeft, ChevronRight, Search, Trash2, User } from "lucide-react";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import PasswordVerificationDialog from "./password-verification-dialog";
@@ -56,7 +50,7 @@ export function BookingSidebar({
         setSeatToDelete(null);
       }
     } catch (error) {
-      console.log(error)
+      console.log(error);
       toast.error("Delete Failed", {
         description: "An error occurred while processing your request",
       });
@@ -220,11 +214,12 @@ export function BookingSidebar({
               setSeatToDelete(null);
             }
           }}
-        onVerified={handleDeleteBookingConfirm}
-        action="delete booking"
-        confirmText="Delete Booking"
-        confirmTextDisplay="Delete Booking"
-      />
+          simple={true}
+          onVerified={handleDeleteBookingConfirm}
+          action="delete booking"
+          confirmText="Delete Booking"
+          confirmTextDisplay="Delete Booking"
+        />
 
         {/* Delete Booking Dialog */}
         {/* <Dialog
