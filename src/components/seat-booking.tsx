@@ -1,5 +1,6 @@
 "use client";
 
+import PasswordVerificationDialog from "@/components/password-verification-dialog";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
@@ -14,7 +15,7 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuTrigger
+  DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -25,14 +26,10 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { getPasswordHashes } from "@/hooks/usePassword";
-import { sha256 } from "@/utils/sha256";
 import { AnimatePresence, motion } from "framer-motion";
 import {
   Check,
   ChevronDown,
-  Eye,
-  EyeOff,
   FolderPen,
   PersonStandingIcon,
   RefreshCcw,
@@ -85,14 +82,8 @@ const SeatBooking = () => {
   const [isFullScreen, setIsFullScreen] = useState(false);
   const [isChangePasswordOpen, setIsChangePasswordOpen] = useState(false);
   const [newPassword, setNewPassword] = useState("");
-  const [deleteConfirmText, setDeleteConfirmText] = useState("");
-  const [deletePassword, setDeletePassword] = useState("");
-  const [showDeletePassword, setShowDeletePassword] = useState(false);
   const [isAddGuestOpen, setIsAddGuestOpen] = useState(false);
   const [isDeleteAllDialogOpen, setIsDeleteAllDialogOpen] = useState(false);
-  const [deleteAllPassword, setDeleteAllPassword] = useState("");
-  const [showDeleteAllPassword, setShowDeleteAllPassword] = useState(false);
-  const [deleteAllConfirmText, setDeleteAllConfirmText] = useState("");
   const [totalGuests, setTotalGuests] = useState(0);
   const [showNames, setShowNames] = useState(false);
   const [isDeleteAllTablesDialogOpen, setIsDeleteAllTablesDialogOpen] =
@@ -106,8 +97,8 @@ const SeatBooking = () => {
   const [isAssignGuestsDialogOpen, setIsAssignGuestsDialogOpen] =
     useState(false);
 
-    console.log(guestsLoading)
-    console.log(guestsError)
+  console.log(guestsLoading);
+  console.log(guestsError);
 
   const getTableInfo = () => {
     return tables.map((table) => ({
@@ -189,24 +180,6 @@ const SeatBooking = () => {
 
   const handleDeleteAllBookings = async () => {
     try {
-      const passwordHashes = await getPasswordHashes();
-      const inputHash = await sha256(deleteAllPassword);
-
-      if (deleteAllConfirmText !== "Delete All Bookings") {
-        toast.error("Please type the exact confirmation text");
-        return;
-      }
-
-      if (passwordHashes.length === 0) {
-        toast.error("System not ready. Please try again.");
-        return;
-      }
-
-      if (!passwordHashes.includes(inputHash)) {
-        toast.error("Incorrect password");
-        return;
-      }
-
       const toastId = toast.loading("Deleting all bookings...");
 
       const deletePromises = bookedSeats.map((seat) =>
@@ -237,8 +210,6 @@ const SeatBooking = () => {
         setTables(updatedTables);
         setBookedSeats([]);
         setIsDeleteAllDialogOpen(false);
-        setDeleteAllConfirmText("");
-        setDeleteAllPassword("");
 
         toast.success("All bookings deleted successfully", { id: toastId });
       } else {
@@ -468,24 +439,6 @@ const SeatBooking = () => {
 
   const handleDeleteTable = async (tableNumber: number) => {
     try {
-      const passwordHashes = await getPasswordHashes();
-      const inputHash = await sha256(deletePassword);
-
-      if (deleteConfirmText !== `Delete Table ${tableNumber}`) {
-        toast.error("Please type the exact confirmation text");
-        return;
-      }
-
-      if (passwordHashes.length === 0) {
-        toast.error("System not ready. Please try again.");
-        return;
-      }
-
-      if (!passwordHashes.includes(inputHash)) {
-        toast.error("Incorrect password");
-        return;
-      }
-
       const response = await fetch(`/api/delete-table`, {
         method: "DELETE",
         headers: {
@@ -506,8 +459,6 @@ const SeatBooking = () => {
         );
         router.refresh();
         setIsDeleteDialogOpen(false);
-        setDeleteConfirmText("");
-        setDeletePassword("");
       } else {
         throw new Error(result.message || "Failed to delete table");
       }
@@ -763,24 +714,6 @@ const SeatBooking = () => {
 
   const handleDeleteAllTables = async () => {
     try {
-      const passwordHashes = await getPasswordHashes();
-      const inputHash = await sha256(deleteAllPassword);
-
-      if (deleteAllConfirmText !== "Delete All Tables") {
-        toast.error("Please type the exact confirmation text");
-        return;
-      }
-
-      if (passwordHashes.length === 0) {
-        toast.error("System not ready. Please try again.");
-        return;
-      }
-
-      if (!passwordHashes.includes(inputHash)) {
-        toast.error("Incorrect password");
-        return;
-      }
-
       const toastId = toast.loading("Deleting all tables...");
 
       const response = await fetch("/api/delete-all-tables", {
@@ -793,8 +726,6 @@ const SeatBooking = () => {
         setTables([]);
         setBookedSeats([]);
         setIsDeleteAllTablesDialogOpen(false);
-        setDeleteAllConfirmText("");
-        setDeleteAllPassword("");
         toast.success("All tables deleted successfully", { id: toastId });
       } else {
         throw new Error(result.message || "Failed to delete all tables");
@@ -828,7 +759,7 @@ const SeatBooking = () => {
                 className="flex justify-center items-center space-x-2"
               >
                 <span className="text-lg font-sans sm:text-xl font-bold text-zinc-900">
-                  Seating4you
+                  Seating4youD
                 </span>
               </Link>
 
@@ -1182,7 +1113,7 @@ const SeatBooking = () => {
         }}
       />
 
-      <Dialog
+      {/* <Dialog
         open={isDeleteDialogOpen}
         onOpenChange={(open) => {
           setIsDeleteDialogOpen(open);
@@ -1283,7 +1214,19 @@ const SeatBooking = () => {
             </Button>
           </DialogFooter>
         </DialogContent>
-      </Dialog>
+      </Dialog> */}
+
+      {/* Delete Table */}
+      <PasswordVerificationDialog
+        open={isDeleteDialogOpen}
+        onOpenChange={(open) => {
+          setIsDeleteDialogOpen(open);
+        }}
+        onVerified={() => tableToDelete && handleDeleteTable(tableToDelete)}
+        action="delete table"
+        confirmText="Delete Table"
+        confirmTextDisplay="Delete Table"
+      />
 
       <BulkTableForm
         isOpen={isBulkTableDialogOpen}
@@ -1342,7 +1285,7 @@ const SeatBooking = () => {
         </DialogContent>
       </Dialog>
 
-      <Dialog
+      {/* <Dialog
         open={isDeleteAllDialogOpen}
         onOpenChange={setIsDeleteAllDialogOpen}
       >
@@ -1436,9 +1379,27 @@ const SeatBooking = () => {
             </Button>
           </DialogFooter>
         </DialogContent>
-      </Dialog>
+      </Dialog> */}
 
-      <Dialog
+      <PasswordVerificationDialog
+        open={isDeleteAllDialogOpen}
+        onOpenChange={setIsDeleteAllDialogOpen}
+        onVerified={handleDeleteAllBookings}
+        action="delete all bookings"
+        confirmText="Delete All Bookings"
+        confirmTextDisplay="Delete All Bookings"
+      />
+
+      <PasswordVerificationDialog
+        open={isDeleteAllTablesDialogOpen}
+        onOpenChange={setIsDeleteAllTablesDialogOpen}
+        onVerified={handleDeleteAllTables}
+        action="delete all tables"
+        confirmText="Delete All Tables"
+        confirmTextDisplay="Delete All Tables"
+      />
+
+      {/* <Dialog
         open={isDeleteAllTablesDialogOpen}
         onOpenChange={setIsDeleteAllTablesDialogOpen}
       >
@@ -1531,7 +1492,7 @@ const SeatBooking = () => {
             </Button>
           </DialogFooter>
         </DialogContent>
-      </Dialog>
+      </Dialog> */}
     </div>
   );
 };

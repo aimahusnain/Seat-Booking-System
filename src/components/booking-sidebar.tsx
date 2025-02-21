@@ -1,31 +1,21 @@
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { useMediaQuery } from "@/hooks/use-media-query";
 import type { Seat } from "@/types/booking";
 import {
   ChevronLeft,
   ChevronRight,
   Search,
   Trash2,
-  User,
-  Eye,
-  EyeOff,
+  User
 } from "lucide-react";
-import { useState, useMemo, useEffect } from "react";
-import PrintableBooking from "./single-seat-pdf";
-import { Checkbox } from "@/components/ui/checkbox";
-import { useMediaQuery } from "@/hooks/use-media-query";
+import { useMemo, useState } from "react";
 import { toast } from "sonner";
-import { getPasswordHashes } from "@/hooks/usePassword";
+import PasswordVerificationDialog from "./password-verification-dialog";
+import PrintableBooking from "./single-seat-pdf";
 
 interface BookingSidebarProps {
   bookedSeats: Seat[];
@@ -55,42 +45,9 @@ export function BookingSidebar({
     useState(false);
   const [deleteBookingConfirmText, setDeleteBookingConfirmText] = useState("");
   const [seatToDelete, setSeatToDelete] = useState<string | null>(null);
-  const [passwordHashes, setPasswordHashes] = useState<string[]>([]);
 
-  // Add this useEffect to fetch passwords when component mounts
-  useEffect(() => {
-    const fetchPasswords = async () => {
-      try {
-        const hashes = await getPasswordHashes();
-        setPasswordHashes(hashes);
-      } catch (error) {
-        toast.error("Failed to initialize password verification");
-        console.error("Error fetching password hashes:", error);
-      }
-    };
-
-    fetchPasswords();
-  }, []);
   const handleDeleteBookingConfirm = async () => {
     try {
-      const inputHash = await sha256(deleteBookingPassword);
-
-      if (deleteBookingConfirmText !== "Delete Booking") {
-        toast.error("Please type the exact confirmation text");
-        return;
-      }
-
-      if (passwordHashes.length === 0) {
-        toast.error("System not ready. Please try again.");
-        return;
-      }
-
-      // Check if the input hash matches any of the stored hashes
-      if (!passwordHashes.includes(inputHash)) {
-        toast.error("Incorrect password");
-        return;
-      }
-
       if (seatToDelete) {
         onDeleteBooking(seatToDelete);
         setIsDeleteBookingDialogOpen(false);
@@ -262,8 +219,25 @@ export function BookingSidebar({
           </div>
         </ScrollArea>
 
+        <PasswordVerificationDialog
+          open={isDeleteBookingDialogOpen}
+          onOpenChange={(open) => {
+            setIsDeleteBookingDialogOpen(open);
+            if (!open) {
+              setDeleteBookingConfirmText("");
+              setDeleteBookingPassword("");
+              setShowDeleteBookingPassword(false);
+              setSeatToDelete(null);
+            }
+          }}
+        onVerified={handleDeleteBookingConfirm}
+        action="delete booking"
+        confirmText="Delete Booking"
+        confirmTextDisplay="Delete Booking"
+      />
+
         {/* Delete Booking Dialog */}
-        <Dialog
+        {/* <Dialog
           open={isDeleteBookingDialogOpen}
           onOpenChange={(open) => {
             setIsDeleteBookingDialogOpen(open);
@@ -366,7 +340,7 @@ export function BookingSidebar({
               </Button>
             </DialogFooter>
           </DialogContent>
-        </Dialog>
+        </Dialog> */}
       </div>
     ),
     [

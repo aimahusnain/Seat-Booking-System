@@ -4,7 +4,7 @@ import { NextResponse } from "next/server";
 export async function DELETE(req: Request) {
   try {
     const { tableNumber } = await req.json();
-    const tableName = `Table ${tableNumber}`;
+    const tableName = `Table${tableNumber}`;
 
     // First find the table by name
     const table = await db.table.findFirst({
