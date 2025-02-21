@@ -42,6 +42,7 @@ import {
   QrCodeIcon as ScanQrCode,
   Trash,
   Trash2,
+  UserCheck2,
 } from "lucide-react";
 import { signOut, useSession } from "next-auth/react";
 import Link from "next/link";
@@ -50,7 +51,7 @@ import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { useSeats } from "../hooks/useSeats";
 import type { Person, Seat, TableData } from "../types/booking";
-import { useGuests } from "../hooks/useGuests"
+import { useGuests } from "../hooks/useGuests";
 import { AddGuestForm } from "./add-guest-form";
 import { AddTableForm } from "./add-table-form";
 import { BookingSidebar } from "./booking-sidebar";
@@ -100,16 +101,24 @@ const SeatBooking = () => {
   const [isDeleteAllTablesDialogOpen, setIsDeleteAllTablesDialogOpen] =
     useState(false);
   const { data: session } = useSession();
-  const { guests: allGuests, loading: guestsLoading, error: guestsError } = useGuests()
-  const [isAssignGuestsDialogOpen, setIsAssignGuestsDialogOpen] = useState(false)
+  const {
+    guests: allGuests,
+    loading: guestsLoading,
+    error: guestsError,
+  } = useGuests();
+  const [isAssignGuestsDialogOpen, setIsAssignGuestsDialogOpen] =
+    useState(false);
+
+    console.log(guestsLoading)
+    console.log(guestsError)
 
   const getTableInfo = () => {
     return tables.map((table) => ({
       id: table.seats[0].tableId,
       name: `Table ${table.tableNumber}`,
       seats: table.seats,
-    }))
-  }
+    }));
+  };
 
   const handleAssignGuests = async (guestIds: string[], tableId: string) => {
     try {
@@ -117,18 +126,18 @@ const SeatBooking = () => {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ guestIds, tableId }),
-      })
+      });
 
-      const data = await response.json()
+      const data = await response.json();
       if (data.success) {
-        refreshSeats()
+        refreshSeats();
       } else {
-        throw new Error(data.message)
+        throw new Error(data.message);
       }
     } catch (error) {
-      throw error
+      throw error;
     }
-  }
+  };
   console.log(error);
 
   const handleSignOut = async () => {
@@ -862,27 +871,17 @@ const SeatBooking = () => {
                   />
                 </div>
 
-                <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button variant="ghost" className="ml-auto">
-            <MoreHorizontal className="h-4 w-4" />
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end">
-          <DropdownMenuLabel>Actions</DropdownMenuLabel>
-          <DropdownMenuSeparator />
-          <DropdownMenuItem className="cursor-pointer" onClick={() => toast.info("Not implemented yet")}>
-            Edit
-          </DropdownMenuItem>
-          <DropdownMenuItem className="cursor-pointer" onClick={() => toast.info("Not implemented yet")}>
-            Delete
-          </DropdownMenuItem>
-          <DropdownMenuSeparator />
-          <DropdownMenuItem className="cursor-pointer" onClick={() => setIsAssignGuestsDialogOpen(true)}>
-            Assign Multiple Guests
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
+                <Button
+                  size="icon"
+                  variant="secondary"
+                  className="cursor-pointer"
+                  onClick={() => setIsAssignGuestsDialogOpen(true)}
+                >
+                  <UserCheck2 />{" "}
+                  <span className="hidden sm:visible">
+                    Assign Multiple Guests
+                  </span>
+                </Button>
 
                 <HelpButton />
 
@@ -899,12 +898,8 @@ const SeatBooking = () => {
                 </Link>
 
                 {session?.user?.email === "admin" && (
-                  <Link
-                    href="/dashboard/manage-users"
-                    >
-                  <Button>
-                    Manage Users
-                    </Button>
+                  <Link href="/dashboard/manage-users">
+                    <Button>Manage Users</Button>
                   </Link>
                 )}
 
@@ -1308,7 +1303,7 @@ const SeatBooking = () => {
         }}
       />
 
-<AssignGuestsDialog
+      <AssignGuestsDialog
         isOpen={isAssignGuestsDialogOpen}
         onClose={() => setIsAssignGuestsDialogOpen(false)}
         guests={allGuests || []}

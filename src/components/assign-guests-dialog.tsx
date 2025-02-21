@@ -15,7 +15,7 @@ interface Guest {
   id: string
   firstname: string
   lastname: string
-  seat: any[]
+  seat: { id: string; tableId: string }[]
 }
 
 interface Table {
@@ -82,6 +82,7 @@ export function AssignGuestsDialog({ isOpen, onClose, guests, tables, onAssignGu
       setSelectedTable("")
       onClose()
     } catch (error) {
+      console.log(error)
       toast.error("Failed to assign guests")
     } finally {
       setIsAssigning(false)

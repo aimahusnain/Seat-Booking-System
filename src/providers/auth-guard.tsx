@@ -6,7 +6,7 @@ import { useSession, signOut } from "next-auth/react"
 import { useRouter } from "next/navigation"
 import { useEffect } from "react"
 
-const SESSION_TIMEOUT = 60 * 5000 // 60 seconds
+const SESSION_TIMEOUT = 60 * 10000 // 60 seconds
 
 export default function AuthGuard({
   children,
