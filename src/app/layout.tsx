@@ -17,7 +17,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Seating4you",
+  title: "Seating4U",
   description:
     "A seat booking application to manage and reserve seats efficiently.",
 };
