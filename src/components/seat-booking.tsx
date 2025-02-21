@@ -51,7 +51,7 @@ import { AddTableForm } from "./add-table-form";
 import { AssignGuestsDialog } from "./assign-guests-dialog";
 import { BookingSidebar } from "./booking-sidebar";
 import { BulkTableForm } from "./bulk-table-form";
-import ChangePasswordForm from "./change-password-dialog";
+import {ChangePasswordDialog} from "./change-password-dialog";
 import { HelpButton } from "./help-dropdown";
 import { ImportGuestsforWeb } from "./import-guests-form";
 import Loader from "./loader";
@@ -799,9 +799,10 @@ const SeatBooking = () => {
                   />
                 </div>
 
+                <HelpButton />
+
                 <Button
                   size="icon"
-                  variant="secondary"
                   className="cursor-pointer"
                   onClick={() => setIsAssignGuestsDialogOpen(true)}
                 >
@@ -810,8 +811,6 @@ const SeatBooking = () => {
                     Assign Multiple Guests
                   </span>
                 </Button>
-
-                <HelpButton />
 
                 <Link href="/seat-scanning">
                   <Button size="icon" className="w-8 h-8 sm:w-10 sm:h-10">
@@ -881,7 +880,7 @@ const SeatBooking = () => {
                     </Avatar>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" className="flex flex-col">
-                    <ChangePasswordForm />
+                    <ChangePasswordDialog />
                     <Button
                       variant="destructive"
                       onClick={handleSignOut}

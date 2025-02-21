@@ -1,30 +1,31 @@
-import { type NextRequest, NextResponse } from "next/server"
+import { getServerSession } from "next-auth"
+import { NextResponse } from "next/server"
 import { PrismaClient } from "@prisma/client"
-import bcrypt from "bcrypt"
-import { getServerSession } from "next-auth/next"
-import { authOptions } from "@/lib/auth"
 
 const prisma = new PrismaClient()
 
-export async function POST(request: NextRequest) {
+export async function POST(req: Request) {
   try {
-    const session = await getServerSession(authOptions)
-    if (!session || !session.user) {
-      return NextResponse.json({ success: false, message: "Unauthorized" }, { status: 401 })
+    const session = await getServerSession()
+
+    if (!session?.user?.email) {
+      return NextResponse.json({ success: false, message: "Not authenticated" }, { status: 401 })
     }
 
-    const { currentPassword, newPassword } = await request.json()
+    const { currentPassword, newPassword } = await req.json()
 
     if (!currentPassword || !newPassword) {
-      return NextResponse.json(
-        { success: false, message: "Current password and new password are required" },
-        { status: 400 },
-      )
+      return NextResponse.json({ success: false, message: "Missing required fields" }, { status: 400 })
     }
 
+    // Get the user from the database
     const user = await prisma.user.findUnique({
       where: {
-        email: session.user.email!,
+        email: session.user.email,
+      },
+      select: {
+        id: true,
+        password: true,
       },
     })
 
@@ -32,29 +33,28 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: false, message: "User not found" }, { status: 404 })
     }
 
-    const isPasswordValid = await bcrypt.compare(currentPassword, user.password)
-
-    if (!isPasswordValid) {
-      return NextResponse.json({ success: false, message: "Current password is incorrect" }, { status: 400 })
+    // Verify current password
+    if (user.password !== currentPassword) {
+      return NextResponse.json({ success: false, message: "Current password is incorrect" }, { status: 401 })
     }
 
-    const hashedNewPassword = await bcrypt.hash(newPassword, 10)
-
+    // Update the password
     await prisma.user.update({
       where: {
         id: user.id,
       },
       data: {
-        password: hashedNewPassword,
+        password: newPassword,
       },
     })
 
-    return NextResponse.json({ success: true, message: "Password updated successfully" }, { status: 200 })
+    return NextResponse.json({
+      success: true,
+      message: "Password updated successfully",
+    })
   } catch (error) {
     console.error("Error changing password:", error)
-    return NextResponse.json({ success: false, message: "Failed to change password" }, { status: 500 })
-  } finally {
-    await prisma.$disconnect()
+    return NextResponse.json({ success: false, message: "Internal server error" }, { status: 500 })
   }
 }
 

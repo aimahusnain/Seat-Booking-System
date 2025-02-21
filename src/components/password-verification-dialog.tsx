@@ -107,7 +107,7 @@ const PasswordVerificationDialog = ({
                 htmlFor="confirmText"
                 className="text-sm font-medium text-gray-700"
               >
-                Type "{confirmTextDisplay || confirmText}" to confirm:
+                Type &quot;{confirmTextDisplay || confirmText}&quot; to confirm:
               </label>
               <Input
                 id="confirmText"
