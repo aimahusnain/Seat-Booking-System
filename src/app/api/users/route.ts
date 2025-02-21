@@ -9,7 +9,7 @@ export async function GET() {
   try {
     const session = await getServerSession(authOptions);
 
-    if (session?.user?.email !== "jodel123@gmail.com") {
+    if (session?.user?.email !== "admin") {
       return new NextResponse("Unauthorized", { status: 401 });
     }
 

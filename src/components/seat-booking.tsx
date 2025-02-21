@@ -843,14 +843,15 @@ const SeatBooking = () => {
                   </Button>
                 </Link>
 
-                {session?.user?.email === "jodel123@gmail.com" && (
-        <Link
-          href="/dashboard/manage-users"
-          className="block mt-4 bg-green-500 text-white rounded-md px-4 py-2 hover:bg-green-600"
-        >
-          Manage Users
-        </Link>
-      )}
+                {session?.user?.email === "admin" && (
+                  <Link
+                    href="/dashboard/manage-users"
+                    >
+                  <Button>
+                    Manage Users
+                    </Button>
+                  </Link>
+                )}
 
                 {/* Create New Dropdown */}
                 <DropdownMenu>
@@ -892,7 +893,6 @@ const SeatBooking = () => {
 
                 {/* Avatar Dropdown */}
                 <DropdownMenu>
-                  
                   <DropdownMenuTrigger asChild>
                     <Avatar className="cursor-pointer w-8 h-8 sm:w-10 sm:h-10">
                       <AvatarImage

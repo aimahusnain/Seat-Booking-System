@@ -15,7 +15,7 @@ export async function DELETE(request: NextRequest) {
       return new NextResponse("User ID is required", { status: 400 })
     }
 
-    if (session?.user?.email !== "jodel123@gmail.com") {
+    if (session?.user?.email !== "admin") {
       return new NextResponse("Unauthorized", { status: 401 })
     }
 
@@ -41,7 +41,7 @@ export async function PATCH(request: NextRequest) {
       return new NextResponse("User ID is required", { status: 400 })
     }
 
-    if (session?.user?.email !== "jodel123@gmail.com") {
+    if (session?.user?.email !== "admin") {
       return new NextResponse("Unauthorized", { status: 401 })
     }
 

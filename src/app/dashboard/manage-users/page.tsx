@@ -25,7 +25,7 @@ export default function ManageUsers() {
   const [newPassword, setNewPassword] = useState("")
 
   useEffect(() => {
-    if (session?.user?.email !== "jodel123@gmail.com") {
+    if (session?.user?.email !== "admin") {
       router.push("/dashboard")
       return
     }
@@ -190,9 +190,8 @@ export default function ManageUsers() {
                 />
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-medium text-zinc-700">Email</label>
+                <label className="text-sm font-medium text-zinc-700">Username</label>
                 <input
-                  type="email"
                   name="email"
                   required
                   className="w-full rounded-lg border border-zinc-300 px-4 py-2 focus:border-transparent focus:ring-2 focus:ring-zinc-500"
@@ -283,14 +282,14 @@ export default function ManageUsers() {
                   <tr
                     key={user.id}
                     className={`transition-colors duration-150 hover:bg-zinc-50 ${
-                      user.email === "jodel123@gmail.com" ? "bg-yellow-50" : ""
+                      user.email === "admin" ? "bg-yellow-50" : ""
                     }`}
                   >
                     <td className="whitespace-nowrap px-6 py-4">{user.name}</td>
                     <td className="whitespace-nowrap px-6 py-4">
                       <div className="flex items-center">
                         {user.email}
-                        {user.email === "jodel123@gmail.com" && (
+                        {user.email === "admin" && (
                           <span className="ml-2 rounded-full bg-yellow-100 px-2 py-1 text-xs font-medium text-yellow-800">
                             Admin
                           </span>
@@ -339,7 +338,7 @@ export default function ManageUsers() {
                         >
                           <Edit2 className="h-5 w-5" />
                         </button>
-                        {user.email !== "jodel123@gmail.com" && (
+                        {user.email !== "admin" && (
                           <button
                             onClick={() => handleDelete(user.id)}
                             className="text-zinc-600 transition-colors hover:text-red-600"
