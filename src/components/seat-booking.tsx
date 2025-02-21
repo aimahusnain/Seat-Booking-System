@@ -759,7 +759,7 @@ const SeatBooking = () => {
                 className="flex justify-center items-center space-x-2"
               >
                 <span className="text-lg font-sans sm:text-xl font-bold text-zinc-900">
-                  Seating4you
+                  Seating4U
                 </span>
               </Link>
 
