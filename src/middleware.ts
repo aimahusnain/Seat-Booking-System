@@ -38,7 +38,7 @@ export const config = {
     "/",
     '/dashboard/:path*',
     '/client-view/:path*',
-    '/seat-scanning/:path*',
+    // '/seat-scanning/:path*',
     // Add other paths you want to protect/check
     '/((?!api|_next/static|_next/image|favicon.ico).*)',
   ]
