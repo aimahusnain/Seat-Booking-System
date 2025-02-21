@@ -274,8 +274,8 @@ export default function SeatScanning() {
         >
           <div className="relative w-full aspect-square sm:aspect-video md:aspect-[4/3] lg:aspect-[16/16]">
             <Image
-              src="/qr-code-for-seat-booking.svg"
-              alt="QR Code for Seat Booking"
+              src="/qr-code-for-seating4u.svg"
+              alt="QR Code for Seating4U"
               fill
               className="object-contain p-6 sm:p-8 md:p-10 lg:p-12"
               priority
