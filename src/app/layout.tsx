@@ -1,3 +1,4 @@
+// layout.tsx
 import Footer from "@/components/Footer";
 import ToasterProvider from "@/providers/toaster-provider";
 import AuthProvider from "@/providers/auth-provider";

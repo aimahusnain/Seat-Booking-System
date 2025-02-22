@@ -21,12 +21,21 @@ export default withAuth(
       authorized: ({ token, req }) => {
         const path = req.nextUrl.pathname;
         
+        // Allow unrestricted access to seat-scanning
+        if (path.startsWith('/seat-scanning')) {
+          return true;
+        }
+        
         // Only require authentication for dashboard page
         if (path.startsWith('/dashboard')) {
           return !!token;
         }
         
-        // Allow access to client-view and seat-scanning without auth
+        // Allow access to client-view without auth
+        if (path.startsWith('/client-view')) {
+          return true;
+        }
+
         return true;
       },
     },
@@ -39,7 +48,6 @@ export const config = {
     '/dashboard/:path*',
     '/client-view/:path*',
     '/seat-scanning/:path*',
-    // Add other paths you want to protect/check
     '/((?!api|_next/static|_next/image|favicon.ico).*)',
   ]
 };

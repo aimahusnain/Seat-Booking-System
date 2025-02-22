@@ -1,9 +1,9 @@
+// auth-guard.tsx
 "use client"
 
 import type React from "react"
-
 import { useSession, signOut } from "next-auth/react"
-import { useRouter } from "next/navigation"
+import { useRouter, usePathname } from "next/navigation"
 import { useEffect } from "react"
 
 const SESSION_TIMEOUT = 60 * 10000 // 60 seconds
@@ -15,8 +15,17 @@ export default function AuthGuard({
 }) {
   const { status } = useSession()
   const router = useRouter()
+  const pathname = usePathname()
+
+  // Check if current path is seat-scanning
+  const isSeatScanningPage = pathname?.startsWith('/seat-scanning')
 
   useEffect(() => {
+    // Skip authentication check for seat-scanning page
+    if (isSeatScanningPage) {
+      return
+    }
+
     if (status === "unauthenticated") {
       router.push("/login")
       return
@@ -33,10 +42,8 @@ export default function AuthGuard({
       }
     }
 
-    // Check session when component mounts
     checkSession()
 
-    // Check session when tab becomes visible
     const handleVisibilityChange = () => {
       if (!document.hidden) {
         checkSession()
@@ -48,7 +55,12 @@ export default function AuthGuard({
     return () => {
       document.removeEventListener("visibilitychange", handleVisibilityChange)
     }
-  }, [status, router])
+  }, [status, router, isSeatScanningPage])
+
+  // Skip loading state for seat-scanning page
+  if (isSeatScanningPage) {
+    return <>{children}</>
+  }
 
   if (status === "loading") {
     return <div>Loading...</div>
@@ -56,4 +68,3 @@ export default function AuthGuard({
 
   return <>{children}</>
 }
-
