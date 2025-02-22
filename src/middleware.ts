@@ -6,7 +6,7 @@ export default withAuth(
     const token = req.nextauth.token;
     const path = req.nextUrl.pathname;
 
-    // If user is logged in and tries to access unauthorized pages, redirect to /dashboard
+    // If user is logged in and tries to access pages other than the allowed ones
     if (token) {
       const allowedAuthPaths = ['/dashboard', '/client-view', '/seat-scanning'];
       if (!allowedAuthPaths.some(p => path.startsWith(p))) {
@@ -20,19 +20,14 @@ export default withAuth(
     callbacks: {
       authorized: ({ token, req }) => {
         const path = req.nextUrl.pathname;
-
-        // Allow access to seat-scanning and client-view without authentication
-        if (path.startsWith('/seat-scanning') || path.startsWith('/client-view')) {
-          return true;
-        }
-
-        // Require authentication for /dashboard and other protected pages
+        
+        // Only require authentication for dashboard page
         if (path.startsWith('/dashboard')) {
           return !!token;
         }
-
-        // Default behavior (require authentication)
-        return !!token;
+        
+        // Allow access to client-view and seat-scanning without auth
+        return true;
       },
     },
   }
@@ -40,10 +35,11 @@ export default withAuth(
 
 export const config = {
   matcher: [
-    "/dashboard/:path*",
-    "/client-view/:path*",
-    "/seat-scanning/:path*",
-    // Exclude API, static files, and images from authentication
-    "/((?!api|_next/static|_next/image|favicon.ico).*)",
+    "/",
+    '/dashboard/:path*',
+    '/client-view/:path*',
+    '/seat-scanning/:path*',
+    // Add other paths you want to protect/check
+    '/((?!api|_next/static|_next/image|favicon.ico).*)',
   ]
 };
