@@ -1,5 +1,6 @@
 import Link from "next/link";
 import React from "react";
+import Image from 'next/image'
 
 const Footer = () => {
   return (
@@ -9,9 +10,9 @@ const Footer = () => {
         <div className="sm:hidden flex flex-col gap-8">
           {/* Brand Name for Mobile */}
           <div className="text-center">
-            <span className="text-2xl font-bold text-zinc-800 dark:text-white tracking-tight">
-              Seat Booking System
-            </span>
+          <Link href="/" className="flex justify-center items-center space-x-2">
+      <Image src="/logo.svg" alt="Seating4U Logo" width={150} height={80} />
+    </Link>
           </div>
 
           {/* Contact Info Card for Mobile */}
@@ -56,9 +57,9 @@ const Footer = () => {
           </Link>
 
           <div className="flex items-center text-left">
-            <span className="text-2xl font-bold text-zinc-800 dark:text-white tracking-tight">
-              Seat Booking System
-            </span>
+          <Link href="/" className="flex justify-center items-center space-x-2">
+      <Image src="/logo.svg" alt="Seating4U Logo" width={180} height={100} />
+    </Link>
           </div>
 
           <div className="flex flex-col items-end">

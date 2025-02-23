@@ -757,7 +757,7 @@ const SeatBooking = () => {
   <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-0 sm:justify-between h-auto min-h-14 py-2">
     {/* Logo */}
     <Link href="/" className="flex justify-center items-center space-x-2">
-      <Image src="/logo.svg" alt="Seating4U Logo" width={150} height={200} />
+      <Image src="/logo.svg" alt="Seating4U Logo" width={150} height={80} />
     </Link>
 
     {/* Right Section - Now with better mobile layout */}
