@@ -32,6 +32,7 @@ import {
   Check,
   ChevronDown,
   FolderPen,
+  Menu,
   PersonStandingIcon,
   RefreshCcw,
   QrCodeIcon as ScanQrCode,
@@ -430,7 +431,7 @@ const SeatBooking = () => {
       "bg-blue-100 text-blue-700 border-blue-300",
       "bg-green-100 text-green-700 border-green-300",
       "bg-yellow-100 text-yellow-700 border-yellow-300",
-      "bg-purple-100 text-purple-700 border-purple-300",
+      "bg-lime-100 text-lime-700 border-lime-300",
       "bg-pink-100 text-pink-700 border-pink-300",
       "bg-indigo-100 text-indigo-700 border-indigo-300",
       "bg-teal-100 text-teal-700 border-teal-300",
@@ -748,153 +749,128 @@ const SeatBooking = () => {
       <AnimatePresence>
         {!isFullScreen && (
           <motion.nav
-            initial={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -50 }}
-            transition={{ duration: 0.5 }}
-            className="z-50 bg-white border-b border-zinc-200 px-2 sm:px-4"
-          >
-            <div className="flex flex-wrap items-center justify-between h-auto min-h-14 py-2">
-              {/* Logo */}
-              <Link
-                href="/"
-                className="flex justify-center items-center space-x-2"
+  initial={{ opacity: 1, y: 0 }}
+  exit={{ opacity: 0, y: -50 }}
+  transition={{ duration: 0.5 }}
+  className="z-50 bg-white border-b border-zinc-200 px-2 sm:px-4"
+>
+  <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-0 sm:justify-between h-auto min-h-14 py-2">
+    {/* Logo */}
+    <Link href="/" className="flex justify-center items-center space-x-2">
+      <Image src="/logo.svg" alt="Seating4U Logo" width={150} height={200} />
+    </Link>
+
+    {/* Right Section - Now with better mobile layout */}
+    <div className="flex flex-wrap justify-center sm:justify-end items-center gap-2 sm:gap-4">
+      {/* Primary Actions Group */}
+      <div className="flex items-center gap-2">
+        <Button onClick={refreshSeats} size="icon" className="w-8 h-8 sm:w-10 sm:h-10">
+          <RefreshCcw className="w-4 h-4 sm:w-5 sm:h-5" />
+        </Button>
+
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                size="icon"
+                className={`w-8 h-8 sm:w-10 sm:h-10 ${
+                  showNames ? "bg-blue-100 text-blue-700 hover:bg-blue-200" : ""
+                }`}
+                onClick={() => setShowNames(!showNames)}
               >
-                {/* <span className="text-lg font-sans sm:text-xl font-bold text-zinc-900">
-                  Seating4U
-                </span> */}
-                <Image src="/logo.jpg" alt="Seating4U Logo" width={25} height={25}  />
+                <FolderPen className="w-4 h-4 sm:w-5 sm:h-5" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              {showNames ? "Hide booked names" : "Show booked names"}
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      </div>
+
+      {/* Secondary Actions Group */}
+      <div className="flex items-center gap-2">
+        <div className="hidden sm:flex items-center space-x-2">
+          <span className="text-sm font-medium">Full Screen</span>
+          <Switch checked={isFullScreen} onCheckedChange={handleFullScreenToggle} />
+        </div>
+
+        <HelpButton />
+
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button size="icon" className="w-8 h-8 sm:w-10 sm:h-10">
+              <Menu className="w-4 h-4 sm:w-5 sm:h-5" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-48">
+            {/* Mobile-friendly action items */}
+            <DropdownMenuItem onClick={() => setIsAssignGuestsDialogOpen(true)}>
+              <UserCheck2 className="mr-2 w-4 h-4" /> Assign Multiple Guests
+            </DropdownMenuItem>
+            <DropdownMenuItem asChild>
+              <Link href="/seat-scanning" className="flex items-center">
+                <ScanQrCode className="mr-2 w-4 h-4" /> Scan QR Code
               </Link>
+            </DropdownMenuItem>
+            <DropdownMenuItem asChild>
+              <Link href="/client-view" className="flex items-center">
+                <PersonStandingIcon className="mr-2 w-4 h-4" /> Client View
+              </Link>
+            </DropdownMenuItem>
+            {session?.user?.email === "admin" && (
+              <DropdownMenuItem asChild>
+                <Link href="/dashboard/manage-users">Manage Users</Link>
+              </DropdownMenuItem>
+            )}
+          </DropdownMenuContent>
+        </DropdownMenu>
 
-              {/* Right Section */}
-              <div className="flex flex-wrap items-center gap-2 sm:gap-4">
-                <Button onClick={refreshSeats} size="icon">
-                  <RefreshCcw />
-                </Button>
+        {/* Create New Dropdown */}
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button className="px-2 sm:px-4 text-sm sm:text-base">
+              <span>New</span>
+              <ChevronDown className="h-4 w-4 ml-1 sm:ml-2" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-48">
+            <DropdownMenuItem className="cursor-pointer" onClick={() => setIsAddTableOpen(true)}>
+              New Table
+            </DropdownMenuItem>
+            <DropdownMenuItem className="cursor-pointer" onClick={handleBulkTableCreation}>
+              Bulk Create Tables
+            </DropdownMenuItem>
+            <DropdownMenuItem className="cursor-pointer" onClick={() => setIsAddGuestOpen(true)}>
+              New Guest
+            </DropdownMenuItem>
+            <ImportGuestsforWeb />
+            <DropdownMenuItem className="cursor-pointer text-red-600" onClick={() => setIsDeleteAllTablesDialogOpen(true)}>
+              <Trash className="w-4 h-4 mr-2" />
+              Delete All Tables
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
 
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button
-                        size="icon"
-                        className={`w-8 h-8 sm:w-10 sm:h-10 ${
-                          showNames
-                            ? "bg-blue-100 text-blue-700 hover:bg-blue-200"
-                            : ""
-                        }`}
-                        onClick={() => setShowNames(!showNames)}
-                      >
-                        <FolderPen className="w-4 h-4 sm:w-5 sm:h-5" />
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      {showNames ? "Hide booked names" : "Show booked names"}
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
-
-                {/* Full Screen Toggle */}
-                <div className="hidden sm:flex items-center space-x-2">
-                  <span className="text-sm font-medium">Full Screen</span>
-                  <Switch
-                    checked={isFullScreen}
-                    onCheckedChange={handleFullScreenToggle}
-                  />
-                </div>
-
-                <HelpButton />
-
-                <Button
-                  size="icon"
-                  className="cursor-pointer"
-                  onClick={() => setIsAssignGuestsDialogOpen(true)}
-                >
-                  <UserCheck2 />{" "}
-                  <span className="hidden sm:visible">
-                    Assign Multiple Guests
-                  </span>
-                </Button>
-
-                <Link href="/seat-scanning">
-                  <Button size="icon" className="w-8 h-8 sm:w-10 sm:h-10">
-                    <ScanQrCode />
-                  </Button>
-                </Link>
-
-                <Link href="/client-view">
-                  <Button size="icon" className="w-8 h-8 sm:w-10 sm:h-10">
-                    <PersonStandingIcon className="w-4 h-4 sm:w-5 sm:h-5" />
-                  </Button>
-                </Link>
-
-                {session?.user?.email === "admin" && (
-                  <Link href="/dashboard/manage-users">
-                    <Button>Manage Users</Button>
-                  </Link>
-                )}
-
-                {/* Create New Dropdown */}
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button className="px-2 sm:px-4 text-sm sm:text-base">
-                      <span>New</span>
-                      <ChevronDown className="h-4 w-4 ml-1 sm:ml-2" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-48">
-                    <DropdownMenuItem
-                      className="cursor-pointer"
-                      onClick={() => setIsAddTableOpen(true)}
-                    >
-                      New Table
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                      className="cursor-pointer"
-                      onClick={handleBulkTableCreation}
-                    >
-                      Bulk Create Tables
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                      className="cursor-pointer"
-                      onClick={() => setIsAddGuestOpen(true)}
-                    >
-                      New Guest
-                    </DropdownMenuItem>
-                    <ImportGuestsforWeb />
-                    <DropdownMenuItem
-                      className="cursor-pointer text-red-600"
-                      onClick={() => setIsDeleteAllTablesDialogOpen(true)}
-                    >
-                      <Trash className="w-4 h-4 mr-2" />
-                      Delete All Tables
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-
-                {/* Avatar Dropdown */}
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Avatar className="cursor-pointer w-8 h-8 sm:w-10 sm:h-10">
-                      <AvatarImage
-                        src="https://github.com/shadcn.png"
-                        alt="@shadcn"
-                      />
-                      <AvatarFallback>JA</AvatarFallback>
-                    </Avatar>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="flex flex-col">
-                    <ChangePasswordDialog />
-                    <Button
-                      variant="destructive"
-                      onClick={handleSignOut}
-                      className="mt-4"
-                    >
-                      Sign out
-                    </Button>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </div>
-            </div>
-          </motion.nav>
+        {/* Avatar Dropdown */}
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Avatar className="cursor-pointer w-8 h-8 sm:w-10 sm:h-10">
+              <AvatarImage src="https://github.com/shadcn.png" alt="@shadcn" />
+              <AvatarFallback>JA</AvatarFallback>
+            </Avatar>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="flex flex-col">
+            <ChangePasswordDialog />
+            <Button variant="destructive" onClick={handleSignOut} className="mt-4">
+              Sign out
+            </Button>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
+    </div>
+  </div>
+</motion.nav>
         )}
       </AnimatePresence>
 

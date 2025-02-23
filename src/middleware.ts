@@ -48,6 +48,6 @@ export const config = {
     '/dashboard/:path*',
     '/client-view/:path*',
     '/seat-scanning/:path*',
-    '/((?!api|_next/static|_next/image|favicon.ico).*)',
+    // '/((?!api|_next/static|_next/image|favicon.ico).*)',
   ]
 };

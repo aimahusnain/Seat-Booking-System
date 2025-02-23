@@ -241,8 +241,8 @@ export function PersonSelector({
                   <div
                     className={`absolute inset-0 border-2 rounded-lg transition-opacity pointer-events-none ${
                       selectedGuests.includes(guest.id)
-                        ? "border-blue-500 opacity-100"
-                        : "border-blue-500 opacity-0 group-hover:opacity-50"
+                        ? "border-lime-500 opacity-100"
+                        : "border-lime-500 opacity-0 group-hover:opacity-50"
                     }`}
                   />
                 </div>

@@ -62,7 +62,7 @@ const SeatBooking = () => {
       "bg-blue-100 text-blue-700 border-blue-300",
       "bg-green-100 text-green-700 border-green-300",
       "bg-yellow-100 text-yellow-700 border-yellow-300",
-      "bg-purple-100 text-purple-700 border-purple-300",
+      "bg-lime-100 text-lime-700 border-lime-300",
       "bg-pink-100 text-pink-700 border-pink-300",
       "bg-indigo-100 text-indigo-700 border-indigo-300",
       "bg-teal-100 text-teal-700 border-teal-300",

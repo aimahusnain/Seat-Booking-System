@@ -136,10 +136,10 @@ export function AddTableForm({ isOpen, onClose, onSuccess, onTableAdded }: AddTa
             <div className="p-4 sm:p-6 space-y-6 max-w-5xl mx-auto">
               <SheetHeader className="space-y-2">
                 <div className="flex items-center gap-2">
-                  <div className="p-2 rounded-lg bg-gradient-to-br from-indigo-100 to-blue-100">
-                    <Table2 className="w-6 h-6 text-indigo-600" />
+                  <div className="p-2 rounded-lg bg-gradient-to-br from-lime-100 to-lime-100">
+                    <Table2 className="w-6 h-6 text-lime-600" />
                   </div>
-                  <SheetTitle className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-blue-600">
+                  <SheetTitle className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-lime-600 to-lime-600">
                     Add New Table
                   </SheetTitle>
                 </div>
@@ -160,7 +160,7 @@ export function AddTableForm({ isOpen, onClose, onSuccess, onTableAdded }: AddTa
 
                     <div className="space-y-4">
                       <Label className="text-base font-medium text-zinc-700">
-                        Number of Seats: <span className="text-indigo-600 font-semibold">{numberOfSeats}</span>
+                        Number of Seats: <span className="text-lime-600 font-semibold">{numberOfSeats}</span>
                       </Label>
                       <div className="flex items-center gap-4">
                         <Button
@@ -199,7 +199,7 @@ export function AddTableForm({ isOpen, onClose, onSuccess, onTableAdded }: AddTa
                       <Button
                         type="button"
                         onClick={handleMagicFill}
-                        className="h-12 w-full items-center justify-center space-x-2 bg-gradient-to-r from-indigo-500 to-blue-500 text-white hover:from-indigo-600 hover:to-blue-600 transition-all duration-200 rounded-xl shadow-md hover:shadow-lg active:scale-95"
+                        className="h-12 w-full items-center justify-center space-x-2 bg-gradient-to-r from-lime-500 to-lime-500 text-white hover:from-lime-600 hover:to-lime-600 transition-all duration-200 rounded-xl shadow-md hover:shadow-lg active:scale-95"
                       >
                         <Wand2 className="w-5 h-5" />
                         <span>Auto-Fill Seats</span>
@@ -210,12 +210,12 @@ export function AddTableForm({ isOpen, onClose, onSuccess, onTableAdded }: AddTa
                   <div className="relative bg-white rounded-2xl p-6 border border-zinc-100 shadow-sm w-full aspect-square flex items-center justify-center max-w-[500px] mx-auto lg:mx-0">
                     <div className="relative w-full h-full flex items-center justify-center">
                       <motion.div
-                        className="w-32 h-32 rounded-full bg-gradient-to-br from-indigo-100 to-blue-100 border-2 border-indigo-200 flex items-center justify-center shadow-lg z-10"
+                        className="w-32 h-32 rounded-full bg-gradient-to-br from-lime-100 to-lime-100 border-2 border-lime-200 flex items-center justify-center shadow-lg z-10"
                         initial={{ scale: 0.8, opacity: 0 }}
                         animate={{ scale: 1, opacity: 1 }}
                         transition={{ duration: 0.3 }}
                       >
-                        <span className="text-2xl font-bold text-indigo-600">
+                        <span className="text-2xl font-bold text-lime-600">
                           {isLoading ? "..." : `Table ${tableNumber}`}
                         </span>
                       </motion.div>
@@ -240,7 +240,7 @@ export function AddTableForm({ isOpen, onClose, onSuccess, onTableAdded }: AddTa
                                 }}
                               >
                                 <div className="relative group">
-                                  <div className="absolute -inset-0.5 bg-gradient-to-br from-indigo-500 to-blue-500 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-200 blur" />
+                                  <div className="absolute -inset-0.5 bg-gradient-to-br from-lime-500 to-lime-500 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-200 blur" />
                                   <Input
                                     type="number"
                                     placeholder={`${index + 1}`}
@@ -248,7 +248,7 @@ export function AddTableForm({ isOpen, onClose, onSuccess, onTableAdded }: AddTa
                                     onChange={(e) => handleSeatNumberChange(index, e.target.value)}
                                     className={cn(
                                       "w-20 h-12 text-center rounded-full bg-white shadow-md transition-all duration-200",
-                                      "text-sm font-medium focus-visible:ring-2 focus-visible:ring-indigo-500",
+                                      "text-sm font-medium focus-visible:ring-2 focus-visible:ring-lime-500",
                                       "sm:w-20 sm:h-14",
                                       "relative",
                                     )}
@@ -278,7 +278,7 @@ export function AddTableForm({ isOpen, onClose, onSuccess, onTableAdded }: AddTa
                     <Button
                       type="submit"
                       disabled={isSubmitting || isLoading}
-                      className="h-12 flex-1 text-base bg-gradient-to-r from-indigo-500 to-blue-500 text-white hover:from-indigo-600 hover:to-blue-600 transition-all duration-200 rounded-xl shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="h-12 flex-1 text-base bg-gradient-to-r from-lime-500 to-lime-500 text-white hover:from-lime-600 hover:to-lime-600 transition-all duration-200 rounded-xl shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       <Plus className="w-5 h-5 mr-2" />
                       {isSubmitting ? "Adding..." : "Add Table"}

@@ -134,7 +134,7 @@ export function BookingSidebar({
                 >
                   <div className="p-4 flex items-center space-x-3">
                     <div className="flex-shrink-0">
-                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-400 to-indigo-500 flex items-center justify-center text-white font-bold text-lg truncate">
+                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-lime-400 to-lime-600 flex items-center justify-center text-white font-bold text-lg truncate">
                         {seat.user?.firstname[0]}
                         {seat.user?.lastname[0]}
                       </div>
@@ -148,7 +148,7 @@ export function BookingSidebar({
                       </h3>
                       <p className="text-xs text-gray-500">{seat.table.name}</p>
                     </div>
-                    <div className="flex-shrink-0 text-2xl font-bold text-indigo-600">
+                    <div className="flex-shrink-0 text-2xl font-bold text-lime-400">
                       #{seat.seat}
                     </div>
                   </div>

@@ -76,7 +76,7 @@ export default function AuthForm({ onAuthenticate }: AuthFormProps) {
         <Card className="overflow-hidden border-none bg-white/80 backdrop-blur-md dark:bg-black/80">
           <CardHeader className="space-y-4 pb-6 pt-8 text-center">
             <motion.div initial={{ scale: 0.8 }} animate={{ scale: 1 }} transition={{ delay: 0.2 }}>
-              <div className="mx-auto mb-3 h-16 w-16 rounded-full bg-gradient-to-tr from-blue-500 to-purple-500 flex items-center justify-center">
+              <div className="mx-auto mb-3 h-16 w-16 rounded-full bg-gradient-to-tr from-blue-500 to-lime-500 flex items-center justify-center">
                 <Lock className="stroke-white" />
               </div>
             </motion.div>
@@ -104,7 +104,7 @@ export default function AuthForm({ onAuthenticate }: AuthFormProps) {
               <Button
                 type="submit"
                 disabled={isLoading}
-                className="h-12 w-full bg-gradient-to-r from-blue-500 to-purple-500 text-lg font-medium text-white transition-all hover:opacity-90 disabled:opacity-50"
+                className="h-12 w-full bg-gradient-to-r from-blue-500 to-lime-500 text-lg font-medium text-white transition-all hover:opacity-90 disabled:opacity-50"
               >
                 {isLoading ? (
                   <div className="flex items-center justify-center gap-2">
