@@ -1,5 +1,6 @@
 "use client";
 
+import Image from 'next/image'
 import PasswordVerificationDialog from "@/components/password-verification-dialog";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -758,9 +759,10 @@ const SeatBooking = () => {
                 href="/"
                 className="flex justify-center items-center space-x-2"
               >
-                <span className="text-lg font-sans sm:text-xl font-bold text-zinc-900">
+                {/* <span className="text-lg font-sans sm:text-xl font-bold text-zinc-900">
                   Seating4U
-                </span>
+                </span> */}
+                <Image src="/logo.jpg" alt="Seating4U Logo" width={25} height={25}  />
               </Link>
 
               {/* Right Section */}
