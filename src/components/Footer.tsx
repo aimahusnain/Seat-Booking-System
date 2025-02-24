@@ -1,6 +1,6 @@
 import Link from "next/link";
 import React from "react";
-import Image from 'next/image'
+import Image from "next/image";
 
 const Footer = () => {
   return (
@@ -10,16 +10,28 @@ const Footer = () => {
         <div className="sm:hidden flex flex-col gap-8">
           {/* Brand Name for Mobile */}
           <div className="text-center">
-          <Link href="/" className="flex justify-center items-center space-x-2">
-      <Image src="/logo.svg" alt="Seating4U Logo" width={150} height={80} />
-    </Link>
+            <Link
+              href="/"
+              className="flex justify-center items-center space-x-2"
+            >
+              <Image
+                src="/logo.jpg"
+                alt="Seating4U Logo"
+                width={150}
+                height={80}
+              />
+            </Link>
           </div>
 
           {/* Contact Info Card for Mobile */}
           <div className="bg-zinc-50 dark:bg-zinc-800 p-6 rounded-2xl space-y-4">
             <div className="flex flex-col gap-3 items-center">
-              <p className="text-sm font-medium text-zinc-600 dark:text-zinc-300">seating4you@gmail.com</p>
-              <p className="text-sm font-medium text-zinc-600 dark:text-zinc-300">(417) 893-0047</p>
+              <p className="text-sm font-medium text-zinc-600 dark:text-zinc-300">
+                seating4you@gmail.com
+              </p>
+              <p className="text-sm font-medium text-zinc-600 dark:text-zinc-300">
+                (417) 893-0047
+              </p>
             </div>
           </div>
 
@@ -29,9 +41,11 @@ const Footer = () => {
               <p className="text-sm font-semibold text-black dark:text-white">
                 Created by Jodel Aristilde
               </p>
-              <p className="text-sm text-zinc-600 dark:text-zinc-400">(2BrothersMovement)</p>
+              <p className="text-sm text-zinc-600 dark:text-zinc-400">
+                (2BrothersMovement)
+              </p>
             </div>
-            
+
             <Link
               href="https://devkins.dev/"
               target="_blank"
@@ -40,8 +54,10 @@ const Footer = () => {
             >
               Design by: Devkins Private Limited Pakistan
             </Link>
-            
-            <p className="text-center text-sm text-zinc-600 dark:text-zinc-400">© 2025</p>
+
+            <p className="text-center text-sm text-zinc-600 dark:text-zinc-400">
+              © 2025
+            </p>
           </div>
         </div>
 
@@ -57,9 +73,17 @@ const Footer = () => {
           </Link>
 
           <div className="flex items-center text-left">
-          <Link href="/" className="flex justify-center items-center space-x-2">
-      <Image src="/logo.svg" alt="Seating4U Logo" width={180} height={100} />
-    </Link>
+            <Link
+              href="/"
+              className="flex justify-center items-center space-x-2"
+            >
+              <Image
+                src="/logo.jpg"
+                alt="Seating4U Logo"
+                width={180}
+                height={100}
+              />
+            </Link>
           </div>
 
           <div className="flex flex-col items-end">
