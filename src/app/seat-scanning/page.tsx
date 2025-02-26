@@ -1,5 +1,6 @@
 "use client";
 
+import QRCodeGenerator from "@/components/qr-code-generator";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
@@ -37,6 +38,7 @@ export default function SeatScanning() {
     table: string;
     seat: number;
     name: string;
+    seatId: string; // Add seatId to store the seat ID
   } | null>(null);
   const [noSeatFound, setNoSeatFound] = useState(false);
 
@@ -91,6 +93,7 @@ export default function SeatScanning() {
         table: seat.table.name,
         seat: seat.seat,
         name: `${user.firstname} ${user.lastname}`,
+        seatId: seat.id, // Store the seat ID
       });
       toast.success("Seat found!");
     } else {
@@ -98,6 +101,49 @@ export default function SeatScanning() {
       setNoSeatFound(true);
       toast.error("No seat booking found for this guest");
     }
+  };
+
+  // Function to update seat received status
+  const updateSeatReceived = async (seatId: string) => {
+    try {
+      const response = await fetch("/api/update-seat-received", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          seatId: seatId,
+          isReceived: true,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        toast.success("Seat check-in confirmed!");
+        return true;
+      } else {
+        toast.error("Failed to update seat status");
+        return false;
+      }
+    } catch (error) {
+      console.error("Error updating seat status:", error);
+      toast.error("Failed to update seat status");
+      return false;
+    }
+  };
+
+  // Generate QR code content
+  const generateQrContent = () => {
+    if (!searchResult) return "";
+
+    // Create a URL with parameters that can be parsed when scanned
+    const baseUrl = window.location.origin;
+    return `${baseUrl}/check-in?seatId=${
+      searchResult.seatId
+    }&name=${encodeURIComponent(searchResult.name)}&table=${encodeURIComponent(
+      searchResult.table
+    )}&seat=${searchResult.seat}`;
   };
 
   return (
@@ -129,7 +175,7 @@ export default function SeatScanning() {
               onClick={() => setIsQrOpen(true)}
               className="sm:flex hidden h-12 w-12 rounded-xl bg-white dark:bg-zinc-900 hover:bg-lime-50 dark:hover:bg-zinc-800 border-0 shadow-lg shadow-lime-500/10 hover:shadow-lime-500/20 transition-all duration-300"
             >
-              <QrCode className="h-5 w-5 text-lime-600" />
+              <QrCode className="h-5 w-5 text-green-600" />
             </Button>
           </motion.div>
 
@@ -226,7 +272,7 @@ export default function SeatScanning() {
                 transition={{ duration: 0.3 }}
               >
                 <Card className="border-0 shadow-2xl shadow-lime-500/10 bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl overflow-hidden">
-                  <CardHeader className="bg-gradient-to-r from-violet-600 to-lime-600 pb-8">
+                  <CardHeader className="bg-lime-500 pb-8">
                     <CardTitle className="text-white flex items-center gap-3">
                       <span className="bg-white/20 p-2 rounded-xl">
                         <QrCode className="h-5 w-5" />
@@ -237,7 +283,7 @@ export default function SeatScanning() {
                   <CardContent className="pt-6">
                     <div className="space-y-4">
                       <div className="flex justify-between items-center p-4 rounded-xl bg-violet-50/50 dark:bg-violet-900/20">
-                        <span className="text-sm font-medium text-violet-600 dark:text-violet-400">
+                        <span className="text-sm font-medium text-lime-600 dark:text-violet-400">
                           Name
                         </span>
                         <span className="font-semibold text-zinc-800 dark:text-zinc-200">
@@ -245,7 +291,7 @@ export default function SeatScanning() {
                         </span>
                       </div>
                       <div className="flex justify-between items-center p-4 rounded-xl bg-lime-50/50 dark:bg-lime-900/20">
-                        <span className="text-sm font-medium text-lime-600 dark:text-lime-400">
+                        <span className="text-sm font-medium text-green-600 dark:text-lime-400">
                           Table
                         </span>
                         <span className="font-semibold text-zinc-800 dark:text-zinc-200">
@@ -260,6 +306,13 @@ export default function SeatScanning() {
                           {searchResult.seat}
                         </span>
                       </div>
+                      <QRCodeGenerator value={generateQrContent()} />
+                      <Button
+                        onClick={() => updateSeatReceived(searchResult.seatId)}
+                        className="w-full bg-lime-500 hover:bg-lime-600 text-white"
+                      >
+                        Confirm Check-in
+                      </Button>
                     </div>
                   </CardContent>
                 </Card>
@@ -307,8 +360,8 @@ export default function SeatScanning() {
         <DialogContent
           className={cn(
             "flex flex-col p-0 bg-white dark:bg-zinc-900 backdrop-blur-xl",
-            "w-[95vw] max-w-3xl rounded-2xl border-0",
-            "sm:w-[85vw] md:w-[75vw] h-auto",
+            "w-[95vw] max-w-sm h-[400px] rounded-2xl border-0",
+            "sm:w-[85vw] md:w-[75vw] h-fit-content",
             "shadow-2xl shadow-lime-500/10"
           )}
         >
@@ -316,9 +369,10 @@ export default function SeatScanning() {
             <Image
               src="/qr-code-for-seating4u.svg"
               alt="QR Code for Seating4U"
-              fill
-              className="object-contain p-6 sm:p-8 md:p-10 lg:p-12"
+              className="object-contain h-[400px] w-[400px] p-7"
               priority
+              height={300}
+              width={300}
             />
           </div>
         </DialogContent>
