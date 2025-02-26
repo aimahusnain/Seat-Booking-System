@@ -84,6 +84,9 @@ export default function SeatScanning() {
       .slice(0, 5); // Limit to 5 results
   }, [searchValue, allUsers]);
 
+  console.log('data.data.isReceived', seatIsReceived);
+
+
   const handleUserSelect = async (user: User) => {
     setSelectedUser(user);
     setSearchValue(`${user.firstname} ${user.lastname}`);
@@ -95,7 +98,7 @@ export default function SeatScanning() {
       
       try {
         // Check if seat is already received
-        const response = await fetch(`/api/get-seat?seatId=${seat.id}`);
+        const response = await fetch(`/api/get-seat-checkin?seatId=${seat.id}`);
         const data = await response.json();
         
         if (data.success) {
@@ -111,7 +114,7 @@ export default function SeatScanning() {
         name: `${user.firstname} ${user.lastname}`,
         seatId: seat.id,
       });
-      toast.success("Seat found!");
+      toast.success(`Seat found!`);
     } else {
       setSearchResult(null);
       setNoSeatFound(true);
@@ -302,7 +305,7 @@ export default function SeatScanning() {
       Already Arrived
     </h3>
     <p className="text-sm text-green-600 dark:text-green-500">
-      You have already checked in for this event. Enjoy!
+      You have already arrived in for this event. Enjoy!
     </p>
   </div>
 ) : (
