@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import { AnimatePresence, motion } from "framer-motion";
-import { Check, HelpCircle, QrCode, Search, Lock } from "lucide-react";
+import { Check, HelpCircle, QrCode, Search } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
@@ -41,16 +41,9 @@ export default function SeatScanning() {
     seat: number;
     name: string;
     seatId: string;
-    userId: string; // Add userId to check against session
   } | null>(null);
   const [seatIsReceived, setSeatIsReceived] = useState(false);
   const [noSeatFound, setNoSeatFound] = useState(false);
-
-  // Check if the current user is the owner of the seat data
-  const isOwnSeatData = useMemo(() => {
-    if (!session || !searchResult) return false;
-    return session.user.id === searchResult.userId;
-  }, [session, searchResult]);
 
   // Fetch all guests when component mounts
   useEffect(() => {
@@ -118,7 +111,6 @@ export default function SeatScanning() {
         seat: seat.seat,
         name: `${user.firstname} ${user.lastname}`,
         seatId: seat.id,
-        userId: user.id, // Store the user ID to check against session
       });
       toast.success(`Seat found!`);
     } else {
@@ -301,39 +293,25 @@ export default function SeatScanning() {
                           {searchResult.seat}
                         </span>
                       </div>
-
-                      {session && session.user.id === searchResult.userId && (
+                      
+                      {/* QR section - Only shown if user is logged in */}
+                      {session && (
                         <>
-                          {isOwnSeatData ? (
-                            seatIsReceived ? (
-                              <div className="p-6 bg-green-50 dark:bg-green-900/20 rounded-xl text-center space-y-3">
-                                <div className="h-16 w-16 bg-green-100 dark:bg-green-800/30 rounded-full flex items-center justify-center mx-auto">
-                                  <Check className="h-8 w-8 text-green-600 dark:text-green-400" />
-                                </div>
-                                <h3 className="text-lg font-semibold text-green-700 dark:text-green-400">
-                                  Already Arrived
-                                </h3>
-                                <p className="text-sm text-green-600 dark:text-green-500">
-                                  You have already arrived for this event.
-                                  Enjoy!
-                                </p>
+                          {seatIsReceived ? (
+                            <div className="p-6 bg-green-50 dark:bg-green-900/20 rounded-xl text-center space-y-3">
+                              <div className="h-16 w-16 bg-green-100 dark:bg-green-800/30 rounded-full flex items-center justify-center mx-auto">
+                                <Check className="h-8 w-8 text-green-600 dark:text-green-400" />
                               </div>
-                            ) : (
-                              <div>
-                                <QRCodeGenerator value={generateQrContent()} />
-                              </div>
-                            )
-                          ) : (
-                            <div className="p-6 bg-amber-50 dark:bg-amber-900/20 rounded-xl text-center space-y-3">
-                              <div className="h-16 w-16 bg-amber-100 dark:bg-amber-800/30 rounded-full flex items-center justify-center mx-auto">
-                                <Lock className="h-8 w-8 text-amber-600 dark:text-amber-400" />
-                              </div>
-                              <h3 className="text-lg font-semibold text-amber-700 dark:text-amber-400">
-                                Not Your Seat
+                              <h3 className="text-lg font-semibold text-green-700 dark:text-green-400">
+                                Already Arrived
                               </h3>
-                              <p className="text-sm text-amber-600 dark:text-amber-500">
-                                You can only view QR codes for your own seat.
+                              <p className="text-sm text-green-600 dark:text-green-500">
+                                You have already arrived for this event. Enjoy!
                               </p>
+                            </div>
+                          ) : (
+                            <div>
+                              <QRCodeGenerator value={generateQrContent()} />
                             </div>
                           )}
                         </>
