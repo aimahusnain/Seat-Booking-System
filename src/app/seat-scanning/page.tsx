@@ -40,6 +40,8 @@ export default function SeatScanning() {
     name: string;
     seatId: string; // Add seatId to store the seat ID
   } | null>(null);
+  const [seatIsReceived, setSeatIsReceived] = useState(false);
+
   const [noSeatFound, setNoSeatFound] = useState(false);
 
   // Fetch all guests when component mounts
@@ -82,18 +84,32 @@ export default function SeatScanning() {
       .slice(0, 5); // Limit to 5 results
   }, [searchValue, allUsers]);
 
-  const handleUserSelect = (user: User) => {
+  const handleUserSelect = async (user: User) => {
     setSelectedUser(user);
     setSearchValue(`${user.firstname} ${user.lastname}`);
     setNoSeatFound(false);
-
+    setSeatIsReceived(false);
+  
     if (user.seat && user.seat.length > 0) {
       const seat = user.seat[0]; // Get first seat assignment
+      
+      try {
+        // Check if seat is already received
+        const response = await fetch(`/api/get-seat?seatId=${seat.id}`);
+        const data = await response.json();
+        
+        if (data.success) {
+          setSeatIsReceived(data.data.isReceived);
+        }
+      } catch (error) {
+        console.error("Error checking seat status:", error);
+      }
+      
       setSearchResult({
         table: seat.table.name,
         seat: seat.seat,
         name: `${user.firstname} ${user.lastname}`,
-        seatId: seat.id, // Store the seat ID
+        seatId: seat.id,
       });
       toast.success("Seat found!");
     } else {
@@ -306,13 +322,24 @@ export default function SeatScanning() {
                           {searchResult.seat}
                         </span>
                       </div>
-                      <QRCodeGenerator value={generateQrContent()} />
-                      <Button
-                        onClick={() => updateSeatReceived(searchResult.seatId)}
-                        className="w-full bg-lime-500 hover:bg-lime-600 text-white"
-                      >
-                        Confirm Check-in
-                      </Button>
+{/* Inside the Search Result card, replace the QRCodeGenerator and Button with this conditional rendering */}
+{seatIsReceived ? (
+  <div className="p-6 bg-green-50 dark:bg-green-900/20 rounded-xl text-center space-y-3">
+    <div className="h-16 w-16 bg-green-100 dark:bg-green-800/30 rounded-full flex items-center justify-center mx-auto">
+      <Check className="h-8 w-8 text-green-600 dark:text-green-400" />
+    </div>
+    <h3 className="text-lg font-semibold text-green-700 dark:text-green-400">
+      Already Arrived
+    </h3>
+    <p className="text-sm text-green-600 dark:text-green-500">
+      You have already checked in for this event. Enjoy!
+    </p>
+  </div>
+) : (
+  <>
+    <QRCodeGenerator value={generateQrContent()} />
+  </>
+)}                      
                     </div>
                   </CardContent>
                 </Card>

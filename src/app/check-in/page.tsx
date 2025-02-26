@@ -35,15 +35,15 @@ export default function CheckIn() {
 
         if (data.success) {
           toast.success("Check-in successful!");
-          setTimeout(() => router.push("/"), 2000);
+          setTimeout(() => router.push("/seat-scanning"), 2000);
         } else {
           toast.error("Check-in failed");
-          setTimeout(() => router.push("/"), 2000);
+          setTimeout(() => router.push("/seat-scanning"), 2000);
         }
       } catch (error) {
         console.error("Error during check-in:", error);
         toast.error("Check-in failed");
-        setTimeout(() => router.push("/"), 2000);
+        setTimeout(() => router.push("/seat-scanning"), 2000);
       } finally {
         setIsProcessing(false);
       }
