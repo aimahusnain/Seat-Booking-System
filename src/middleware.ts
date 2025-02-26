@@ -25,6 +25,10 @@ export default withAuth(
         if (path.startsWith('/seat-scanning')) {
           return true;
         }
+
+        if (path.startsWith('/check-in')) {
+          return true;
+        }
         
         // Only require authentication for dashboard page
         if (path.startsWith('/dashboard')) {

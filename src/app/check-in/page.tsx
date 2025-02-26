@@ -16,7 +16,7 @@ export default function CheckIn() {
         
         if (!seatId) {
           toast.error("Invalid QR code");
-          setTimeout(() => router.push("/"), 2000);
+          setTimeout(() => router.push("/seat-scanning"), 2000);
           return;
         }
 
