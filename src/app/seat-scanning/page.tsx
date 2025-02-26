@@ -119,36 +119,6 @@ export default function SeatScanning() {
     }
   };
 
-  // Function to update seat received status
-  const updateSeatReceived = async (seatId: string) => {
-    try {
-      const response = await fetch("/api/update-seat-received", {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          seatId: seatId,
-          isReceived: true,
-        }),
-      });
-
-      const data = await response.json();
-
-      if (data.success) {
-        toast.success("Seat check-in confirmed!");
-        return true;
-      } else {
-        toast.error("Failed to update seat status");
-        return false;
-      }
-    } catch (error) {
-      console.error("Error updating seat status:", error);
-      toast.error("Failed to update seat status");
-      return false;
-    }
-  };
-
   // Generate QR code content
   const generateQrContent = () => {
     if (!searchResult) return "";
