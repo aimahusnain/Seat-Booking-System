@@ -12,23 +12,12 @@ export default function CheckIn() {
   const { status } = useSession()
 
   useEffect(() => {
-    // If user is not authenticated, redirect to the custom check-in login page with return URL
-    if (status === "unauthenticated") {
-      // Create a URLSearchParams object to preserve all original parameters
-      const params = new URLSearchParams()
-
-      // Add all original parameters
-      searchParams.forEach((value, key) => {
-        params.append(key, value)
-      })
-
-      // Add the current path as returnUrl
-      params.append("returnUrl", window.location.pathname)
-
-      // Redirect to the custom login page with all parameters
-      router.push(`/check-in/login?${params.toString()}`)
-      return
-    }
+      if (status === "unauthenticated") {
+        const params = new URLSearchParams(searchParams);
+        params.set("redirectPath", "/check-in"); // Ensure redirectPath is passed
+        router.push(`/login?${params.toString()}`);
+        return;
+      }
 
     // Only proceed with check-in if user is authenticated
     if (status === "authenticated") {
