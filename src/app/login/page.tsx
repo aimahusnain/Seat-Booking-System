@@ -14,7 +14,7 @@ export default function LoginPage() {
   const redirectUrl = searchParams.get("redirect") || "/dashboard"
   const [loading, setLoading] = useState(false)
 
-  // If user is already logged in, redirect them
+  // If user is already logged in, redirect them to the intended destination
   useEffect(() => {
     if (status === "authenticated" && session) {
       router.push(redirectUrl)
@@ -40,7 +40,7 @@ export default function LoginPage() {
 
     toast.success("Logged in successfully!")
 
-    // Redirect to the original destination
+    // Redirect to the original destination after successful login
     router.push(redirectUrl)
     router.refresh()
     setLoading(false)
@@ -64,6 +64,11 @@ export default function LoginPage() {
         <div className="w-full max-w-md space-y-8 p-10 rounded-xl bg-white shadow-lg">
           <div className="text-center">
             <h2 className="mt-6 text-3xl font-bold tracking-tight">Sign in to your account</h2>
+            {redirectUrl && redirectUrl !== "/dashboard" && (
+              <p className="mt-2 text-sm text-gray-600">
+                You need to sign in to access this page
+              </p>
+            )}
           </div>
 
           <form onSubmit={handleSubmit} className="mt-8 space-y-6">

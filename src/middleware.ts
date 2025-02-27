@@ -1,3 +1,4 @@
+// Updated middleware.js
 import { withAuth } from "next-auth/middleware";
 import { NextResponse } from "next/server";
 
@@ -8,10 +9,17 @@ export default withAuth(
 
     // If user is logged in and tries to access pages other than the allowed ones
     if (token) {
-      const allowedAuthPaths = ['/dashboard', '/client-view', '/seat-scanning'];
+      const allowedAuthPaths = ['/dashboard', '/client-view', '/seat-scanning', '/check-in'];
       if (!allowedAuthPaths.some(p => path.startsWith(p))) {
         return NextResponse.redirect(new URL('/dashboard', req.url));
       }
+    }
+
+    // If user is not logged in and tries to access check-in
+    if (!token && path.startsWith('/check-in')) {
+      return NextResponse.redirect(
+        new URL(`/login?redirect=${encodeURIComponent(req.nextUrl.href)}`, req.url)
+      );
     }
 
     return NextResponse.next();
@@ -26,8 +34,8 @@ export default withAuth(
           return true;
         }
         
-        // Only require authentication for dashboard page
-        if (path.startsWith('/dashboard')) {
+        // Require authentication for dashboard and check-in
+        if (path.startsWith('/dashboard') || path.startsWith('/check-in')) {
           return !!token;
         }
         
@@ -48,6 +56,8 @@ export const config = {
     '/dashboard/:path*',
     '/client-view/:path*',
     '/seat-scanning/:path*',
+    '/check-in/:path*',
+    '/login',
     // '/((?!api|_next/static|_next/image|favicon.ico).*)',
   ]
 };
