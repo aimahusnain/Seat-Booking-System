@@ -93,7 +93,7 @@ export default function CheckIn() {
       <div className="w-full max-w-md mx-auto text-center">
         <div className="bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl rounded-2xl p-8 shadow-2xl shadow-lime-500/10">
           <h1 className="text-2xl font-bold mb-4 text-zinc-800 dark:text-zinc-200">Check-in Complete</h1>
-          <p className="text-zinc-600 dark:text-zinc-400">You'll be redirected back to the main page.</p>
+          <p className="text-zinc-600 dark:text-zinc-400">You&apos;ll be redirected back to the main page.</p>
 
           {searchParams.get("name") && (
             <div className="mt-4 p-4 bg-lime-50 dark:bg-lime-900/20 rounded-xl">
