@@ -9,7 +9,7 @@ export default function CheckIn() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [isProcessing, setIsProcessing] = useState(true);
-  const { data: session, status } = useSession();
+  const { status } = useSession();
 
   useEffect(() => {
     // Check if user is authenticated
