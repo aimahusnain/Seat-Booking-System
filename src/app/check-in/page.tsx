@@ -1,7 +1,7 @@
 "use client";
 
-import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 
 export default function CheckIn() {
@@ -40,6 +40,7 @@ export default function CheckIn() {
           toast.error("Check-in failed");
           setTimeout(() => router.push("/seat-scanning"), 2000);
         }
+
       } catch (error) {
         console.error("Error during check-in:", error);
         toast.error("Check-in failed");
@@ -51,17 +52,6 @@ export default function CheckIn() {
 
     updateSeatStatus();
   }, [router, searchParams]);
-
-  useEffect(() => {
-    if (status === "unauthenticated") {
-      const currentPath = window.location.pathname + window.location.search
-      router.push(`/login?redirect=${encodeURIComponent(currentPath)}`)
-    }
-  }, [status, router])
-
-  if (status === "loading") {
-    return <div className="flex min-h-screen items-center justify-center">Loading...</div>
-  }
 
   return (
     <div className="min-h-screen bg-[#fafafa] dark:bg-zinc-950 flex flex-col items-center justify-center p-4">
