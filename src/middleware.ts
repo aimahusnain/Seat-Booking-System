@@ -5,7 +5,6 @@ export default withAuth(
   function middleware(req) {
     const token = req.nextauth.token
     const path = req.nextUrl.pathname
-    const fullUrl = req.nextUrl.toString()
 
     // If user is logged in and tries to access pages other than the allowed ones
     if (token) {
