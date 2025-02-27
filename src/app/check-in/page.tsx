@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
+import { redirect } from "next/navigation"
 
 export default function CheckIn() {
   const router = useRouter();
@@ -51,6 +52,17 @@ export default function CheckIn() {
 
     updateSeatStatus();
   }, [router, searchParams]);
+
+  useEffect(() => {
+    if (status === "unauthenticated") {
+      const currentPath = window.location.pathname + window.location.search
+      router.push(`/login?redirect=${encodeURIComponent(currentPath)}`)
+    }
+  }, [status, router])
+
+  if (status === "loading") {
+    return <div className="flex min-h-screen items-center justify-center">Loading...</div>
+  }
 
   return (
     <div className="min-h-screen bg-[#fafafa] dark:bg-zinc-950 flex flex-col items-center justify-center p-4">
