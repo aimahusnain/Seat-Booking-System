@@ -17,7 +17,9 @@ export default function LoginPage() {
   // If user is already logged in, redirect them to the intended destination
   useEffect(() => {
     if (status === "authenticated" && session) {
-      router.push(redirectUrl)
+      // Decode the redirect URL to ensure proper navigation
+      const decodedRedirectUrl = decodeURIComponent(redirectUrl);
+      router.push(decodedRedirectUrl);
     }
   }, [session, status, router, redirectUrl])
 
@@ -40,9 +42,9 @@ export default function LoginPage() {
 
     toast.success("Logged in successfully!")
 
-    // Redirect to the original destination after successful login
-    router.push(redirectUrl)
-    router.refresh()
+    // Decode the redirect URL to ensure proper navigation
+    const decodedRedirectUrl = decodeURIComponent(redirectUrl);
+    router.push(decodedRedirectUrl);
     setLoading(false)
   }
 
@@ -64,9 +66,9 @@ export default function LoginPage() {
         <div className="w-full max-w-md space-y-8 p-10 rounded-xl bg-white shadow-lg">
           <div className="text-center">
             <h2 className="mt-6 text-3xl font-bold tracking-tight">Sign in to your account</h2>
-            {redirectUrl && redirectUrl !== "/dashboard" && (
+            {redirectUrl && redirectUrl.includes('/check-in') && (
               <p className="mt-2 text-sm text-gray-600">
-                You need to sign in to access this page
+                Sign in to complete the check-in process
               </p>
             )}
           </div>

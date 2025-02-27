@@ -125,7 +125,7 @@ export default function SeatScanning() {
   // Generate QR code content
   const generateQrContent = () => {
     if (!searchResult) return "";
-
+  
     // Create a URL with parameters that can be parsed when scanned
     const baseUrl = window.location.origin;
     return `${baseUrl}/check-in?seatId=${
