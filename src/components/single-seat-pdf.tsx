@@ -67,7 +67,7 @@ const PrintableBooking = ({ firstName, lastName, seats }: PrintBookingProps) => 
           <div class="container">
             <div class="welcome">Welcome</div>
             <div class="name">${firstName} ${lastName}</div>
-            <div class="table">You are Seating on TABLE ${tableNumber}</div>
+            <div class="table">TABLE ${tableNumber}</div>
           </div>
         </body>
       </html>
