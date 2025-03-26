@@ -6,7 +6,7 @@ import { toast } from "sonner"
 import { useSession } from "next-auth/react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
-import { Check, X, Loader2 } from "lucide-react"
+import { Check, X, Loader2, QrCode } from "lucide-react"
 
 export default function QRScanner() {
   const [scanning, setScanning] = useState(false)
@@ -26,7 +26,7 @@ export default function QRScanner() {
   const router = useRouter()
   const html5QrCodeRef = useRef<Html5Qrcode | null>(null)
   const scannerContainerRef = useRef<HTMLDivElement>(null)
-console.log(scanning)
+  const lastDetectionRef = useRef<number>(0)
 
   // Check authentication
   useEffect(() => {
@@ -72,6 +72,25 @@ console.log(scanning)
       }
     }
   }, [status])
+
+  // Check for QR code timeout
+  useEffect(() => {
+    // If QR code is detected, update the last detection time
+    if (qrDetected) {
+      lastDetectionRef.current = Date.now()
+    }
+
+    // Set up an interval to check if QR code has been out of view for too long
+    const interval = setInterval(() => {
+      if (qrDetected && Date.now() - lastDetectionRef.current > 500) {
+        // If it's been more than 500ms since last detection, consider QR code lost
+        setQrDetected(false)
+        setLastDetectedCode("")
+      }
+    }, 100)
+
+    return () => clearInterval(interval)
+  }, [qrDetected])
 
   // Adjust scanner size to fill screen
   useEffect(() => {
@@ -130,20 +149,19 @@ console.log(scanning)
       await html5QrCodeRef.current.start(
         { facingMode: "environment" },
         {
-          fps: 10,
+          fps: 15, // Increased FPS for more responsive detection
           qrbox: undefined, // Don't use the library's qrbox, we'll create our own UI
+          aspectRatio: 1.0,
         },
         (decodedText) => {
           // Just detect the QR code but don't process it yet
           setQrDetected(true)
           setLastDetectedCode(decodedText)
+          lastDetectionRef.current = Date.now() // Update last detection time
         },
         (errorMessage) => {
-          // QR code not in view
-          if (errorMessage.includes("No QR code found")) {
-            setQrDetected(false)
-            setLastDetectedCode("")
-          }
+          // This callback is called frequently when no QR code is found
+          // We don't need to do anything here as we have the timeout mechanism
         },
       )
     } catch (err) {
@@ -153,16 +171,16 @@ console.log(scanning)
     }
   }
 
-  // const stopScanner = async () => {
-  //   if (html5QrCodeRef.current && html5QrCodeRef.current.isScanning) {
-  //     try {
-  //       await html5QrCodeRef.current.stop()
-  //       setScanning(false)
-  //     } catch (err) {
-  //       console.error("Error stopping scanner:", err)
-  //     }
-  //   }
-  // }
+  const stopScanner = async () => {
+    if (html5QrCodeRef.current && html5QrCodeRef.current.isScanning) {
+      try {
+        await html5QrCodeRef.current.stop()
+        setScanning(false)
+      } catch (err) {
+        console.error("Error stopping scanner:", err)
+      }
+    }
+  }
 
   const processQrCode = async () => {
     if (!lastDetectedCode || processing) return
@@ -282,12 +300,25 @@ console.log(scanning)
               ></div>
             </div>
 
-            {/* Success indicator */}
-            {qrDetected && (
+            {/* Status indicator */}
+            {qrDetected ? (
               <div className="absolute -top-4 -right-4 bg-lime-500 rounded-full p-1 shadow-lg">
                 <Check className="h-5 w-5 text-white" />
               </div>
+            ) : (
+              <div className="absolute -top-4 -right-4 bg-zinc-700 rounded-full p-1 shadow-lg">
+                <QrCode className="h-5 w-5 text-white/70" />
+              </div>
             )}
+
+            {/* Status text */}
+            <div
+              className={`absolute -bottom-12 left-1/2 transform -translate-x-1/2 px-4 py-1 rounded-full ${
+                qrDetected ? "bg-lime-500/90" : "bg-zinc-800/90"
+              } transition-colors duration-300 text-white text-sm font-medium`}
+            >
+              {qrDetected ? "QR Code Detected" : "Searching for QR Code..."}
+            </div>
           </div>
         </div>
 
