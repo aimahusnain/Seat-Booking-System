@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { cn } from "@/lib/utils"
 import { AnimatePresence, motion } from "framer-motion"
-import { Check, HelpCircle, QrCode, Search, Scan } from "lucide-react"
+import { Check, HelpCircle, QrCode, Search, Camera } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
 import { useEffect, useMemo, useState } from "react"
@@ -160,7 +160,7 @@ export default function SeatScanning() {
                   size="icon"
                   className="h-12 w-12 rounded-xl bg-lime-600 hover:bg-lime-700 border-0 shadow-lg shadow-lime-500/10 hover:shadow-lime-500/20 transition-all duration-300"
                 >
-                  <Scan className="h-5 w-5 text-white" />
+                  <Camera className="h-5 w-5 text-white" />
                 </Button>
               </Link>
             </div>
@@ -280,8 +280,8 @@ export default function SeatScanning() {
                           <div className="mt-4 flex justify-center">
                             <Link href="/scanner">
                               <Button className="bg-lime-600 hover:bg-lime-700">
-                                <Scan className="mr-2 h-4 w-4" />
-                                Scan QR Code
+                                <Camera className="mr-2 h-4 w-4" />
+                                Scan with Camera
                               </Button>
                             </Link>
                           </div>
