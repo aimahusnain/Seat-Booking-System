@@ -748,6 +748,11 @@ const SeatBooking = () => {
                         </Link>
                       </DropdownMenuItem>
                       <DropdownMenuItem asChild>
+                        <Link href="/scanner" className="flex items-center">
+                          <ScanQrCode className="mr-2 w-4 h-4" /> Scanner
+                        </Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem asChild>
                         <Link href="/client-view" className="flex items-center">
                           <PersonStandingIcon className="mr-2 w-4 h-4" /> Client View
                         </Link>
