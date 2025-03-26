@@ -26,7 +26,7 @@ export default function QRScanner() {
   const router = useRouter()
   const html5QrCodeRef = useRef<Html5Qrcode | null>(null)
   const scannerContainerRef = useRef<HTMLDivElement>(null)
-
+console.log(scanning)
   // Check authentication
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -124,16 +124,16 @@ export default function QRScanner() {
     }
   }
 
-  const stopScanner = async () => {
-    if (html5QrCodeRef.current && html5QrCodeRef.current.isScanning) {
-      try {
-        await html5QrCodeRef.current.stop()
-        setScanning(false)
-      } catch (err) {
-        console.error("Error stopping scanner:", err)
-      }
-    }
-  }
+  // const stopScanner = async () => {
+  //   if (html5QrCodeRef.current && html5QrCodeRef.current.isScanning) {
+  //     try {
+  //       await html5QrCodeRef.current.stop()
+  //       setScanning(false)
+  //     } catch (err) {
+  //       console.error("Error stopping scanner:", err)
+  //     }
+  //   }
+  // }
 
   const processQrCode = async () => {
     if (!lastDetectedCode || processing) return
