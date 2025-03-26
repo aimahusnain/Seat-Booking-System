@@ -151,7 +151,7 @@ export default function QRScanner() {
 
   const onScanFailure = (error: string) => {
     // Don't show errors for normal scanning failures
-    // console.log("Scan error:", error)
+    console.log("Scan error:", error)
   }
 
   const resetScanner = () => {
