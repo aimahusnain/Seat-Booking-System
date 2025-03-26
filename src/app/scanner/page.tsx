@@ -28,6 +28,7 @@ export default function QRScanner() {
   const scannerContainerRef = useRef<HTMLDivElement>(null)
   const lastDetectionRef = useRef<number>(0)
 
+  console.log(scanning)
   // Check authentication
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -168,17 +169,6 @@ export default function QRScanner() {
       console.error("Error starting scanner:", err)
       toast.error("Could not access camera. Please check permissions.")
       setScanning(false)
-    }
-  }
-
-  const stopScanner = async () => {
-    if (html5QrCodeRef.current && html5QrCodeRef.current.isScanning) {
-      try {
-        await html5QrCodeRef.current.stop()
-        setScanning(false)
-      } catch (err) {
-        console.error("Error stopping scanner:", err)
-      }
     }
   }
 
