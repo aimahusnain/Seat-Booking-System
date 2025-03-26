@@ -26,7 +26,7 @@ export default function QRScanner() {
   const router = useRouter()
   const html5QrCodeRef = useRef<Html5Qrcode | null>(null)
   const scannerContainerRef = useRef<HTMLDivElement>(null)
-console.log(scanning)
+
   // Check authentication
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -89,6 +89,34 @@ console.log(scanning)
     }
   }, [])
 
+  // Hide the default QR scanner UI elements
+  useEffect(() => {
+    // Add custom CSS to hide the default QR scanner UI
+    const style = document.createElement("style")
+    style.textContent = `
+      #reader__scan_region {
+        display: none !important;
+      }
+      #reader__dashboard {
+        display: none !important;
+      }
+      #reader {
+        border: none !important;
+        box-shadow: none !important;
+      }
+      #reader video {
+        width: 100% !important;
+        height: 100% !important;
+        object-fit: cover !important;
+      }
+    `
+    document.head.appendChild(style)
+
+    return () => {
+      document.head.removeChild(style)
+    }
+  }, [])
+
   const startScanner = async () => {
     if (!html5QrCodeRef.current) return
 
@@ -102,7 +130,7 @@ console.log(scanning)
         { facingMode: "environment" },
         {
           fps: 10,
-          qrbox: { width: 250, height: 250 },
+          qrbox: undefined, // Don't use the library's qrbox, we'll create our own UI
         },
         (decodedText) => {
           // Just detect the QR code but don't process it yet
@@ -124,16 +152,16 @@ console.log(scanning)
     }
   }
 
-  // const stopScanner = async () => {
-  //   if (html5QrCodeRef.current && html5QrCodeRef.current.isScanning) {
-  //     try {
-  //       await html5QrCodeRef.current.stop()
-  //       setScanning(false)
-  //     } catch (err) {
-  //       console.error("Error stopping scanner:", err)
-  //     }
-  //   }
-  // }
+  const stopScanner = async () => {
+    if (html5QrCodeRef.current && html5QrCodeRef.current.isScanning) {
+      try {
+        await html5QrCodeRef.current.stop()
+        setScanning(false)
+      } catch (err) {
+        console.error("Error stopping scanner:", err)
+      }
+    }
+  }
 
   const processQrCode = async () => {
     if (!lastDetectedCode || processing) return
@@ -228,12 +256,35 @@ console.log(scanning)
         {/* Camera View */}
         <div id="reader" className="w-full h-full"></div>
 
-        {/* QR Frame Overlay */}
+        {/* Custom QR Frame Overlay */}
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-          <div className={`w-64 h-64 border-2 rounded-lg ${qrDetected ? "border-green-500" : "border-white/50"}`}>
+          <div className="relative">
+            {/* Single frame with corner markers */}
+            <div
+              className={`w-64 h-64 ${qrDetected ? "border-lime-500" : "border-white/70"} rounded-lg transition-colors duration-300`}
+            >
+              {/* Top-left corner */}
+              <div
+                className={`absolute -top-2 -left-2 w-8 h-8 border-t-4 border-l-4 ${qrDetected ? "border-lime-500" : "border-white"} rounded-tl-lg`}
+              ></div>
+              {/* Top-right corner */}
+              <div
+                className={`absolute -top-2 -right-2 w-8 h-8 border-t-4 border-r-4 ${qrDetected ? "border-lime-500" : "border-white"} rounded-tr-lg`}
+              ></div>
+              {/* Bottom-left corner */}
+              <div
+                className={`absolute -bottom-2 -left-2 w-8 h-8 border-b-4 border-l-4 ${qrDetected ? "border-lime-500" : "border-white"} rounded-bl-lg`}
+              ></div>
+              {/* Bottom-right corner */}
+              <div
+                className={`absolute -bottom-2 -right-2 w-8 h-8 border-b-4 border-r-4 ${qrDetected ? "border-lime-500" : "border-white"} rounded-br-lg`}
+              ></div>
+            </div>
+
+            {/* Success indicator */}
             {qrDetected && (
-              <div className="absolute top-0 right-0 transform translate-x-1/2 -translate-y-1/2 bg-green-500 rounded-full p-1">
-                <Check className="h-4 w-4 text-white" />
+              <div className="absolute -top-4 -right-4 bg-lime-500 rounded-full p-1 shadow-lg">
+                <Check className="h-5 w-5 text-white" />
               </div>
             )}
           </div>
@@ -291,20 +342,34 @@ console.log(scanning)
         )}
 
         {/* Bottom Controls */}
-        <div className="absolute bottom-0 left-0 right-0 p-6 flex justify-center">
-          <Button
+        <div className="absolute bottom-10 left-0 right-0 flex justify-center">
+          <button
             onClick={processQrCode}
             disabled={!qrDetected || processing}
-            className={`h-16 w-16 rounded-full ${
-              qrDetected && !processing ? "bg-lime-600 hover:bg-lime-700 text-white" : "bg-zinc-800 text-zinc-500"
-            }`}
+            className={`
+              h-20 w-20 rounded-full flex items-center justify-center focus:outline-none
+              ${
+                qrDetected && !processing
+                  ? "bg-gradient-to-r from-lime-500 to-green-500 shadow-lg shadow-lime-500/30"
+                  : "bg-zinc-800 opacity-70"
+              }
+              transition-all duration-300 transform ${qrDetected ? "scale-105" : "scale-100"}
+            `}
           >
             {processing ? (
-              <Loader2 className="h-8 w-8 animate-spin" />
+              <Loader2 className="h-10 w-10 text-white animate-spin" />
             ) : (
-              <div className="h-10 w-10 rounded-full border-2 border-current"></div>
+              <div
+                className={`
+                h-16 w-16 rounded-full border-4 
+                ${qrDetected ? "border-white bg-lime-500/30" : "border-zinc-600 bg-zinc-900/50"}
+                flex items-center justify-center
+              `}
+              >
+                {qrDetected && <Check className="h-8 w-8 text-white" />}
+              </div>
             )}
-          </Button>
+          </button>
         </div>
 
         {/* Close Button */}
