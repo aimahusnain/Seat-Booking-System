@@ -6,7 +6,21 @@ import { toast } from "sonner"
 import { useSession } from "next-auth/react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
-import { Check, X, Loader2, QrCode } from "lucide-react"
+import { Check, X, Loader2, QrCode, ZoomIn, ZoomOut } from "lucide-react"
+
+// Extend the MediaTrackConstraintSet type to include zoom
+interface ExtendedMediaTrackConstraintSet extends MediaTrackConstraintSet {
+  zoom?: number
+}
+
+// Extend the MediaTrackCapabilities type to include zoom
+interface ExtendedMediaTrackCapabilities extends MediaTrackCapabilities {
+  zoom?: {
+    min: number
+    max: number
+    step: number
+  }
+}
 
 export default function QRScanner() {
   const [scanning, setScanning] = useState(false)
@@ -27,8 +41,13 @@ export default function QRScanner() {
   const html5QrCodeRef = useRef<Html5Qrcode | null>(null)
   const scannerContainerRef = useRef<HTMLDivElement>(null)
   const lastDetectionRef = useRef<number>(0)
-
-  console.log(scanning)
+  const videoRef = useRef<HTMLVideoElement | null>(null)
+  const [zoomLevel, setZoomLevel] = useState(1)
+  const [zoomSupported, setZoomSupported] = useState(false)
+  const [minZoom, setMinZoom] = useState(1)
+  const [maxZoom, setMaxZoom] = useState(5)
+  const [showZoomControls, setShowZoomControls] = useState(false)
+console.log(scanning, zoomSupported)
   // Check authentication
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -110,7 +129,7 @@ export default function QRScanner() {
     }
   }, [])
 
-  // Hide the default QR scanner UI elements
+  // Hide the default QR scanner UI elements and set up zoom
   useEffect(() => {
     // Add custom CSS to hide the default QR scanner UI
     const style = document.createElement("style")
@@ -133,10 +152,93 @@ export default function QRScanner() {
     `
     document.head.appendChild(style)
 
+    // Find and reference the video element for zoom control
+    const findVideoElement = () => {
+      const video = document.querySelector("#reader video") as HTMLVideoElement
+      if (video) {
+        videoRef.current = video
+        checkZoomSupport(video)
+      } else {
+        // If video element isn't available yet, try again in a moment
+        setTimeout(findVideoElement, 500)
+      }
+    }
+
+    findVideoElement()
+
     return () => {
       document.head.removeChild(style)
     }
   }, [])
+
+  // Check if zoom is supported and get zoom range
+  const checkZoomSupport = async (videoElement: HTMLVideoElement) => {
+    try {
+      if (!videoElement.srcObject) return
+
+      const track = (videoElement.srcObject as MediaStream).getVideoTracks()[0]
+
+      if (!track) return
+
+      const capabilities = track.getCapabilities() as ExtendedMediaTrackCapabilities
+
+      // Check if zoom is supported
+      if (capabilities.zoom) {
+        setZoomSupported(true)
+        setMinZoom(capabilities.zoom.min || 1)
+        setMaxZoom(capabilities.zoom.max || 5)
+        setShowZoomControls(true)
+      } else {
+        setZoomSupported(false)
+        setShowZoomControls(false)
+      }
+    } catch (error) {
+      console.error("Error checking zoom support:", error)
+      setZoomSupported(false)
+      setShowZoomControls(false)
+    }
+  }
+
+  // Apply zoom to the camera
+  const applyZoom = async (zoomFactor: number) => {
+    try {
+      if (!videoRef.current || !videoRef.current.srcObject) return
+
+      const track = (videoRef.current.srcObject as MediaStream).getVideoTracks()[0]
+
+      if (!track) return
+
+      const capabilities = track.getCapabilities() as ExtendedMediaTrackCapabilities
+
+      // Check if zoom is supported
+      if (capabilities.zoom) {
+        // Ensure zoom is within the allowed range
+        const newZoom = Math.max(minZoom, Math.min(maxZoom, zoomFactor))
+
+        // Apply the zoom constraint
+        const constraints: MediaTrackConstraints = {
+          advanced: [{ zoom: newZoom } as ExtendedMediaTrackConstraintSet],
+        }
+
+        await track.applyConstraints(constraints)
+        setZoomLevel(newZoom)
+      }
+    } catch (error) {
+      console.error("Error applying zoom:", error)
+    }
+  }
+
+  // Zoom in function
+  const zoomIn = () => {
+    const newZoom = Math.min(maxZoom, zoomLevel + 0.5)
+    applyZoom(newZoom)
+  }
+
+  // Zoom out function
+  const zoomOut = () => {
+    const newZoom = Math.max(minZoom, zoomLevel - 0.5)
+    applyZoom(newZoom)
+  }
 
   const startScanner = async () => {
     if (!html5QrCodeRef.current) return
@@ -161,7 +263,6 @@ export default function QRScanner() {
           lastDetectionRef.current = Date.now() // Update last detection time
         },
         (errorMessage) => {
-          console.log(errorMessage)
           // This callback is called frequently when no QR code is found
           // We don't need to do anything here as we have the timeout mechanism
         },
@@ -312,6 +413,35 @@ export default function QRScanner() {
             </div>
           </div>
         </div>
+
+        {/* Zoom Controls */}
+        {showZoomControls && (
+          <div className="absolute top-4 right-4 flex flex-col gap-2">
+            <Button
+              onClick={zoomIn}
+              disabled={zoomLevel >= maxZoom}
+              variant="ghost"
+              size="icon"
+              className="h-10 w-10 rounded-full bg-black/50 p-0 text-white hover:bg-black/70"
+            >
+              <ZoomIn className="h-5 w-5" />
+            </Button>
+
+            <div className="bg-black/50 text-white text-xs font-medium rounded-full px-2 py-1 text-center">
+              {zoomLevel.toFixed(1)}x
+            </div>
+
+            <Button
+              onClick={zoomOut}
+              disabled={zoomLevel <= minZoom}
+              variant="ghost"
+              size="icon"
+              className="h-10 w-10 rounded-full bg-black/50 p-0 text-white hover:bg-black/70"
+            >
+              <ZoomOut className="h-5 w-5" />
+            </Button>
+          </div>
+        )}
 
         {/* Result Overlay */}
         {scanResult && (
