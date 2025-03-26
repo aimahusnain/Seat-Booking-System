@@ -263,6 +263,7 @@ console.log(scanning, zoomSupported)
           lastDetectionRef.current = Date.now() // Update last detection time
         },
         (errorMessage) => {
+          console.log("Error scanning QR code:", errorMessage)
           // This callback is called frequently when no QR code is found
           // We don't need to do anything here as we have the timeout mechanism
         },
