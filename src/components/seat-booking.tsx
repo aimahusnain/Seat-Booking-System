@@ -18,6 +18,7 @@ import { Switch } from "@/components/ui/switch"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { AnimatePresence, motion } from "framer-motion"
 import {
+  Camera,
   Check,
   ChevronDown,
   FolderPen,
@@ -27,7 +28,7 @@ import {
   QrCodeIcon as ScanQrCode,
   Trash,
   Trash2,
-  UserCheck2,
+  UserCheck2
 } from "lucide-react"
 import { signOut, useSession } from "next-auth/react"
 import Image from "next/image"
@@ -749,7 +750,7 @@ const SeatBooking = () => {
                       </DropdownMenuItem>
                       <DropdownMenuItem asChild>
                         <Link href="/scanner" className="flex items-center">
-                          <ScanQrCode className="mr-2 w-4 h-4" /> Scanner
+                          <Camera className="mr-2 w-4 h-4" /> Scanner
                         </Link>
                       </DropdownMenuItem>
                       <DropdownMenuItem asChild>

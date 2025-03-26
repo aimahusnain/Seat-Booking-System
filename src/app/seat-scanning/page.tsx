@@ -153,16 +153,6 @@ export default function SeatScanning() {
               >
                 <QrCode className="h-5 w-5 text-green-600" />
               </Button>
-
-              <Link href="/scanner">
-                <Button
-                  variant="default"
-                  size="icon"
-                  className="h-12 w-12 rounded-xl bg-lime-600 hover:bg-lime-700 border-0 shadow-lg shadow-lime-500/10 hover:shadow-lime-500/20 transition-all duration-300"
-                >
-                  <Camera className="h-5 w-5 text-white" />
-                </Button>
-              </Link>
             </div>
           </motion.div>
 
@@ -277,14 +267,6 @@ export default function SeatScanning() {
                       ) : (
                         <>
                           <QRCodeGenerator value={generateQrContent()} />
-                          <div className="mt-4 flex justify-center">
-                            <Link href="/scanner">
-                              <Button className="bg-lime-600 hover:bg-lime-700">
-                                <Camera className="mr-2 h-4 w-4" />
-                                Scan with Camera
-                              </Button>
-                            </Link>
-                          </div>
                         </>
                       )}
                     </div>
