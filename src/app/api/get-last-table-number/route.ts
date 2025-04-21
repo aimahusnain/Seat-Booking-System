@@ -13,7 +13,7 @@ export async function GET() {
     let lastTableNumber = 0
 
     for (const table of tables) {
-      const match = table.name.match(/Table(\d+)/)
+      const match = table.name.match(/Table (\d+)/)
       if (match) {
         const tableNumber = Number.parseInt(match[1], 10)
         if (tableNumber > lastTableNumber) {
