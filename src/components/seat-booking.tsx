@@ -423,7 +423,7 @@ const SeatBooking = () => {
       if (result.success) {
         toast.success("Table deleted successfully")
         setTables(tables.filter((t) => t.tableNumber !== tableNumber))
-        setBookedSeats(bookedSeats.filter((seat) => seat.table.name !== `Table${tableNumber}`))
+        setBookedSeats(bookedSeats.filter((seat) => seat.table.name !== `Table ${tableNumber}`))
         router.refresh()
         setIsDeleteDialogOpen(false)
       } else {

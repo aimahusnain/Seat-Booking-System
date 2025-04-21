@@ -116,7 +116,7 @@ export function BulkTableForm({ isOpen, onClose, onSuccess }: BulkTableFormProps
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            name: `Table${table.tableNumber}`,
+            name: `Table ${table.tableNumber}`,
             seats: table.seats,
           }),
         })

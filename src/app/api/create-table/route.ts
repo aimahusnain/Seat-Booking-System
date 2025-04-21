@@ -13,7 +13,7 @@ export async function POST(req: Request) {
 
     const table = await prisma.table.create({
       data: {
-        name: `Table${tableNumber}`,
+        name: `Table ${tableNumber}`,
         Seat: {
           create: Array.from({ length: seats }, (_, index) => ({
             seat: index + 1,
