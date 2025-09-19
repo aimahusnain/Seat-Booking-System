@@ -1,8 +1,8 @@
-"use client"
+"use client";
 
-import PasswordVerificationDialog from "@/components/password-verification-dialog"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Button } from "@/components/ui/button"
+import PasswordVerificationDialog from "@/components/password-verification-dialog";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -10,13 +10,23 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { Input } from "@/components/ui/input"
-import { ScrollArea } from "@/components/ui/scroll-area"
-import { Switch } from "@/components/ui/switch"
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
-import { AnimatePresence, motion } from "framer-motion"
+} from "@/components/ui/dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Input } from "@/components/ui/input";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Switch } from "@/components/ui/switch";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { AnimatePresence, motion } from "framer-motion";
 import {
   Camera,
   Check,
@@ -30,71 +40,84 @@ import {
   Trash2,
   UserCheck2,
   Edit3,
-} from "lucide-react"
-import { signOut, useSession } from "next-auth/react"
-import Image from "next/image"
-import Link from "next/link"
-import { useRouter } from "next/navigation"
-import { useEffect, useRef, useState } from "react"
-import { toast } from "sonner"
-import { useGuests } from "../hooks/useGuests"
-import { useSeats } from "../hooks/useSeats"
-import type { Person, Seat, TableData } from "../types/booking"
-import { AddGuestForm } from "./add-guest-form"
-import { AddTableForm } from "./add-table-form"
-import { AssignGuestsDialog } from "./assign-guests-dialog"
-import { BookingSidebar } from "./booking-sidebar"
-import { BulkTableForm } from "./bulk-table-form"
-import { ChangePasswordDialog } from "./change-password-dialog"
-import { HelpButton } from "./help-dropdown"
-import { ImportGuestsforWeb } from "./import-guests-form"
-import Loader from "./loader"
-import { PDFExport } from "./pdf-export"
-import { PersonSelector } from "./person-selector"
+} from "lucide-react";
+import { signOut, useSession } from "next-auth/react";
+import Image from "next/image";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
+import { toast } from "sonner";
+import { useGuests } from "../hooks/useGuests";
+import { useSeats } from "../hooks/useSeats";
+import type { Person, Seat, TableData } from "../types/booking";
+import { AddGuestForm } from "./add-guest-form";
+import { AddTableForm } from "./add-table-form";
+import { AssignGuestsDialog } from "./assign-guests-dialog";
+import { BookingSidebar } from "./booking-sidebar";
+import { BulkTableForm } from "./bulk-table-form";
+import { ChangePasswordDialog } from "./change-password-dialog";
+import { HelpButton } from "./help-dropdown";
+import { ImportGuestsforWeb } from "./import-guests-form";
+import Loader from "./loader";
+import { PDFExport } from "./pdf-export";
+import { PersonSelector } from "./person-selector";
 
 const SeatBooking = () => {
-  const { seats: initialSeats, loading, error, fetchSeats: refreshSeats } = useSeats()
-  const [isBulkTableDialogOpen, setBulkTableDialogOpen] = useState(false)
-  const [isAddTableOpen, setIsAddTableOpen] = useState(false)
-  const [tables, setTables] = useState<TableData[]>([])
-  const [selectedSeat, setSelectedSeat] = useState<Seat | null>(null)
-  const [isPersonSelectorOpen, setIsPersonSelectorOpen] = useState(false)
-  const [bookedSeats, setBookedSeats] = useState<Seat[]>([])
-  const [isConfirmationOpen, setIsConfirmationOpen] = useState(false)
-  const [personToBook, setPersonToBook] = useState<Person | null>(null)
-  const [hoveredSeat, setHoveredSeat] = useState<string | null>(null)
-  const pdfExportRef = useRef<{ generatePDF: () => void } | null>(null)
-  const router = useRouter()
-  const [hoveredTable, setHoveredTable] = useState<string | number | null>(null)
-  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
-  const [tableToDelete, setTableToDelete] = useState<number | null>(null)
-  const [isFullScreen, setIsFullScreen] = useState(false)
-  const [isChangePasswordOpen, setIsChangePasswordOpen] = useState(false)
-  const [newPassword, setNewPassword] = useState("")
-  const [isAddGuestOpen, setIsAddGuestOpen] = useState(false)
-  const [isDeleteAllDialogOpen, setIsDeleteAllDialogOpen] = useState(false)
-  const [totalGuests, setTotalGuests] = useState(0)
-  const [showNames, setShowNames] = useState(false)
-  const [isDeleteAllTablesDialogOpen, setIsDeleteAllTablesDialogOpen] = useState(false)
-  const { data: session } = useSession()
-  const { guests: allGuests, loading: guestsLoading, error: guestsError } = useGuests()
-  const [isAssignGuestsDialogOpen, setIsAssignGuestsDialogOpen] = useState(false)
+  const {
+    seats: initialSeats,
+    loading,
+    error,
+    fetchSeats: refreshSeats,
+  } = useSeats();
+  const [isBulkTableDialogOpen, setBulkTableDialogOpen] = useState(false);
+  const [isAddTableOpen, setIsAddTableOpen] = useState(false);
+  const [tables, setTables] = useState<TableData[]>([]);
+  const [selectedSeat, setSelectedSeat] = useState<Seat | null>(null);
+  const [isPersonSelectorOpen, setIsPersonSelectorOpen] = useState(false);
+  const [bookedSeats, setBookedSeats] = useState<Seat[]>([]);
+  const [isConfirmationOpen, setIsConfirmationOpen] = useState(false);
+  const [personToBook, setPersonToBook] = useState<Person | null>(null);
+  const [hoveredSeat, setHoveredSeat] = useState<string | null>(null);
+  const pdfExportRef = useRef<{ generatePDF: () => void } | null>(null);
+  const router = useRouter();
+  const [hoveredTable, setHoveredTable] = useState<string | number | null>(
+    null
+  );
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [tableToDelete, setTableToDelete] = useState<number | null>(null);
+  const [isFullScreen, setIsFullScreen] = useState(false);
+  const [isChangePasswordOpen, setIsChangePasswordOpen] = useState(false);
+  const [newPassword, setNewPassword] = useState("");
+  const [isAddGuestOpen, setIsAddGuestOpen] = useState(false);
+  const [isDeleteAllDialogOpen, setIsDeleteAllDialogOpen] = useState(false);
+  const [totalGuests, setTotalGuests] = useState(0);
+  const [showNames, setShowNames] = useState(false);
+  const [isDeleteAllTablesDialogOpen, setIsDeleteAllTablesDialogOpen] =
+    useState(false);
+  const { data: session } = useSession();
+  const {
+    guests: allGuests,
+    loading: guestsLoading,
+    error: guestsError,
+  } = useGuests();
+  const [isAssignGuestsDialogOpen, setIsAssignGuestsDialogOpen] =
+    useState(false);
 
-  const [isRenameDialogOpen, setIsRenameDialogOpen] = useState(false)
-  const [tableToRename, setTableToRename] = useState<number | null>(null)
-  const [newTableName, setNewTableName] = useState("")
-  const [isRenaming, setIsRenaming] = useState(false)
+  const [isRenameDialogOpen, setIsRenameDialogOpen] = useState(false);
+  const [tableToRename, setTableToRename] = useState<number | null>(null);
+  const [newTableName, setNewTableName] = useState("");
+  const [isRenaming, setIsRenaming] = useState(false);
 
-  console.log(guestsLoading)
-  console.log(guestsError)
+  console.log(guestsLoading);
+  console.log(guestsError);
 
   const getTableInfo = () => {
     return tables.map((table) => ({
       id: table.seats[0].tableId,
       name: table.seats[0]?.table?.name || `Table ${table.tableNumber}`, // Use actual table name from database
       seats: table.seats,
-    }))
-  }
+    }));
+  };
 
   const handleAssignGuests = async (guestIds: string[], tableId: string) => {
     try {
@@ -102,84 +125,87 @@ const SeatBooking = () => {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ guestIds, tableId }),
-      })
+      });
 
-      const data = await response.json()
+      const data = await response.json();
       if (data.success) {
-        refreshSeats()
+        refreshSeats();
       } else {
-        throw new Error(data.message)
+        throw new Error(data.message);
       }
     } catch (error) {
-      throw error
+      throw error;
     }
-  }
-  console.log(error)
+  };
+  console.log(error);
 
   const handleSignOut = async () => {
-    await signOut({ redirect: false })
-    router.push("/login")
-  }
+    await signOut({ redirect: false });
+    router.push("/login");
+  };
 
   useEffect(() => {
     if (initialSeats.length > 0) {
-      const groupedSeats = initialSeats.reduce((acc: { [key: string]: Seat[] }, seat) => {
-        if (!acc[seat.table.name]) {
-          acc[seat.table.name] = []
-        }
-        acc[seat.table.name].push(seat)
-        return acc
-      }, {})
+      const groupedSeats = initialSeats.reduce(
+        (acc: { [key: string]: Seat[] }, seat) => {
+          if (!acc[seat.table.name]) {
+            acc[seat.table.name] = [];
+          }
+          acc[seat.table.name].push(seat);
+          return acc;
+        },
+        {}
+      );
 
       const formattedTables: TableData[] = Object.entries(groupedSeats)
         .map(([tableName, seats]) => ({
           tableNumber: Number.parseInt(tableName.replace("Table", "")),
           seats: seats.sort((a, b) => a.seat - b.seat),
         }))
-        .sort((a, b) => a.tableNumber - b.tableNumber)
+        .sort((a, b) => a.tableNumber - b.tableNumber);
 
-      setTables(formattedTables)
-      setBookedSeats(initialSeats.filter((seat) => seat.isBooked))
+      setTables(formattedTables);
+      setBookedSeats(initialSeats.filter((seat) => seat.isBooked));
     }
-  }, [initialSeats])
+  }, [initialSeats]);
 
   const handleBulkTableCreation = () => {
-    setBulkTableDialogOpen(true)
-  }
+    setBulkTableDialogOpen(true);
+  };
 
   const handleBulkTableSuccess = () => {
-    refreshSeats()
-    toast.success("Tables created successfully")
-  }
+    refreshSeats();
+    toast.success("Tables created successfully");
+  };
 
   // Add fetch function
   const fetchTotalGuests = async () => {
-    const response = await fetch("/api/get-total-guests")
-    const data = await response.json()
-    setTotalGuests(data.data)
-  }
+    const response = await fetch("/api/get-total-guests");
+    const data = await response.json();
+    setTotalGuests(data.data);
+  };
 
   useEffect(() => {
-    fetchTotalGuests()
-  }, [])
+    fetchTotalGuests();
+  }, []);
 
   const handleDeleteAllBookings = async () => {
     try {
-      const toastId = toast.loading("Deleting all bookings...")
+      const toastId = toast.loading("Deleting all bookings...");
 
       const deletePromises = bookedSeats.map((seat) =>
         fetch("/api/delete-booking", {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ seatId: seat.id }),
-        }),
-      )
+        })
+      );
 
-      const results = await Promise.all(deletePromises)
+      const results = await Promise.all(deletePromises);
       const allSuccessful = results.every(async (res) => {
-        const data = await res.json()
-        return data.success
-      })
+        const data = await res.json();
+        return data.success;
+      });
 
       if (allSuccessful) {
         const updatedTables = tables.map((table) => ({
@@ -190,85 +216,89 @@ const SeatBooking = () => {
             userId: null,
             user: null,
           })),
-        }))
+        }));
 
-        setTables(updatedTables)
-        setBookedSeats([])
-        setIsDeleteAllDialogOpen(false)
+        setTables(updatedTables);
+        setBookedSeats([]);
+        setIsDeleteAllDialogOpen(false);
 
-        toast.success("All bookings deleted successfully", { id: toastId })
+        toast.success("All bookings deleted successfully", { id: toastId });
       } else {
-        throw new Error("Some bookings failed to delete")
+        throw new Error("Some bookings failed to delete");
       }
     } catch (error) {
       toast.error("Failed to delete all bookings", {
-        description: error instanceof Error ? error.message : "Unknown error occurred",
-      })
+        description:
+          error instanceof Error ? error.message : "Unknown error occurred",
+      });
     }
-  }
+  };
 
   useEffect(() => {
     if (initialSeats.length > 0) {
-      const groupedSeats = initialSeats.reduce((acc: { [key: string]: Seat[] }, seat) => {
-        if (!acc[seat.table.name]) {
-          acc[seat.table.name] = []
-        }
-        acc[seat.table.name].push(seat)
-        return acc
-      }, {})
+      const groupedSeats = initialSeats.reduce(
+        (acc: { [key: string]: Seat[] }, seat) => {
+          if (!acc[seat.table.name]) {
+            acc[seat.table.name] = [];
+          }
+          acc[seat.table.name].push(seat);
+          return acc;
+        },
+        {}
+      );
 
       const formattedTables: TableData[] = Object.entries(groupedSeats)
         .map(([tableName, seats]) => ({
           tableNumber: Number.parseInt(tableName.replace("Table", "")),
           seats: seats.sort((a, b) => a.seat - b.seat),
         }))
-        .sort((a, b) => a.tableNumber - b.tableNumber)
+        .sort((a, b) => a.tableNumber - b.tableNumber);
 
-      setTables(formattedTables)
-      setBookedSeats(initialSeats.filter((seat) => seat.isBooked))
+      setTables(formattedTables);
+      setBookedSeats(initialSeats.filter((seat) => seat.isBooked));
     }
-  }, [initialSeats])
+  }, [initialSeats]);
 
   useEffect(() => {
     const handleEscKey = (event: KeyboardEvent) => {
       if (event.key === "Escape" && isFullScreen) {
-        setIsFullScreen(false)
-        toast.info("Exited full-screen mode")
+        setIsFullScreen(false);
+        toast.info("Exited full-screen mode");
       }
-    }
+    };
 
-    document.addEventListener("keydown", handleEscKey)
+    document.addEventListener("keydown", handleEscKey);
 
     return () => {
-      document.removeEventListener("keydown", handleEscKey)
-    }
-  }, [isFullScreen])
+      document.removeEventListener("keydown", handleEscKey);
+    };
+  }, [isFullScreen]);
 
   const getVisibleTables = () => {
-    return tables
-  }
+    return tables;
+  };
 
   const handleSeatClick = (seat: Seat) => {
     if (!seat.isBooked) {
-      setSelectedSeat(seat)
-      setIsPersonSelectorOpen(true)
+      setSelectedSeat(seat);
+      setIsPersonSelectorOpen(true);
     }
-  }
+  };
 
   const handlePersonSelect = (person: Person) => {
     if (selectedSeat) {
-      setPersonToBook(person)
-      setIsConfirmationOpen(true)
-      setIsPersonSelectorOpen(false)
+      setPersonToBook(person);
+      setIsConfirmationOpen(true);
+      setIsPersonSelectorOpen(false);
     }
-  }
+  };
 
   const handleConfirmBooking = async () => {
     if (selectedSeat && personToBook) {
-      setIsConfirmationOpen(false)
+      setIsConfirmationOpen(false);
 
       try {
-        const toastId = toast.loading("Booking seat...")
+        const toastId = toast.loading("Booking seat...");
 
         const response = await fetch("/api/update-seat", {
           method: "PUT",
@@ -279,9 +309,9 @@ const SeatBooking = () => {
             seatId: selectedSeat.id,
             userId: personToBook.id,
           }),
-        })
+        });
 
-        const result = await response.json()
+        const result = await response.json();
 
         if (result.success) {
           const updatedTables = tables.map((table) => ({
@@ -299,11 +329,11 @@ const SeatBooking = () => {
                       seat: [],
                     },
                   }
-                : seat,
+                : seat
             ),
-          }))
+          }));
 
-          setTables(updatedTables)
+          setTables(updatedTables);
           setBookedSeats([
             ...bookedSeats,
             {
@@ -317,38 +347,38 @@ const SeatBooking = () => {
                 seat: [],
               },
             },
-          ])
+          ]);
 
           toast.success(
             <div className="flex flex-col gap-1">
               <div className="font-semibold">Booking Confirmed! ✨</div>
               <div className="text-sm opacity-90">
-                {personToBook.firstName} {personToBook.lastName} is assigned to Table {selectedSeat.table.name}, Seat{" "}
-                {selectedSeat.seat}
+                {personToBook.firstName} {personToBook.lastName} is assigned to
+                Table {selectedSeat.table.name}, Seat {selectedSeat.seat}
               </div>
             </div>,
-            { id: toastId, duration: 4000 },
-          )
+            { id: toastId, duration: 4000 }
+          );
         } else {
           toast.error("Booking failed", {
             id: toastId,
             description: result.message || "Unable to book the seat",
-          })
+          });
         }
       } catch (error) {
         toast.error("Booking failed", {
           description: `An unexpected error occurred ${error}`,
-        })
+        });
       } finally {
-        setSelectedSeat(null)
-        setPersonToBook(null)
+        setSelectedSeat(null);
+        setPersonToBook(null);
       }
     }
-  }
+  };
 
   const handleDeleteBooking = async (seatId: string) => {
     try {
-      const toastId = toast.loading("Deleting booking...")
+      const toastId = toast.loading("Deleting booking...");
 
       const response = await fetch("/api/delete-booking", {
         method: "PUT",
@@ -358,9 +388,9 @@ const SeatBooking = () => {
         body: JSON.stringify({
           seatId,
         }),
-      })
+      });
 
-      const result = await response.json()
+      const result = await response.json();
 
       if (result.success) {
         const updatedTables = tables.map((table) => ({
@@ -373,29 +403,31 @@ const SeatBooking = () => {
                   userId: null,
                   user: null,
                 }
-              : seat,
+              : seat
           ),
-        }))
+        }));
 
-        setTables(updatedTables)
-        setBookedSeats(bookedSeats.filter((seat) => seat.id !== seatId))
+        setTables(updatedTables);
+        setBookedSeats(bookedSeats.filter((seat) => seat.id !== seatId));
 
         toast.success(
           <div className="flex flex-col gap-1">
             <div className="font-semibold">Booking Deleted</div>
-            <div className="text-sm opacity-90">The seat has been successfully freed up</div>
+            <div className="text-sm opacity-90">
+              The seat has been successfully freed up
+            </div>
           </div>,
-          { id: toastId },
-        )
+          { id: toastId }
+        );
       } else {
-        throw new Error(result.message || "Failed to delete the booking.")
+        throw new Error(result.message || "Failed to delete the booking.");
       }
     } catch (error) {
       toast.error("Delete Failed", {
         description: `An unexpected error occurred while deleting the booking ${error}`,
-      })
+      });
     }
-  }
+  };
 
   const getTableColor = (index: number) => {
     const colors = [
@@ -407,9 +439,9 @@ const SeatBooking = () => {
       "bg-pink-100 text-pink-700 border-pink-300",
       "bg-indigo-100 text-indigo-700 border-indigo-300",
       "bg-teal-100 text-teal-700 border-teal-300",
-    ]
-    return colors[index % colors.length]
-  }
+    ];
+    return colors[index % colors.length];
+  };
 
   const handleDeleteTable = async (tableId: number) => {
     try {
@@ -419,134 +451,145 @@ const SeatBooking = () => {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({ tableId }),
-      })
+      });
 
-      const result = await response.json()
+      const result = await response.json();
 
       if (result.success) {
-        toast.success("Table deleted successfully")
-        setTables(tables.filter((t) => t.tableNumber !== tableId))
-        setBookedSeats(bookedSeats.filter((seat) => seat.table.name !== `Table ${tableId}`))
-        router.refresh()
-        setIsDeleteDialogOpen(false)
+        toast.success("Table deleted successfully");
+        setTables(tables.filter((t) => t.tableNumber !== tableId));
+        setBookedSeats(
+          bookedSeats.filter((seat) => seat.table.name !== `Table ${tableId}`)
+        );
+        router.refresh();
+        setIsDeleteDialogOpen(false);
       } else {
-        throw new Error(result.message || "Failed to delete table")
+        throw new Error(result.message || "Failed to delete table");
       }
     } catch (error) {
       toast.error("Failed to delete table", {
-        description: error instanceof Error ? error.message : "Unknown error occurred",
-      })
+        description:
+          error instanceof Error ? error.message : "Unknown error occurred",
+      });
     }
-  }
+  };
 
-const handleRenameTable = async () => {
-  if (!tableToRename || !newTableName.trim()) {
-    toast.error("Please enter a valid table name")
-    return
-  }
-
-  setIsRenaming(true)
-  
-  try {
-    // Find the table to get its ID - fix the ID comparison logic
-    const tableToUpdate = tables.find((t) => {
-      const currentTableId = t.seats[0]?.table?.id || t.tableNumber
-      return currentTableId === tableToRename
-    })
-    
-    if (!tableToUpdate) {
-      throw new Error("Table not found in local data")
+  const handleRenameTable = async () => {
+    if (!tableToRename || !newTableName.trim()) {
+      toast.error("Please enter a valid table name");
+      return;
     }
 
-    // Get the actual table ID from the database
-    const actualTableId = tableToUpdate.seats[0]?.table?.id
-    
-    if (!actualTableId) {
-      throw new Error("Table ID is missing from database")
-    }
+    setIsRenaming(true);
 
-    console.log("Renaming table:", {
-      tableToRename,
-      actualTableId,
-      newName: newTableName.trim()
-    })
+    try {
+      // Find the table to get its ID - fix the ID comparison logic
+      const tableToUpdate = tables.find((t) => {
+        const currentTableId = t.seats[0]?.table?.id || t.tableNumber;
+        return currentTableId === tableToRename;
+      });
 
-    const response = await fetch(`/api/table-rename`, {
-      method: "PATCH", 
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        tableId: actualTableId, // Use the actual database table ID
+      if (!tableToUpdate) {
+        throw new Error("Table not found in local data");
+      }
+
+      // Get the actual table ID from the database
+      const actualTableId = tableToUpdate.seats[0]?.table?.id;
+
+      if (!actualTableId) {
+        throw new Error("Table ID is missing from database");
+      }
+
+      console.log("Renaming table:", {
+        tableToRename,
+        actualTableId,
         newName: newTableName.trim(),
-      }),
-    })
+      });
 
-    const result = await response.json()
-    
-    if (!response.ok) {
-      throw new Error(result.message || `HTTP error! status: ${response.status}`)
+      const response = await fetch(`/api/table-rename`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          tableId: actualTableId, // Use the actual database table ID
+          newName: newTableName.trim(),
+        }),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(
+          result.message || `HTTP error! status: ${response.status}`
+        );
+      }
+
+      if (result.success) {
+        toast.success("Table renamed successfully");
+
+        // Update local state
+        setTables((prevTables) =>
+          prevTables.map((table) => {
+            const currentTableId =
+              table.seats[0]?.table?.id || table.tableNumber;
+            return currentTableId === tableToRename
+              ? {
+                  ...table,
+                  seats: table.seats.map((seat) => ({
+                    ...seat,
+                    table: { ...seat.table, name: newTableName.trim() },
+                  })),
+                }
+              : table;
+          })
+        );
+
+        // Update booked seats state
+        const oldTableName =
+          tableToUpdate.seats[0]?.table?.name ||
+          `Table ${tableToUpdate.tableNumber}`;
+        setBookedSeats((prevSeats) =>
+          prevSeats.map((seat) =>
+            seat.table.name === oldTableName
+              ? { ...seat, table: { ...seat.table, name: newTableName.trim() } }
+              : seat
+          )
+        );
+
+        // Reset dialog state
+        setIsRenameDialogOpen(false);
+        setNewTableName("");
+        setTableToRename(null);
+      } else {
+        throw new Error(result.message || "Failed to rename table");
+      }
+    } catch (error) {
+      console.error("Rename table error:", error);
+      toast.error("Failed to rename table", {
+        description:
+          error instanceof Error ? error.message : "Unknown error occurred",
+      });
+    } finally {
+      setIsRenaming(false);
     }
-    
-    if (result.success) {
-      toast.success("Table renamed successfully")
-      
-      // Update local state
-      setTables((prevTables) =>
-        prevTables.map((table) => {
-          const currentTableId = table.seats[0]?.table?.id || table.tableNumber
-          return currentTableId === tableToRename
-            ? {
-                ...table,
-                seats: table.seats.map((seat) => ({
-                  ...seat,
-                  table: { ...seat.table, name: newTableName.trim() },
-                })),
-              }
-            : table
-        })
-      )
-
-      // Update booked seats state
-      const oldTableName = tableToUpdate.seats[0]?.table?.name || `Table ${tableToUpdate.tableNumber}`
-      setBookedSeats((prevSeats) =>
-        prevSeats.map((seat) =>
-          seat.table.name === oldTableName 
-            ? { ...seat, table: { ...seat.table, name: newTableName.trim() } } 
-            : seat
-        )
-      )
-
-      // Reset dialog state
-      setIsRenameDialogOpen(false)
-      setNewTableName("")
-      setTableToRename(null)
-      
-    } else {
-      throw new Error(result.message || "Failed to rename table")
-    }
-  } catch (error) {
-    console.error("Rename table error:", error)
-    toast.error("Failed to rename table", {
-      description: error instanceof Error ? error.message : "Unknown error occurred",
-    })
-  } finally {
-    setIsRenaming(false)
-  }
-}
+  };
 
   const renderCircularTable = (table: TableData, index: number) => {
-    const tableId = table.seats[0]?.table?.id || table.tableNumber
-    const tableName = table.seats[0]?.table?.name
-    const tableNumber = table.tableNumber
-    const displayName = !isNaN(tableNumber) && tableNumber !== null ? `Table ${tableNumber}` : tableName
-    const tableColor = getTableColor(index)
-    const isHovered = hoveredTable === tableId
+    const tableId = table.seats[0]?.table?.id || table.tableNumber;
+    const tableName = table.seats[0]?.table?.name;
+    const tableNumber = table.tableNumber;
+    // Use the actual table name from the database, fall back to "Table X" format only if no name exists
+    const displayName = tableName || `Table ${tableNumber}`;
+    const tableColor = getTableColor(index);
+    const isHovered = hoveredTable === tableId;
 
     return (
       <motion.div
         key={tableId}
-        className={`relative w-full aspect-square mx-auto ${isFullScreen ? "max-w-[500px]" : "max-w-[300px]"}`}
+        className={`relative w-full aspect-square mx-auto ${
+          isFullScreen ? "max-w-[500px]" : "max-w-[300px]"
+        }`}
         onMouseEnter={() => setHoveredTable(tableId)}
         onMouseLeave={() => setHoveredTable(null)}
         layout
@@ -561,7 +604,9 @@ const handleRenameTable = async () => {
             className={`relative ${tableColor} rounded-full px-4 py-2 transition-all duration-200 ease-in-out mt-5 ml-5`}
           >
             <span className="flex items-center justify-center">
-              <span className={`font-semibold text-lg text-center`}>{displayName}</span>
+              <span className={`font-semibold text-lg text-center`}>
+                {displayName}
+              </span>
             </span>
 
             {/* Action Buttons - Shows on Hover */}
@@ -574,21 +619,22 @@ const handleRenameTable = async () => {
                 <TooltipProvider>
                   <Tooltip>
                     <TooltipTrigger asChild>
-<Button
-  variant="secondary"
-  size="sm"
-  className="rounded-full w-8 h-8 p-0 bg-blue-500 hover:bg-blue-600 text-white"
-  onClick={(e) => {
-    e.stopPropagation()
-    // Store the correct identifier - use table.seats[0]?.table?.id if available, otherwise use tableId
-    const actualTableId = table.seats[0]?.table?.id || tableId
-    setTableToRename(actualTableId)
-    setNewTableName(displayName)
-    setIsRenameDialogOpen(true)
-  }}
->
-  <Edit3 className="h-4 w-4" />
-</Button>
+                      <Button
+                        variant="secondary"
+                        size="sm"
+                        className="rounded-full w-8 h-8 p-0 bg-blue-500 hover:bg-blue-600 text-white"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          // Store the correct identifier - use table.seats[0]?.table?.id if available, otherwise use tableId
+                          const actualTableId =
+                            table.seats[0]?.table?.id || tableId;
+                          setTableToRename(actualTableId);
+                          setNewTableName(displayName);
+                          setIsRenameDialogOpen(true);
+                        }}
+                      >
+                        <Edit3 className="h-4 w-4" />
+                      </Button>
                     </TooltipTrigger>
                     <TooltipContent>
                       <p>Rename {displayName}</p>
@@ -603,9 +649,9 @@ const handleRenameTable = async () => {
                         size="sm"
                         className="rounded-full w-8 h-8 p-0"
                         onClick={(e) => {
-                          e.stopPropagation()
-                          setTableToDelete(tableId)
-                          setIsDeleteDialogOpen(true)
+                          e.stopPropagation();
+                          setTableToDelete(tableId);
+                          setIsDeleteDialogOpen(true);
                         }}
                       >
                         <Trash2 className="h-4 w-4" />
@@ -623,11 +669,11 @@ const handleRenameTable = async () => {
 
         {/* Circular Seats */}
         {table.seats.map((seat, seatIndex) => {
-          const countofseats = table.seats.length
-          const angle = ((seatIndex - 2.5) * 2 * Math.PI) / countofseats
-          const radius = 45
-          const left = 45 + Math.cos(angle) * radius
-          const top = 45 + Math.sin(angle) * radius
+          const countofseats = table.seats.length;
+          const angle = ((seatIndex - 2.5) * 2 * Math.PI) / countofseats;
+          const radius = 45;
+          const left = 45 + Math.cos(angle) * radius;
+          const top = 45 + Math.sin(angle) * radius;
 
           return (
             <motion.div
@@ -635,7 +681,9 @@ const handleRenameTable = async () => {
               initial={{ opacity: 0, scale: 0.5 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.3, delay: seatIndex * 0.05 }}
-              className={`absolute ${isFullScreen ? "w-[20%]" : "w-[15%]"} aspect-square`}
+              className={`absolute ${
+                isFullScreen ? "w-[20%]" : "w-[15%]"
+              } aspect-square`}
               style={{
                 left: `${left}%`,
                 top: `${top}%`,
@@ -654,14 +702,12 @@ const handleRenameTable = async () => {
                         ${
                           seat.isBooked
                             ? "cursor-pointer " +
-                              (
-                                seat.isReceived
-                                  ? "bg-green-200 border-green-300 text-green-600"
-                                  : "bg-red-200 border-red-300 text-red-600"
-                              )
+                              (seat.isReceived
+                                ? "bg-green-200 border-green-300 text-green-600"
+                                : "bg-red-200 border-red-300 text-red-600")
                             : hoveredSeat === seat.id
-                              ? `${tableColor} cursor-pointer`
-                              : `bg-white hover:${tableColor} cursor-pointer`
+                            ? `${tableColor} cursor-pointer`
+                            : `bg-white hover:${tableColor} cursor-pointer`
                         }
                         border-2
                       `}
@@ -675,7 +721,13 @@ const handleRenameTable = async () => {
                           <span className="font-bold text-lg">X</span>
                         )
                       ) : (
-                        <span className={`text-sm font-medium ${isFullScreen ? "text-lg" : ""}`}>{seat.seat}</span>
+                        <span
+                          className={`text-sm font-medium ${
+                            isFullScreen ? "text-lg" : ""
+                          }`}
+                        >
+                          {seat.seat}
+                        </span>
                       )}
                     </div>
                   </TooltipTrigger>
@@ -688,7 +740,9 @@ const handleRenameTable = async () => {
                         <p className="text-xs text-muted-foreground">
                           {seat.table.name}, Seat {seat.seat}
                         </p>
-                        <p className="text-xs font-medium">Status: {seat.isReceived ? "Arrived" : "Not Arrived"}</p>
+                        <p className="text-xs font-medium">
+                          Status: {seat.isReceived ? "Arrived" : "Not Arrived"}
+                        </p>
                         {/* <p className="text-xs text-muted-foreground mt-1">
                           Click to {seat.isReceived ? "mark as not arrived" : "mark as arrived"}
                         </p> */}
@@ -711,18 +765,18 @@ const handleRenameTable = async () => {
                 </motion.div>
               )}
             </motion.div>
-          )
+          );
         })}
       </motion.div>
-    )
-  }
+    );
+  };
 
   const handleFullScreenToggle = (checked: boolean) => {
-    setIsFullScreen(checked)
+    setIsFullScreen(checked);
     if (checked) {
-      toast.info("Press Esc to exit full-screen mode")
+      toast.info("Press Esc to exit full-screen mode");
     }
-  }
+  };
 
   const handleChangePassword = async () => {
     try {
@@ -732,18 +786,18 @@ const handleRenameTable = async () => {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({ newPassword }),
-      })
-      const data = await response.json()
+      });
+      const data = await response.json();
       if (data.success) {
-        toast.success("Password changed successfully")
-        setIsChangePasswordOpen(false)
+        toast.success("Password changed successfully");
+        setIsChangePasswordOpen(false);
       } else {
-        toast.error("Failed to change password")
+        toast.error("Failed to change password");
       }
     } catch (error) {
-      toast.error(`An error occurred while changing the password ${error}`)
+      toast.error(`An error occurred while changing the password ${error}`);
     }
-  }
+  };
 
   const handleToggleReceived = async (seatId: string, isReceived: boolean) => {
     try {
@@ -756,57 +810,69 @@ const handleRenameTable = async () => {
           seatId,
           isReceived,
         }),
-      })
+      });
 
-      const result = await response.json()
+      const result = await response.json();
 
       if (result.success) {
         const updatedTables = tables.map((table) => ({
           ...table,
-          seats: table.seats.map((seat) => (seat.id === seatId ? { ...seat, isReceived } : seat)),
-        }))
+          seats: table.seats.map((seat) =>
+            seat.id === seatId ? { ...seat, isReceived } : seat
+          ),
+        }));
 
-        setTables(updatedTables)
-        setBookedSeats(bookedSeats.map((seat) => (seat.id === seatId ? { ...seat, isReceived } : seat)))
+        setTables(updatedTables);
+        setBookedSeats(
+          bookedSeats.map((seat) =>
+            seat.id === seatId ? { ...seat, isReceived } : seat
+          )
+        );
 
-        toast.success(`Seat ${isReceived ? "marked as arrived" : "unmarked as arrived"}`)
+        toast.success(
+          `Seat ${isReceived ? "marked as arrived" : "unmarked as arrived"}`
+        );
       } else {
-        throw new Error(result.message || "Failed to update seat arrived status")
+        throw new Error(
+          result.message || "Failed to update seat arrived status"
+        );
       }
     } catch (error) {
       toast.error("Failed to update seat arrived status", {
-        description: error instanceof Error ? error.message : "Unknown error occurred",
-      })
+        description:
+          error instanceof Error ? error.message : "Unknown error occurred",
+      });
     }
-  }
+  };
 
   const handleDeleteAllTables = async () => {
     try {
-      const toastId = toast.loading("Deleting all tables...")
+      const toastId = toast.loading("Deleting all tables...");
 
       const response = await fetch("/api/delete-all-tables", {
         method: "DELETE",
-      })
+      });
 
-      const result = await response.json()
+      const result = await response.json();
 
       if (result.success) {
-        setTables([])
-        setBookedSeats([])
-        setIsDeleteAllTablesDialogOpen(false)
-        toast.success("All tables deleted successfully", { id: toastId })
+        setTables([]);
+        setBookedSeats([]);
+        setIsDeleteAllTablesDialogOpen(false);
+        toast.success("All tables deleted successfully", { id: toastId });
       } else {
-        throw new Error(result.message || "Failed to delete all tables")
+        throw new Error(result.message || "Failed to delete all tables");
       }
     } catch (error) {
       toast.error("Failed to delete all tables", {
-        description: error instanceof Error ? error.message : "Unknown error occurred",
-      })
+        description:
+          error instanceof Error ? error.message : "Unknown error occurred",
+      });
     }
-  }
+  };
 
   if (loading) {
-    return <Loader />
+    return <Loader />;
   }
 
   return (
@@ -821,15 +887,27 @@ const handleRenameTable = async () => {
           >
             <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-0 sm:justify-between h-auto min-h-14 py-2">
               {/* Logo */}
-              <Link href="/" className="flex justify-center items-center space-x-2">
-                <Image src="/logo.jpg" alt="Seating4U Logo" width={150} height={80} />
+              <Link
+                href="/"
+                className="flex justify-center items-center space-x-2"
+              >
+                <Image
+                  src="/logo.jpg"
+                  alt="Seating4U Logo"
+                  width={150}
+                  height={80}
+                />
               </Link>
 
               {/* Right Section - Now with better mobile layout */}
               <div className="flex flex-wrap justify-center sm:justify-end items-center gap-2 sm:gap-4">
                 {/* Primary Actions Group */}
                 <div className="flex items-center gap-2">
-                  <Button onClick={refreshSeats} size="icon" className="w-8 h-8 sm:w-10 sm:h-10">
+                  <Button
+                    onClick={refreshSeats}
+                    size="icon"
+                    className="w-8 h-8 sm:w-10 sm:h-10"
+                  >
                     <RefreshCcw className="w-4 h-4 sm:w-5 sm:h-5" />
                   </Button>
 
@@ -839,14 +917,18 @@ const handleRenameTable = async () => {
                         <Button
                           size="icon"
                           className={`w-8 h-8 sm:w-10 sm:h-10 ${
-                            showNames ? "bg-blue-100 text-blue-700 hover:bg-blue-200" : ""
+                            showNames
+                              ? "bg-blue-100 text-blue-700 hover:bg-blue-200"
+                              : ""
                           }`}
                           onClick={() => setShowNames(!showNames)}
                         >
                           <FolderPen className="w-4 h-4 sm:w-5 sm:h-5" />
                         </Button>
                       </TooltipTrigger>
-                      <TooltipContent>{showNames ? "Hide booked names" : "Show booked names"}</TooltipContent>
+                      <TooltipContent>
+                        {showNames ? "Hide booked names" : "Show booked names"}
+                      </TooltipContent>
                     </Tooltip>
                   </TooltipProvider>
                 </div>
@@ -855,7 +937,10 @@ const handleRenameTable = async () => {
                 <div className="flex items-center gap-2">
                   <div className="hidden sm:flex items-center space-x-2">
                     <span className="text-sm font-medium">Full Screen</span>
-                    <Switch checked={isFullScreen} onCheckedChange={handleFullScreenToggle} />
+                    <Switch
+                      checked={isFullScreen}
+                      onCheckedChange={handleFullScreenToggle}
+                    />
                   </div>
 
                   <HelpButton />
@@ -868,11 +953,17 @@ const handleRenameTable = async () => {
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className="w-48">
                       {/* Mobile-friendly action items */}
-                      <DropdownMenuItem onClick={() => setIsAssignGuestsDialogOpen(true)}>
-                        <UserCheck2 className="mr-2 w-4 h-4" /> Assign Multiple Guests
+                      <DropdownMenuItem
+                        onClick={() => setIsAssignGuestsDialogOpen(true)}
+                      >
+                        <UserCheck2 className="mr-2 w-4 h-4" /> Assign Multiple
+                        Guests
                       </DropdownMenuItem>
                       <DropdownMenuItem asChild>
-                        <Link href="/seat-scanning" className="flex items-center">
+                        <Link
+                          href="/seat-scanning"
+                          className="flex items-center"
+                        >
                           <ScanQrCode className="mr-2 w-4 h-4" /> Scan QR Code
                         </Link>
                       </DropdownMenuItem>
@@ -883,12 +974,15 @@ const handleRenameTable = async () => {
                       </DropdownMenuItem>
                       <DropdownMenuItem asChild>
                         <Link href="/client-view" className="flex items-center">
-                          <PersonStandingIcon className="mr-2 w-4 h-4" /> Client View
+                          <PersonStandingIcon className="mr-2 w-4 h-4" /> Client
+                          View
                         </Link>
                       </DropdownMenuItem>
                       {session?.user?.email === "admin" && (
                         <DropdownMenuItem asChild>
-                          <Link href="/dashboard/manage-users">Manage Users</Link>
+                          <Link href="/dashboard/manage-users">
+                            Manage Users
+                          </Link>
                         </DropdownMenuItem>
                       )}
                     </DropdownMenuContent>
@@ -903,13 +997,22 @@ const handleRenameTable = async () => {
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className="w-48">
-                      <DropdownMenuItem className="cursor-pointer" onClick={() => setIsAddTableOpen(true)}>
+                      <DropdownMenuItem
+                        className="cursor-pointer"
+                        onClick={() => setIsAddTableOpen(true)}
+                      >
                         New Table
                       </DropdownMenuItem>
-                      <DropdownMenuItem className="cursor-pointer" onClick={handleBulkTableCreation}>
+                      <DropdownMenuItem
+                        className="cursor-pointer"
+                        onClick={handleBulkTableCreation}
+                      >
                         Bulk Create Tables
                       </DropdownMenuItem>
-                      <DropdownMenuItem className="cursor-pointer" onClick={() => setIsAddGuestOpen(true)}>
+                      <DropdownMenuItem
+                        className="cursor-pointer"
+                        onClick={() => setIsAddGuestOpen(true)}
+                      >
                         New Guest
                       </DropdownMenuItem>
                       <ImportGuestsforWeb />
@@ -927,13 +1030,20 @@ const handleRenameTable = async () => {
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Avatar className="cursor-pointer w-8 h-8 sm:w-10 sm:h-10">
-                        <AvatarImage src="https://github.com/shadcn.png" alt="@shadcn" />
+                        <AvatarImage
+                          src="https://github.com/shadcn.png"
+                          alt="@shadcn"
+                        />
                         <AvatarFallback>JA</AvatarFallback>
                       </Avatar>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className="flex flex-col">
                       <ChangePasswordDialog />
-                      <Button variant="destructive" onClick={handleSignOut} className="mt-4">
+                      <Button
+                        variant="destructive"
+                        onClick={handleSignOut}
+                        className="mt-4"
+                      >
                         Sign out
                       </Button>
                     </DropdownMenuContent>
@@ -946,11 +1056,17 @@ const handleRenameTable = async () => {
       </AnimatePresence>
 
       {/* Main Content */}
-      <div className={`flex flex-col lg:flex-row ${isFullScreen ? "h-screen" : "h-[calc(100vh-64px)]"}`}>
+      <div
+        className={`flex flex-col lg:flex-row ${
+          isFullScreen ? "h-screen" : "h-[calc(100vh-64px)]"
+        }`}
+      >
         {/* Main Content - Tables */}
         <motion.div
           layout
-          className={`w-full ${isFullScreen ? "" : "lg:w-full xl:w-3/4"} bg-zinc-50 overflow-hidden`}
+          className={`w-full ${
+            isFullScreen ? "" : "lg:w-full xl:w-3/4"
+          } bg-zinc-50 overflow-hidden`}
           transition={{ duration: 0.5 }}
         >
           <AnimatePresence>
@@ -968,40 +1084,64 @@ const handleRenameTable = async () => {
                   <div className="w-full md:w-auto">
                     <div className="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-5 gap-2 md:gap-3">
                       <div className="bg-zinc-50 rounded-lg border border-zinc-200 p-2 text-center hover:shadow-sm transition-all">
-                        <div className="text-xs uppercase tracking-wider text-zinc-500 mb-1">Seats</div>
+                        <div className="text-xs uppercase tracking-wider text-zinc-500 mb-1">
+                          Seats
+                        </div>
                         <div className="text-lg font-bold text-zinc-800">
-                          {tables.reduce((total, table) => total + table.seats.length, 0)}
+                          {tables.reduce(
+                            (total, table) => total + table.seats.length,
+                            0
+                          )}
                         </div>
                       </div>
                       <div className="bg-cyan-50 rounded-lg border border-cyan-200 p-2 text-center hover:shadow-sm transition-all">
-                        <div className="text-xs uppercase tracking-wider text-cyan-600 mb-1">Invited</div>
-                        <div className="text-lg font-bold text-cyan-800">{totalGuests}</div>
+                        <div className="text-xs uppercase tracking-wider text-cyan-600 mb-1">
+                          Invited
+                        </div>
+                        <div className="text-lg font-bold text-cyan-800">
+                          {totalGuests}
+                        </div>
                       </div>
                       <div className="bg-red-50 rounded-lg border border-red-200 p-2 text-center hover:shadow-sm transition-all">
-                        <div className="text-xs uppercase tracking-wider text-red-600 mb-1">Booked</div>
+                        <div className="text-xs uppercase tracking-wider text-red-600 mb-1">
+                          Booked
+                        </div>
                         <div className="text-lg font-bold text-red-800">
                           {tables.reduce(
-                            (booked, table) => booked + table.seats.filter((seat) => seat.isBooked).length,
-                            0,
+                            (booked, table) =>
+                              booked +
+                              table.seats.filter((seat) => seat.isBooked)
+                                .length,
+                            0
                           )}
                         </div>
                       </div>
                       <div className="bg-green-50 rounded-lg border border-green-200 p-2 text-center hover:shadow-sm transition-all">
-                        <div className="text-xs uppercase tracking-wider text-green-600 mb-1">Available</div>
+                        <div className="text-xs uppercase tracking-wider text-green-600 mb-1">
+                          Available
+                        </div>
                         <div className="text-lg font-bold text-green-800">
                           {tables.reduce(
-                            (available, table) => available + table.seats.filter((seat) => !seat.isBooked).length,
-                            0,
+                            (available, table) =>
+                              available +
+                              table.seats.filter((seat) => !seat.isBooked)
+                                .length,
+                            0
                           )}
                         </div>
                       </div>
                       <div className="bg-blue-50 rounded-lg border border-blue-200 p-2 text-center hover:shadow-sm transition-all">
-                        <div className="text-xs uppercase tracking-wider text-blue-600 mb-1">Arrived</div>
+                        <div className="text-xs uppercase tracking-wider text-blue-600 mb-1">
+                          Arrived
+                        </div>
                         <div className="text-lg font-bold text-blue-800">
                           {tables.reduce(
                             (arrived, table) =>
-                              arrived + table.seats.filter((seat) => seat.isBooked && seat.isReceived).length,
-                            0,
+                              arrived +
+                              table.seats.filter(
+                                (seat) => seat.isBooked && seat.isReceived
+                              ).length,
+                            0
                           )}
                         </div>
                       </div>
@@ -1030,7 +1170,9 @@ const handleRenameTable = async () => {
           </AnimatePresence>
 
           {/* Scrollable Table Grid */}
-          <ScrollArea className={`${isFullScreen ? "h-screen" : "h-[calc(100vh-144px)]"}`}>
+          <ScrollArea
+            className={`${isFullScreen ? "h-screen" : "h-[calc(100vh-144px)]"}`}
+          >
             <motion.div
               layout
               className={`py-6 px-8 grid gap-12 sm:pb-[3rem] pb-[9rem]`}
@@ -1041,7 +1183,9 @@ const handleRenameTable = async () => {
               }}
               transition={{ duration: 0.5 }}
             >
-              {getVisibleTables().map((table, index) => renderCircularTable(table, index))}
+              {getVisibleTables().map((table, index) =>
+                renderCircularTable(table, index)
+              )}
             </motion.div>
           </ScrollArea>
         </motion.div>
@@ -1088,7 +1232,9 @@ const handleRenameTable = async () => {
       <Dialog open={isConfirmationOpen} onOpenChange={setIsConfirmationOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle className="text-xl font-bold text-zinc-800">Confirm Booking</DialogTitle>
+            <DialogTitle className="text-xl font-bold text-zinc-800">
+              Confirm Booking
+            </DialogTitle>
             <DialogDescription className="mt-2">
               <div className="space-y-2">
                 <div className="p-4 bg-zinc-50 rounded-lg">
@@ -1099,7 +1245,9 @@ const handleRenameTable = async () => {
                     {personToBook?.firstName} {personToBook?.lastName}
                   </p>
                 </div>
-                <p className="text-sm text-zinc-600">Please confirm if you want to proceed with this booking.</p>
+                <p className="text-sm text-zinc-600">
+                  Please confirm if you want to proceed with this booking.
+                </p>
               </div>
             </DialogDescription>
           </DialogHeader>
@@ -1121,7 +1269,7 @@ const handleRenameTable = async () => {
         isOpen={isAddTableOpen}
         onClose={() => setIsAddTableOpen(false)}
         onSuccess={() => {
-          router.refresh()
+          router.refresh();
         }}
       />
 
@@ -1129,7 +1277,7 @@ const handleRenameTable = async () => {
       <PasswordVerificationDialog
         open={isDeleteDialogOpen}
         onOpenChange={(open) => {
-          setIsDeleteDialogOpen(open)
+          setIsDeleteDialogOpen(open);
         }}
         onVerified={() => tableToDelete && handleDeleteTable(tableToDelete)}
         action="delete table"
@@ -1147,8 +1295,8 @@ const handleRenameTable = async () => {
         isOpen={isAddGuestOpen}
         onClose={() => setIsAddGuestOpen(false)}
         onSuccess={() => {
-          setIsAddGuestOpen(false)
-          router.refresh()
+          setIsAddGuestOpen(false);
+          router.refresh();
         }}
       />
 
@@ -1160,11 +1308,18 @@ const handleRenameTable = async () => {
         onAssignGuests={handleAssignGuests}
       />
 
-      <Dialog open={isChangePasswordOpen} onOpenChange={setIsChangePasswordOpen}>
+      <Dialog
+        open={isChangePasswordOpen}
+        onOpenChange={setIsChangePasswordOpen}
+      >
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle className="text-xl font-bold text-zinc-800">Change Password</DialogTitle>
-            <DialogDescription className="mt-2">Enter your new password below.</DialogDescription>
+            <DialogTitle className="text-xl font-bold text-zinc-800">
+              Change Password
+            </DialogTitle>
+            <DialogDescription className="mt-2">
+              Enter your new password below.
+            </DialogDescription>
           </DialogHeader>
           <div className="mt-4">
             <Input
@@ -1175,7 +1330,11 @@ const handleRenameTable = async () => {
             />
           </div>
           <DialogFooter className="flex-col sm:flex-row gap-2 mt-4">
-            <Button variant="outline" onClick={() => setIsChangePasswordOpen(false)} className="w-full sm:w-auto">
+            <Button
+              variant="outline"
+              onClick={() => setIsChangePasswordOpen(false)}
+              className="w-full sm:w-auto"
+            >
               Cancel
             </Button>
             <Button onClick={handleChangePassword}>Change Password</Button>
@@ -1206,27 +1365,39 @@ const handleRenameTable = async () => {
       <Dialog
         open={isRenameDialogOpen}
         onOpenChange={(open) => {
-          setIsRenameDialogOpen(open)
+          setIsRenameDialogOpen(open);
           if (!open) {
-            setNewTableName("")
-            setTableToRename(null)
+            setNewTableName("");
+            setTableToRename(null);
           }
         }}
       >
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle className="text-xl font-bold text-blue-800">Rename Table</DialogTitle>
+            <DialogTitle className="text-xl font-bold text-blue-800">
+              Rename Table
+            </DialogTitle>
             <DialogDescription className="mt-2">
               <div className="space-y-2">
                 <div className="p-4 bg-blue-50 rounded-lg">
                   <p className="font-medium text-blue-700">
                     Rename{" "}
-                    {tables.find((t) => (t.seats[0]?.table?.id || t.tableNumber) === tableToRename)?.seats[0]?.table
-                      ?.name ||
-                      `Table ${tables.find((t) => (t.seats[0]?.table?.id || t.tableNumber) === tableToRename)?.tableNumber}`}
+                    {tables.find(
+                      (t) =>
+                        (t.seats[0]?.table?.id || t.tableNumber) ===
+                        tableToRename
+                    )?.seats[0]?.table?.name ||
+                      `Table ${
+                        tables.find(
+                          (t) =>
+                            (t.seats[0]?.table?.id || t.tableNumber) ===
+                            tableToRename
+                        )?.tableNumber
+                      }`}
                   </p>
                   <p className="text-blue-600 text-sm mt-2">
-                    Enter a new name for this table. The change will be applied immediately.
+                    Enter a new name for this table. The change will be applied
+                    immediately.
                   </p>
                 </div>
               </div>
@@ -1235,7 +1406,10 @@ const handleRenameTable = async () => {
 
           <div className="space-y-4 py-4">
             <div className="space-y-2">
-              <label htmlFor="newTableName" className="text-sm font-medium text-gray-700">
+              <label
+                htmlFor="newTableName"
+                className="text-sm font-medium text-gray-700"
+              >
                 New Table Name
               </label>
               <Input
@@ -1246,7 +1420,7 @@ const handleRenameTable = async () => {
                 className="w-full"
                 onKeyDown={(e) => {
                   if (e.key === "Enter" && !isRenaming && newTableName.trim()) {
-                    handleRenameTable()
+                    handleRenameTable();
                   }
                 }}
               />
@@ -1254,7 +1428,11 @@ const handleRenameTable = async () => {
           </div>
 
           <DialogFooter className="flex justify-end gap-2">
-            <Button variant="outline" onClick={() => setIsRenameDialogOpen(false)} disabled={isRenaming}>
+            <Button
+              variant="outline"
+              onClick={() => setIsRenameDialogOpen(false)}
+              disabled={isRenaming}
+            >
               Cancel
             </Button>
             <Button
@@ -1268,7 +1446,7 @@ const handleRenameTable = async () => {
         </DialogContent>
       </Dialog>
     </div>
-  )
-}
+  );
+};
 
-export default SeatBooking
+export default SeatBooking;
