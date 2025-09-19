@@ -25,10 +25,11 @@ import {
   Menu,
   PersonStandingIcon,
   RefreshCcw,
-  QrCodeIcon as ScanQrCode,
+  ScanBarcode as ScanQrCode,
   Trash,
   Trash2,
-  UserCheck2
+  UserCheck2,
+  Edit3,
 } from "lucide-react"
 import { signOut, useSession } from "next-auth/react"
 import Image from "next/image"
@@ -64,7 +65,7 @@ const SeatBooking = () => {
   const [hoveredSeat, setHoveredSeat] = useState<string | null>(null)
   const pdfExportRef = useRef<{ generatePDF: () => void } | null>(null)
   const router = useRouter()
-  const [hoveredTable, setHoveredTable] = useState<number | null>(null)
+  const [hoveredTable, setHoveredTable] = useState<string | number | null>(null)
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
   const [tableToDelete, setTableToDelete] = useState<number | null>(null)
   const [isFullScreen, setIsFullScreen] = useState(false)
@@ -79,13 +80,18 @@ const SeatBooking = () => {
   const { guests: allGuests, loading: guestsLoading, error: guestsError } = useGuests()
   const [isAssignGuestsDialogOpen, setIsAssignGuestsDialogOpen] = useState(false)
 
+  const [isRenameDialogOpen, setIsRenameDialogOpen] = useState(false)
+  const [tableToRename, setTableToRename] = useState<number | null>(null)
+  const [newTableName, setNewTableName] = useState("")
+  const [isRenaming, setIsRenaming] = useState(false)
+
   console.log(guestsLoading)
   console.log(guestsError)
 
   const getTableInfo = () => {
     return tables.map((table) => ({
       id: table.seats[0].tableId,
-      name: `Table ${table.tableNumber}`,
+      name: table.seats[0]?.table?.name || `Table ${table.tableNumber}`, // Use actual table name from database
       seats: table.seats,
     }))
   }
@@ -382,10 +388,7 @@ const SeatBooking = () => {
           { id: toastId },
         )
       } else {
-        toast.error("Delete Failed", {
-          id: toastId,
-          description: "There was an error deleting the booking.",
-        })
+        throw new Error(result.message || "Failed to delete the booking.")
       }
     } catch (error) {
       toast.error("Delete Failed", {
@@ -394,7 +397,7 @@ const SeatBooking = () => {
     }
   }
 
-  const getTableColor = (tableNumber: number) => {
+  const getTableColor = (index: number) => {
     const colors = [
       "bg-red-100 text-red-700 border-red-300",
       "bg-blue-100 text-blue-700 border-blue-300",
@@ -405,25 +408,25 @@ const SeatBooking = () => {
       "bg-indigo-100 text-indigo-700 border-indigo-300",
       "bg-teal-100 text-teal-700 border-teal-300",
     ]
-    return colors[tableNumber % colors.length]
+    return colors[index % colors.length]
   }
 
-  const handleDeleteTable = async (tableNumber: number) => {
+  const handleDeleteTable = async (tableId: number) => {
     try {
       const response = await fetch(`/api/delete-table`, {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ tableNumber }),
+        body: JSON.stringify({ tableId }),
       })
 
       const result = await response.json()
 
       if (result.success) {
         toast.success("Table deleted successfully")
-        setTables(tables.filter((t) => t.tableNumber !== tableNumber))
-        setBookedSeats(bookedSeats.filter((seat) => seat.table.name !== `Table ${tableNumber}`))
+        setTables(tables.filter((t) => t.tableNumber !== tableId))
+        setBookedSeats(bookedSeats.filter((seat) => seat.table.name !== `Table ${tableId}`))
         router.refresh()
         setIsDeleteDialogOpen(false)
       } else {
@@ -436,14 +439,115 @@ const SeatBooking = () => {
     }
   }
 
-  const renderCircularTable = (table: TableData) => {
-    const tableColor = getTableColor(table.tableNumber)
-    const isHovered = hoveredTable === table.tableNumber
+const handleRenameTable = async () => {
+  if (!tableToRename || !newTableName.trim()) {
+    toast.error("Please enter a valid table name")
+    return
+  }
+
+  setIsRenaming(true)
+  
+  try {
+    // Find the table to get its ID - fix the ID comparison logic
+    const tableToUpdate = tables.find((t) => {
+      const currentTableId = t.seats[0]?.table?.id || t.tableNumber
+      return currentTableId === tableToRename
+    })
+    
+    if (!tableToUpdate) {
+      throw new Error("Table not found in local data")
+    }
+
+    // Get the actual table ID from the database
+    const actualTableId = tableToUpdate.seats[0]?.table?.id
+    
+    if (!actualTableId) {
+      throw new Error("Table ID is missing from database")
+    }
+
+    console.log("Renaming table:", {
+      tableToRename,
+      actualTableId,
+      newName: newTableName.trim()
+    })
+
+    const response = await fetch(`/api/table-rename`, {
+      method: "PATCH", 
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        tableId: actualTableId, // Use the actual database table ID
+        newName: newTableName.trim(),
+      }),
+    })
+
+    const result = await response.json()
+    
+    if (!response.ok) {
+      throw new Error(result.message || `HTTP error! status: ${response.status}`)
+    }
+    
+    if (result.success) {
+      toast.success("Table renamed successfully")
+      
+      // Update local state
+      setTables((prevTables) =>
+        prevTables.map((table) => {
+          const currentTableId = table.seats[0]?.table?.id || table.tableNumber
+          return currentTableId === tableToRename
+            ? {
+                ...table,
+                seats: table.seats.map((seat) => ({
+                  ...seat,
+                  table: { ...seat.table, name: newTableName.trim() },
+                })),
+              }
+            : table
+        })
+      )
+
+      // Update booked seats state
+      const oldTableName = tableToUpdate.seats[0]?.table?.name || `Table ${tableToUpdate.tableNumber}`
+      setBookedSeats((prevSeats) =>
+        prevSeats.map((seat) =>
+          seat.table.name === oldTableName 
+            ? { ...seat, table: { ...seat.table, name: newTableName.trim() } } 
+            : seat
+        )
+      )
+
+      // Reset dialog state
+      setIsRenameDialogOpen(false)
+      setNewTableName("")
+      setTableToRename(null)
+      
+    } else {
+      throw new Error(result.message || "Failed to rename table")
+    }
+  } catch (error) {
+    console.error("Rename table error:", error)
+    toast.error("Failed to rename table", {
+      description: error instanceof Error ? error.message : "Unknown error occurred",
+    })
+  } finally {
+    setIsRenaming(false)
+  }
+}
+
+  const renderCircularTable = (table: TableData, index: number) => {
+    const tableId = table.seats[0]?.table?.id || table.tableNumber
+    const tableName = table.seats[0]?.table?.name
+    const tableNumber = table.tableNumber
+    const displayName = !isNaN(tableNumber) && tableNumber !== null ? `Table ${tableNumber}` : tableName
+    const tableColor = getTableColor(index)
+    const isHovered = hoveredTable === tableId
 
     return (
       <motion.div
+        key={tableId}
         className={`relative w-full aspect-square mx-auto ${isFullScreen ? "max-w-[500px]" : "max-w-[300px]"}`}
-        onMouseEnter={() => setHoveredTable(table.tableNumber)}
+        onMouseEnter={() => setHoveredTable(tableId)}
         onMouseLeave={() => setHoveredTable(null)}
         layout
         initial={{ opacity: 0, scale: 0.8 }}
@@ -457,17 +561,41 @@ const SeatBooking = () => {
             className={`relative ${tableColor} rounded-full px-4 py-2 transition-all duration-200 ease-in-out mt-5 ml-5`}
           >
             <span className="flex items-center justify-center">
-              <span className={`font-semibold text-lg text-center`}>Table {table.tableNumber}</span>
+              <span className={`font-semibold text-lg text-center`}>{displayName}</span>
             </span>
 
-            {/* Delete Button - Shows on Hover */}
+            {/* Action Buttons - Shows on Hover */}
             {isHovered && !isFullScreen && (
               <motion.div
                 initial={{ opacity: 0, scale: 0.8 }}
                 animate={{ opacity: 1, scale: 1 }}
-                className="absolute -top-2 -right-2"
+                className="absolute -top-2 -right-2 flex gap-1"
               >
                 <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+<Button
+  variant="secondary"
+  size="sm"
+  className="rounded-full w-8 h-8 p-0 bg-blue-500 hover:bg-blue-600 text-white"
+  onClick={(e) => {
+    e.stopPropagation()
+    // Store the correct identifier - use table.seats[0]?.table?.id if available, otherwise use tableId
+    const actualTableId = table.seats[0]?.table?.id || tableId
+    setTableToRename(actualTableId)
+    setNewTableName(displayName)
+    setIsRenameDialogOpen(true)
+  }}
+>
+  <Edit3 className="h-4 w-4" />
+</Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Rename {displayName}</p>
+                    </TooltipContent>
+                  </Tooltip>
+
+                  {/* Existing Delete Button */}
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <Button
@@ -476,7 +604,7 @@ const SeatBooking = () => {
                         className="rounded-full w-8 h-8 p-0"
                         onClick={(e) => {
                           e.stopPropagation()
-                          setTableToDelete(table.tableNumber)
+                          setTableToDelete(tableId)
                           setIsDeleteDialogOpen(true)
                         }}
                       >
@@ -484,7 +612,7 @@ const SeatBooking = () => {
                       </Button>
                     </TooltipTrigger>
                     <TooltipContent>
-                      <p>Delete Table {table.tableNumber}</p>
+                      <p>Delete {displayName}</p>
                     </TooltipContent>
                   </Tooltip>
                 </TooltipProvider>
@@ -494,9 +622,9 @@ const SeatBooking = () => {
         </div>
 
         {/* Circular Seats */}
-        {table.seats.map((seat, index) => {
+        {table.seats.map((seat, seatIndex) => {
           const countofseats = table.seats.length
-          const angle = ((index - 2.5) * 2 * Math.PI) / countofseats
+          const angle = ((seatIndex - 2.5) * 2 * Math.PI) / countofseats
           const radius = 45
           const left = 45 + Math.cos(angle) * radius
           const top = 45 + Math.sin(angle) * radius
@@ -506,7 +634,7 @@ const SeatBooking = () => {
               key={seat.id}
               initial={{ opacity: 0, scale: 0.5 }}
               animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.3, delay: index * 0.05 }}
+              transition={{ duration: 0.3, delay: seatIndex * 0.05 }}
               className={`absolute ${isFullScreen ? "w-[20%]" : "w-[15%]"} aspect-square`}
               style={{
                 left: `${left}%`,
@@ -913,7 +1041,7 @@ const SeatBooking = () => {
               }}
               transition={{ duration: 0.5 }}
             >
-              {getVisibleTables().map((table) => renderCircularTable(table))}
+              {getVisibleTables().map((table, index) => renderCircularTable(table, index))}
             </motion.div>
           </ScrollArea>
         </motion.div>
@@ -997,110 +1125,7 @@ const SeatBooking = () => {
         }}
       />
 
-      {/* <Dialog
-        open={isDeleteDialogOpen}
-        onOpenChange={(open) => {
-          setIsDeleteDialogOpen(open);
-          if (!open) {
-            setDeleteConfirmText("");
-            setDeletePassword("");
-            setShowDeletePassword(false);
-          }
-        }}
-      >
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle className="text-xl font-bold text-red-800">
-              Delete Table
-            </DialogTitle>
-            <DialogDescription className="mt-2">
-              <div className="space-y-2">
-                <div className="p-4 bg-red-50 rounded-lg">
-                  <p className="font-medium text-red-700">
-                    Are you sure you want to delete Table {tableToDelete}?
-                  </p>
-                  <p className="text-red-600 text-sm mt-2">
-                    This will permanently delete the table and all its seat
-                    assignments. This action cannot be undone.
-                  </p>
-                </div>
-              </div>
-            </DialogDescription>
-          </DialogHeader>
-
-          <div className="space-y-4 py-4">
-            <div className="space-y-2">
-              <label
-                htmlFor="confirmText"
-                className="text-sm font-medium text-gray-700"
-              >
-                Type &quot;<strong>Delete Table {tableToDelete}</strong>&quot;
-                to confirm
-              </label>
-              <Input
-                id="confirmText"
-                value={deleteConfirmText}
-                onChange={(e) => setDeleteConfirmText(e.target.value)}
-                placeholder={`Delete Table ${tableToDelete}`}
-                className="w-full"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <label
-                htmlFor="password"
-                className="text-sm font-medium text-gray-700"
-              >
-                Enter Password
-              </label>
-              <div className="relative">
-                <Input
-                  id="password"
-                  type={showDeletePassword ? "text" : "password"}
-                  value={deletePassword}
-                  onChange={(e) => setDeletePassword(e.target.value)}
-                  placeholder="Enter your password"
-                  className="w-full pr-10"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowDeletePassword(!showDeletePassword)}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
-                >
-                  {showDeletePassword ? (
-                    <EyeOff size={16} />
-                  ) : (
-                    <Eye size={16} />
-                  )}
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <DialogFooter className="flex-col sm:flex-row gap-2">
-            <Button
-              variant="outline"
-              onClick={() => setIsDeleteDialogOpen(false)}
-              className="w-full sm:w-auto"
-            >
-              Cancel
-            </Button>
-            <Button
-              variant="destructive"
-              onClick={() => tableToDelete && handleDeleteTable(tableToDelete)}
-              className="w-full sm:w-auto"
-              disabled={
-                deleteConfirmText !== `Delete Table ${tableToDelete}` ||
-                !deletePassword
-              }
-            >
-              Delete Table
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog> */}
-
-      {/* Delete Table */}
+      {/* Delete Table Dialog */}
       <PasswordVerificationDialog
         open={isDeleteDialogOpen}
         onOpenChange={(open) => {
@@ -1158,102 +1183,7 @@ const SeatBooking = () => {
         </DialogContent>
       </Dialog>
 
-      {/* <Dialog
-        open={isDeleteAllDialogOpen}
-        onOpenChange={setIsDeleteAllDialogOpen}
-      >
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle className="text-xl font-bold text-red-800">
-              Delete All Bookings
-            </DialogTitle>
-            <DialogDescription className="mt-2">
-              <div className="space-y-2">
-                <div className="p-4 bg-red-50 rounded-lg">
-                  <p className="font-medium text-red-700">
-                    Are you sure you want to delete all bookings?
-                  </p>
-                  <p className="text-red-600 text-sm mt-2">
-                    This will permanently delete all bookings. This action
-                    cannot be undone.
-                  </p>
-                </div>
-              </div>
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4 py-4">
-            <div className="space-y-2">
-              <label
-                htmlFor="deleteAllConfirmText"
-                className="text-sm font-medium text-gray-700"
-              >
-                Type <strong>&quot;Delete All Bookings&quot;</strong> to
-                confirm:
-              </label>
-              <Input
-                id="deleteAllConfirmText"
-                type="text"
-                value={deleteAllConfirmText}
-                onChange={(e) => setDeleteAllConfirmText(e.target.value)}
-                placeholder="Delete All Bookings"
-                className="w-full"
-              />
-            </div>
-            <div className="space-y-2">
-              <label
-                htmlFor="deleteAllPassword"
-                className="text-sm font-medium text-gray-700"
-              >
-                Enter Password
-              </label>
-              <div className="relative">
-                <Input
-                  id="deleteAllPassword"
-                  type={showDeleteAllPassword ? "text" : "password"}
-                  value={deleteAllPassword}
-                  onChange={(e) => setDeleteAllPassword(e.target.value)}
-                  placeholder="Enter your password"
-                  className="w-full pr-10"
-                />
-                <button
-                  type="button"
-                  onClick={() =>
-                    setShowDeleteAllPassword(!showDeleteAllPassword)
-                  }
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
-                >
-                  {showDeleteAllPassword ? (
-                    <EyeOff size={16} />
-                  ) : (
-                    <Eye size={16} />
-                  )}
-                </button>
-              </div>
-            </div>
-          </div>
-          <DialogFooter className="flex-col sm:flex-row gap-2">
-            <Button
-              variant="outline"
-              onClick={() => setIsDeleteAllDialogOpen(false)}
-              className="w-full sm:w-auto"
-            >
-              Cancel
-            </Button>
-            <Button
-              variant="destructive"
-              onClick={handleDeleteAllBookings}
-              className="w-full sm:w-auto"
-              disabled={
-                deleteAllConfirmText !== "Delete All Bookings" ||
-                !deleteAllPassword
-              }
-            >
-              Delete All Bookings
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog> */}
-
+      {/* Delete All Bookings Dialog */}
       <PasswordVerificationDialog
         open={isDeleteAllDialogOpen}
         onOpenChange={setIsDeleteAllDialogOpen}
@@ -1263,6 +1193,7 @@ const SeatBooking = () => {
         confirmTextDisplay="Delete All Bookings"
       />
 
+      {/* Delete All Tables Dialog */}
       <PasswordVerificationDialog
         open={isDeleteAllTablesDialogOpen}
         onOpenChange={setIsDeleteAllTablesDialogOpen}
@@ -1272,103 +1203,72 @@ const SeatBooking = () => {
         confirmTextDisplay="Delete All Tables"
       />
 
-      {/* <Dialog
-        open={isDeleteAllTablesDialogOpen}
-        onOpenChange={setIsDeleteAllTablesDialogOpen}
+      <Dialog
+        open={isRenameDialogOpen}
+        onOpenChange={(open) => {
+          setIsRenameDialogOpen(open)
+          if (!open) {
+            setNewTableName("")
+            setTableToRename(null)
+          }
+        }}
       >
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle className="text-xl font-bold text-red-800">
-              Delete All Tables
-            </DialogTitle>
+            <DialogTitle className="text-xl font-bold text-blue-800">Rename Table</DialogTitle>
             <DialogDescription className="mt-2">
               <div className="space-y-2">
-                <div className="p-4 bg-red-50 rounded-lg">
-                  <p className="font-medium text-red-700">
-                    Are you sure you want to delete all tables?
+                <div className="p-4 bg-blue-50 rounded-lg">
+                  <p className="font-medium text-blue-700">
+                    Rename{" "}
+                    {tables.find((t) => (t.seats[0]?.table?.id || t.tableNumber) === tableToRename)?.seats[0]?.table
+                      ?.name ||
+                      `Table ${tables.find((t) => (t.seats[0]?.table?.id || t.tableNumber) === tableToRename)?.tableNumber}`}
                   </p>
-                  <p className="text-red-600 text-sm mt-2">
-                    This will permanently delete all tables and their seat
-                    assignments. This action cannot be undone.
+                  <p className="text-blue-600 text-sm mt-2">
+                    Enter a new name for this table. The change will be applied immediately.
                   </p>
                 </div>
               </div>
             </DialogDescription>
           </DialogHeader>
+
           <div className="space-y-4 py-4">
             <div className="space-y-2">
-              <label
-                htmlFor="deleteAllTablesConfirmText"
-                className="text-sm font-medium text-gray-700"
-              >
-                Type <strong>&quot;Delete All Tables&quot;</strong> to confirm:
+              <label htmlFor="newTableName" className="text-sm font-medium text-gray-700">
+                New Table Name
               </label>
               <Input
-                id="deleteAllTablesConfirmText"
-                type="text"
-                value={deleteAllConfirmText}
-                onChange={(e) => setDeleteAllConfirmText(e.target.value)}
-                placeholder="Delete All Tables"
+                id="newTableName"
+                value={newTableName}
+                onChange={(e) => setNewTableName(e.target.value)}
+                placeholder="Enter new table name"
                 className="w-full"
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && !isRenaming && newTableName.trim()) {
+                    handleRenameTable()
+                  }
+                }}
               />
             </div>
-            <div className="space-y-2">
-              <label
-                htmlFor="deleteAllTablesPassword"
-                className="text-sm font-medium text-gray-700"
-              >
-                Enter Password
-              </label>
-              <div className="relative">
-                <Input
-                  id="deleteAllTablesPassword"
-                  type={showDeleteAllPassword ? "text" : "password"}
-                  value={deleteAllPassword}
-                  onChange={(e) => setDeleteAllPassword(e.target.value)}
-                  placeholder="Enter your password"
-                  className="w-full pr-10"
-                />
-                <button
-                  type="button"
-                  onClick={() =>
-                    setShowDeleteAllPassword(!showDeleteAllPassword)
-                  }
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
-                >
-                  {showDeleteAllPassword ? (
-                    <EyeOff size={16} />
-                  ) : (
-                    <Eye size={16} />
-                  )}
-                </button>
-              </div>
-            </div>
           </div>
-          <DialogFooter className="flex-col sm:flex-row gap-2">
-            <Button
-              variant="outline"
-              onClick={() => setIsDeleteAllTablesDialogOpen(false)}
-              className="w-full sm:w-auto"
-            >
+
+          <DialogFooter className="flex justify-end gap-2">
+            <Button variant="outline" onClick={() => setIsRenameDialogOpen(false)} disabled={isRenaming}>
               Cancel
             </Button>
             <Button
-              variant="destructive"
-              onClick={handleDeleteAllTables}
-              className="w-full sm:w-auto"
-              disabled={
-                deleteAllConfirmText !== "Delete All Tables" ||
-                !deleteAllPassword
-              }
+              onClick={handleRenameTable}
+              disabled={isRenaming || !newTableName.trim()}
+              className="bg-blue-600 hover:bg-blue-700"
             >
-              Delete All Tables
+              {isRenaming ? "Renaming..." : "Rename Table"}
             </Button>
           </DialogFooter>
         </DialogContent>
-      </Dialog> */}
+      </Dialog>
     </div>
   )
 }
 
 export default SeatBooking
-

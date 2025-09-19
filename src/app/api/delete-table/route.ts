@@ -3,37 +3,37 @@ import { NextResponse } from "next/server";
 
 export async function DELETE(req: Request) {
   try {
-    const { tableNumber } = await req.json();
-    const tableName = `Table ${tableNumber}`;
+    // Log the raw body first
+    const body = await req.text();
+    console.log("Raw request body:", body);
+    
+    // Parse the JSON
+    const parsedBody = JSON.parse(body);
+    console.log("Parsed body:", parsedBody);
+    
+    const { tableId } = parsedBody; // Changed from tableNumber to tableId
 
-    // First find the table by name
-    const table = await db.table.findFirst({
-      where: {
-        name: tableName,
-      },
-      select: {
-        id: true,
-      },
-    });
-
-    if (!table) {
+    if (!tableId) {
       return NextResponse.json(
-        { success: false, message: "Table not found" },
-        { status: 404 }
+        { success: false, message: "Table ID is required" },
+        { status: 400 }
       );
     }
+
+    // tableId is the actual database table ID
+    console.log("Table ID to delete:", tableId);
 
     // Delete all seats associated with the table
     await db.seat.deleteMany({
       where: {
-        tableId: table.id,
+        tableId: tableId,
       },
     });
 
-    // Delete the table using its ID
+    // Delete the table itself
     await db.table.delete({
       where: {
-        id: table.id,
+        id: tableId,
       },
     });
 
@@ -41,7 +41,7 @@ export async function DELETE(req: Request) {
   } catch (error) {
     console.error("Failed to delete table:", error);
     return NextResponse.json(
-      { success: false, message: "Failed to delete table" },
+      { success: false, message: `Failed to delete table: ${error}` },
       { status: 500 }
     );
   }

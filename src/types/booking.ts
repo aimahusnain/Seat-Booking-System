@@ -1,6 +1,6 @@
 // Updated type definitions to match Prisma schema and fix type errors
 export interface Table {
-  id: string
+  id: number
   name: string
   Seat: Seat[]
 }
