@@ -735,7 +735,7 @@ const SeatBooking = () => {
                     {seat.isBooked ? (
                       <div className="text-center">
                         <p className="font-semibold">
-                          Booked by {seat.user?.firstname} {seat.user?.lastname}
+                          Booked for {seat.user?.firstname} {seat.user?.lastname}
                         </p>
                         <p className="text-xs text-muted-foreground">
                           {seat.table.name}, Seat {seat.seat}
