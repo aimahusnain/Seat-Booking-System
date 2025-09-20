@@ -5,9 +5,10 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useMediaQuery } from "@/hooks/use-media-query";
 import type { Seat } from "@/types/booking";
-import { ChevronLeft, ChevronRight, Search, Trash2, User } from "lucide-react";
+import { ChevronLeft, ChevronRight, Download, Search, Trash2, User } from "lucide-react";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
+import * as XLSX from 'xlsx';
 import PasswordVerificationDialog from "./password-verification-dialog";
 import PrintableBooking from "./single-seat-pdf";
 
@@ -29,6 +30,7 @@ export function BookingSidebar({
     name: "",
     seat: "",
   });
+  const [isExporting, setIsExporting] = useState(false);
   const isTablet = useMediaQuery("(min-width: 200px) and (max-width: 1279px)");
 
   // Delete booking dialog states
@@ -54,6 +56,79 @@ export function BookingSidebar({
       toast.error("Delete Failed", {
         description: "An error occurred while processing your request",
       });
+    }
+  };
+
+  // Excel export function
+  const handleExportToExcel = async () => {
+    try {
+      setIsExporting(true);
+      
+      // Prepare data for Excel export
+      const exportData = filteredBookings.map((seat, index) => ({
+        'S.No': index + 1,
+        'First Name': seat.user?.firstname || '',
+        'Last Name': seat.user?.lastname || '',
+        'Full Name': `${seat.user?.firstname || ''} ${seat.user?.lastname || ''}`.trim(),
+        'Table Name': seat.table.name || '',
+        'Seat Number': seat.seat,
+        'Booking ID': seat.id,
+        'Arrival Status': seat.isReceived ? 'Arrived' : 'Not Arrived',
+        'Booking Date': new Date().toLocaleDateString(), // You can replace this with actual booking date if available
+      }));
+
+      
+
+      // Create workbook and worksheet
+      const workbook = XLSX.utils.book_new();
+      const worksheet = XLSX.utils.json_to_sheet(exportData);
+
+      // Set column widths for better formatting
+      const columnWidths = [
+        { wch: 8 },   // S.No
+        { wch: 15 },  // First Name
+        { wch: 15 },  // Last Name
+        { wch: 25 },  // Full Name
+        { wch: 20 },  // Table Name
+        { wch: 12 },  // Seat Number
+        { wch: 25 },  // Booking ID
+        { wch: 15 },  // Arrival Status
+        { wch: 15 },  // Booking Date
+      ];
+      worksheet['!cols'] = columnWidths;
+
+      // Make header row bold
+      const headerCells = ['A1', 'B1', 'C1', 'D1', 'E1', 'F1', 'G1', 'H1', 'I1'];
+      headerCells.forEach(cell => {
+        if (worksheet[cell]) {
+          worksheet[cell].s = {
+            font: { bold: true }
+          };
+        }
+      });
+
+      // Add worksheet to workbook
+      XLSX.utils.book_append_sheet(workbook, worksheet, 'Bookings');
+
+      // Generate filename with current date and time
+      const now = new Date();
+      const dateStr = now.toISOString().split('T')[0]; // YYYY-MM-DD format
+      const timeStr = now.toTimeString().split(' ')[0].replace(/:/g, '-'); // HH-MM-SS format
+      const filename = `bookings_export_${dateStr}_${timeStr}.xlsx`;
+
+      // Write and download file
+      XLSX.writeFile(workbook, filename);
+
+      toast.success("Export Successful", {
+        description: `${filteredBookings.length} bookings exported to ${filename}`,
+      });
+    } catch (error) {
+      console.error('Export failed:', error);
+      toast.error("Export Failed", {
+        description: "An error occurred while exporting the bookings",
+      });
+    } finally {
+      setIsExporting(false);
     }
   };
 
@@ -91,16 +166,30 @@ export function BookingSidebar({
         <div className="p-4 bg-white shadow-sm space-y-4">
           <div className="flex justify-between items-center">
             <h2 className="text-xl font-bold text-gray-800">Booked Seats</h2>
-            {bookedSeats.length > 0 && (
-              <Button
-                variant="destructive"
-                size="sm"
-                onClick={onDeleteAll}
-                className="text-xs"
-              >
-                Delete All
-              </Button>
-            )}
+            <div className="flex gap-2">
+              {bookedSeats.length > 0 && (
+                <>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleExportToExcel}
+                    disabled={isExporting || filteredBookings.length === 0}
+                    className="text-xs flex items-center gap-1"
+                  >
+                    <Download className="h-3 w-3" />
+                    {isExporting ? 'Exporting...' : 'Export in Excel'}
+                  </Button>
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    onClick={onDeleteAll}
+                    className="text-xs"
+                  >
+                    Delete All
+                  </Button>
+                </>
+              )}
+            </div>
           </div>
 
           <div className="flex gap-2">
@@ -220,112 +309,6 @@ export function BookingSidebar({
           confirmText="Delete Booking"
           confirmTextDisplay="Delete Booking"
         />
-
-        {/* Delete Booking Dialog */}
-        {/* <Dialog
-          open={isDeleteBookingDialogOpen}
-          onOpenChange={(open) => {
-            setIsDeleteBookingDialogOpen(open);
-            if (!open) {
-              setDeleteBookingConfirmText("");
-              setDeleteBookingPassword("");
-              setShowDeleteBookingPassword(false);
-              setSeatToDelete(null);
-            }
-          }}
-        >
-          <DialogContent className="sm:max-w-md">
-            <DialogHeader>
-              <DialogTitle className="text-xl font-bold text-red-800">
-                Delete Booking
-              </DialogTitle>
-              <DialogDescription className="mt-2">
-                <div className="space-y-2">
-                  <div className="p-4 bg-red-50 rounded-lg">
-                    <p className="font-medium text-red-700">
-                      Are you sure you want to delete this booking?
-                    </p>
-                    <p className="text-red-600 text-sm mt-2">
-                      This will permanently delete the booking. This action
-                      cannot be undone.
-                    </p>
-                  </div>
-                </div>
-              </DialogDescription>
-            </DialogHeader>
-
-            <div className="space-y-4 py-4">
-              <div className="space-y-2">
-                <label
-                  htmlFor="confirmText"
-                  className="text-sm font-medium text-gray-700"
-                >
-                  Type &quot;<strong>Delete Booking</strong>&quot; to confirm
-                </label>
-                <Input
-                  id="confirmText"
-                  value={deleteBookingConfirmText}
-                  onChange={(e) => setDeleteBookingConfirmText(e.target.value)}
-                  placeholder="Delete Booking"
-                  className="w-full"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <label
-                  htmlFor="password"
-                  className="text-sm font-medium text-gray-700"
-                >
-                  Enter Password
-                </label>
-                <div className="relative">
-                  <Input
-                    id="password"
-                    type={showDeleteBookingPassword ? "text" : "password"}
-                    value={deleteBookingPassword}
-                    onChange={(e) => setDeleteBookingPassword(e.target.value)}
-                    placeholder="Enter your password"
-                    className="w-full pr-10"
-                  />
-                  <button
-                    type="button"
-                    onClick={() =>
-                      setShowDeleteBookingPassword(!showDeleteBookingPassword)
-                    }
-                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
-                  >
-                    {showDeleteBookingPassword ? (
-                      <EyeOff size={16} />
-                    ) : (
-                      <Eye size={16} />
-                    )}
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            <DialogFooter className="flex-col sm:flex-row gap-2">
-              <Button
-                variant="outline"
-                onClick={() => setIsDeleteBookingDialogOpen(false)}
-                className="w-full sm:w-auto"
-              >
-                Cancel
-              </Button>
-              <Button
-                variant="destructive"
-                onClick={handleDeleteBookingConfirm}
-                className="w-full sm:w-auto"
-                disabled={
-                  deleteBookingConfirmText !== "Delete Booking" ||
-                  !deleteBookingPassword
-                }
-              >
-                Delete Booking
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog> */}
       </div>
     ),
     [
@@ -340,6 +323,7 @@ export function BookingSidebar({
       deleteBookingPassword,
       showDeleteBookingPassword,
       seatToDelete,
+      isExporting,
     ]
   );
 
