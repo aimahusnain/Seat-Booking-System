@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useMemo } from "react"
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { ScrollArea } from "@/components/ui/scroll-area"
@@ -8,8 +8,9 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Label } from "@/components/ui/label"
 import { toast } from "sonner"
-import { AlertCircle } from "lucide-react"
+import { AlertCircle, Search } from "lucide-react"
 import { Alert, AlertDescription } from "@/components/ui/alert"
+import { Input } from "@/components/ui/input"
 
 interface Guest {
   id: string
@@ -40,12 +41,27 @@ export function AssignGuestsDialog({ isOpen, onClose, guests, tables, onAssignGu
   const [selectedGuests, setSelectedGuests] = useState<string[]>([])
   const [selectedTable, setSelectedTable] = useState<string>("")
   const [isAssigning, setIsAssigning] = useState(false)
+  const [searchValue, setSearchValue] = useState("")
 
   const availableGuests = guests.filter((guest) => guest.seat.length === 0)
   const availableTables = tables.filter((table) => table.seats.some((seat) => !seat.isBooked))
 
+  // Filter guests by search
+  const filteredGuests = useMemo(() => {
+    if (!searchValue) return availableGuests
+    const term = searchValue.toLowerCase()
+    return availableGuests.filter(
+      (g) =>
+        g.firstname.toLowerCase().includes(term) ||
+        g.lastname.toLowerCase().includes(term) ||
+        `${g.firstname} ${g.lastname}`.toLowerCase().includes(term),
+    )
+  }, [searchValue, availableGuests])
+
   const handleGuestToggle = (guestId: string) => {
-    setSelectedGuests((prev) => (prev.includes(guestId) ? prev.filter((id) => id !== guestId) : [...prev, guestId]))
+    setSelectedGuests((prev) =>
+      prev.includes(guestId) ? prev.filter((id) => id !== guestId) : [...prev, guestId],
+    )
   }
 
   const handleAssign = async () => {
@@ -80,9 +96,10 @@ export function AssignGuestsDialog({ isOpen, onClose, guests, tables, onAssignGu
       toast.success("Guests assigned successfully")
       setSelectedGuests([])
       setSelectedTable("")
+      setSearchValue("")
       onClose()
     } catch (error) {
-      console.log(error)
+      console.error(error)
       toast.error("Failed to assign guests")
     } finally {
       setIsAssigning(false)
@@ -103,13 +120,28 @@ export function AssignGuestsDialog({ isOpen, onClose, guests, tables, onAssignGu
         </DialogHeader>
 
         <div className="grid grid-cols-2 gap-6 mt-4">
-          {/* Left side - Guest selection */}
+          {/* Left side - Guest selection with search */}
           <div className="space-y-4">
             <h3 className="font-semibold">Select Guests</h3>
-            <ScrollArea className="h-[400px] border rounded-lg p-4">
-              {availableGuests.length > 0 ? (
-                availableGuests.map((guest) => (
-                  <div key={guest.id} className="flex items-center space-x-3 py-2 px-2 hover:bg-muted rounded-lg">
+
+            {/* Search Bar */}
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Search guests..."
+                value={searchValue}
+                onChange={(e) => setSearchValue(e.target.value)}
+                className="pl-9"
+              />
+            </div>
+
+            <ScrollArea className="h-[360px] border rounded-lg p-4">
+              {filteredGuests.length > 0 ? (
+                filteredGuests.map((guest) => (
+                  <div
+                    key={guest.id}
+                    className="flex items-center space-x-3 py-2 px-2 hover:bg-muted rounded-lg"
+                  >
                     <Checkbox
                       checked={selectedGuests.includes(guest.id)}
                       onCheckedChange={() => handleGuestToggle(guest.id)}
@@ -120,9 +152,10 @@ export function AssignGuestsDialog({ isOpen, onClose, guests, tables, onAssignGu
                   </div>
                 ))
               ) : (
-                <div className="text-center py-8 text-muted-foreground">No available guests found</div>
+                <div className="text-center py-8 text-muted-foreground">No guests found</div>
               )}
             </ScrollArea>
+
             <div className="text-sm text-muted-foreground">{selectedGuests.length} guests selected</div>
           </div>
 
@@ -132,7 +165,10 @@ export function AssignGuestsDialog({ isOpen, onClose, guests, tables, onAssignGu
             <ScrollArea className="h-[400px] border rounded-lg p-4">
               <RadioGroup value={selectedTable} onValueChange={setSelectedTable}>
                 {availableTables.map((table) => (
-                  <div key={table.id} className="flex items-center space-x-3 py-2 px-2 hover:bg-muted rounded-lg">
+                  <div
+                    key={table.id}
+                    className="flex items-center space-x-3 py-2 px-2 hover:bg-muted rounded-lg"
+                  >
                     <RadioGroupItem value={table.id} id={table.id} />
                     <Label htmlFor={table.id} className="flex-1">
                       <div className="flex justify-between items-center">
@@ -168,4 +204,3 @@ export function AssignGuestsDialog({ isOpen, onClose, guests, tables, onAssignGu
     </Dialog>
   )
 }
-
