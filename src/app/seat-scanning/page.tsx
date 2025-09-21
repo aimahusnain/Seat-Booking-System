@@ -255,20 +255,57 @@ export default function SeatScanning() {
                       </div>
 
                       {seatIsReceived ? (
-                        <div className="p-6 bg-green-50 dark:bg-green-900/20 rounded-xl text-center space-y-3">
-                          <div className="h-16 w-16 bg-green-100 dark:bg-green-800/30 rounded-full flex items-center justify-center mx-auto">
-                            <Check className="h-8 w-8 text-green-600 dark:text-green-400" />
-                          </div>
-                          <h3 className="text-lg font-semibold text-green-700 dark:text-green-400">Already Arrived</h3>
-                          <p className="text-sm text-green-600 dark:text-green-500">
-                            You have already arrived for this event. Enjoy!
-                          </p>
-                        </div>
-                      ) : (
-                        <>
-                          <QRCodeGenerator value={generateQrContent()} />
-                        </>
-                      )}
+  // Already arrived card (you already have this block)
+  <div className="p-6 bg-green-50 dark:bg-green-900/20 rounded-xl text-center space-y-3">
+    <div className="h-16 w-16 bg-green-100 dark:bg-green-800/30 rounded-full flex items-center justify-center mx-auto">
+      <Check className="h-8 w-8 text-green-600 dark:text-green-400" />
+    </div>
+    <h3 className="text-lg font-semibold text-green-700 dark:text-green-400">Already Arrived</h3>
+    <p className="text-sm text-green-600 dark:text-green-500">
+      You have already arrived for this event. Enjoy!
+    </p>
+  </div>
+) : (
+  <div className="space-y-4">
+    {/* Mark as Arrived button */}
+    <Button
+      onClick={async () => {
+        if (!searchResult) return
+        try {
+          setSeatIsReceived(false)
+          setIsLoading(true)
+
+          const response = await fetch("/api/seat-checkin", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ seatId: searchResult.seatId }),
+          })
+
+          const data = await response.json()
+          if (data.success) {
+            setSeatIsReceived(true)
+            toast.success(`${searchResult.name} marked as arrived`)
+          } else {
+            toast.error(data.message || "Failed to update")
+          }
+        } catch (err) {
+          console.error(err)
+          toast.error("Error updating status")
+        } finally {
+          setIsLoading(false)
+        }
+      }}
+      disabled={isLoading}
+      className="w-full h-12 rounded-xl bg-green-600 text-white hover:bg-green-700 transition-all disabled:opacity-50"
+    >
+      {isLoading ? "Processing..." : "Mark as Arrived"}
+    </Button>
+
+    {/* QR Code below button */}
+    <QRCodeGenerator value={generateQrContent()} />
+  </div>
+)}
+
                     </div>
                   </CardContent>
                 </Card>
