@@ -300,7 +300,7 @@ export default function SeatScanning() {
                           <div className="h-16 w-16 bg-green-100 dark:bg-green-800/30 rounded-full flex items-center justify-center mx-auto">
                             <Check className="h-8 w-8 text-green-600 dark:text-green-400" />
                           </div>
-                          <h3 className="text-lg font-semibold text-green-700 dark:text-green-400">
+                          <h3 className="text-3xl font-semibold text-green-700 dark:text-green-400">
                             Arrived
                           </h3>
                           <p className="text-sm text-green-600 dark:text-green-500">
@@ -313,6 +313,7 @@ export default function SeatScanning() {
                           <Button
                             onClick={async () => {
                               if (!searchResult) return;
+                              
                               try {
                                 setSeatIsReceived(false);
                                 setIsLoading(true);
@@ -349,9 +350,9 @@ export default function SeatScanning() {
                               }
                             }}
                             disabled={isLoading}
-                            className="w-full h-12 rounded-xl bg-green-600 text-white hover:bg-green-700 transition-all disabled:opacity-50"
+                            className="text-2xl w-full h-12 rounded-xl bg-green-600 text-white hover:bg-green-700 transition-all disabled:opacity-50"
                           >
-                            {isLoading ? "Processing..." : "Mark as Arrived"}
+                            {isLoading ? "Processing..." : "Arrived"}
                           </Button>
 
                           {/* QR Code below button */}
