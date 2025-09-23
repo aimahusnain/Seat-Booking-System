@@ -11,7 +11,7 @@ interface PrintBookingProps {
 const PrintableBooking = ({ firstName, lastName, seats }: PrintBookingProps) => {
   const handlePrint = () => {
     // Extract table number by removing "Table" and trimming whitespace
-    const tableNumber = seats[0].table.name.replace(/Table/i, '').trim()
+    const tableNumber = seats[0].table.name.trim()
 
     const printFrame = document.createElement("iframe")
     printFrame.style.position = "absolute"
@@ -67,7 +67,7 @@ const PrintableBooking = ({ firstName, lastName, seats }: PrintBookingProps) => 
           <div class="container">
             <div class="welcome">Welcome</div>
             <div class="name">${firstName} ${lastName}</div>
-            <div class="table">TABLE ${tableNumber}</div>
+            <div class="table">${tableNumber}</div>
           </div>
         </body>
       </html>
