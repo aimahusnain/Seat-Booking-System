@@ -18,60 +18,71 @@ const PrintableBooking = ({ firstName, lastName, seats }: PrintBookingProps) => 
     printFrame.style.top = "-9999px"
     document.body.appendChild(printFrame)
 
-    const printContent = `
-      <!DOCTYPE html>
-      <html>
-        <head>
-          <title>Booking Details - ${firstName} ${lastName}</title>
-          <style>
-            @page {
-              size: A4;
-              margin: 2cm;
-            }
-            body {
-              font-family: Arial, sans-serif;
-              display: flex;
-              justify-content: center;
-              align-items: center;
-              height: 100vh;
-              margin: 0;
-              padding: 0;
-            }
-            .container {
-              border: 8px solid black;
-              padding: 40px;
-              text-align: center;
-              max-width: 400px;
-              width: 100%;
-            }
-            .welcome {
-              font-size: 36px;
-              font-weight: bold;
-              margin-bottom: 30px;
-              color: black;
-              text-transform: uppercase;
-            }
-            .name {
-              font-size: 28px;
-              margin-bottom: 20px;
-              color: black;
-            }
-            .table {
-              font-size: 24px;
-              color: black;
-              margin-top: 20px;
-            }
-          </style>
-        </head>
-        <body>
-          <div class="container">
-            <div class="welcome">Welcome</div>
-            <div class="name">${firstName} ${lastName}</div>
-            <div class="table">${tableNumber}</div>
-          </div>
-        </body>
-      </html>
-    `
+const printContent = `
+  <!DOCTYPE html>
+  <html>
+    <head>
+      <title>Booking Details - ${firstName} ${lastName}</title>
+      <style>
+        @page {
+          size: A4;
+          margin: 2cm;
+        }
+        body {
+          font-family: Arial, sans-serif;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          height: 100vh;
+          margin: 0;
+          padding: 0;
+        }
+        .container {
+          border: 8px solid black;
+          padding: 40px;
+          text-align: center;
+          max-width: 400px;
+          width: 100%;
+          position: relative;
+        }
+        .welcome {
+          font-size: 36px;
+          font-weight: bold;
+          margin-bottom: 30px;
+          color: black;
+          text-transform: uppercase;
+        }
+        .name {
+          font-size: 28px;
+          margin-bottom: 20px;
+          color: black;
+        }
+        .table {
+          font-size: 24px;
+          color: black;
+          margin-top: 20px;
+        }
+        .footer {
+          font-size: 14px;
+          color: gray;
+          position: absolute;
+          bottom: 10px;
+          left: 0;
+          right: 0;
+        }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <div class="welcome">Welcome</div>
+        <div class="name">${firstName} ${lastName}</div>
+        <div class="table">${tableNumber}</div>
+        <div class="footer">www.seating4u.com</div>
+      </div>
+    </body>
+  </html>
+`
+
 
     const frameDoc = printFrame.contentWindow?.document
     if (frameDoc) {

@@ -1,58 +1,40 @@
-"use client";
+"use client"
 
-import { forwardRef, useImperativeHandle, useRef } from "react";
-import { jsPDF } from "jspdf";
-import html2canvas from "html2canvas";
-import type { Seat } from "../types/booking";
+import { forwardRef, useImperativeHandle, useRef } from "react"
+import { jsPDF } from "jspdf"
+import html2canvas from "html2canvas"
+import type { Seat } from "../types/booking"
 
 interface PDFExportProps {
-  bookedSeats: Seat[];
+  bookedSeats: Seat[]
 }
 
-export const PDFExport = forwardRef<
-  { generatePDF: () => void },
-  PDFExportProps
->(({ bookedSeats }, ref) => {
-  const pdfRef = useRef<HTMLDivElement>(null);
+export const PDFExport = forwardRef<{ generatePDF: () => void }, PDFExportProps>(({ bookedSeats }, ref) => {
+  const pdfRef = useRef<HTMLDivElement>(null)
 
   const generatePDF = () => {
-    const input = pdfRef.current;
-    if (!input) return;
+    const input = pdfRef.current
+    if (!input) return
 
     html2canvas(input).then((canvas) => {
-      const imgData = canvas.toDataURL("image/png");
-      const pdf = new jsPDF("p", "mm", "a4", true);
-      const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = pdf.internal.pageSize.getHeight();
-      const imgWidth = canvas.width;
-      const imgHeight = canvas.height;
-      const ratio = Math.min(pdfWidth / imgWidth, pdfHeight / imgHeight);
-      const imgX = (pdfWidth - imgWidth * ratio) / 2;
-      const imgY = 30;
+      const imgData = canvas.toDataURL("image/png")
+      const pdf = new jsPDF("p", "mm", "a4", true)
+      const pdfWidth = pdf.internal.pageSize.getWidth()
+      const pdfHeight = pdf.internal.pageSize.getHeight()
+      const imgWidth = canvas.width
+      const imgHeight = canvas.height
+      const ratio = Math.min(pdfWidth / imgWidth, pdfHeight / imgHeight)
+      const imgX = (pdfWidth - imgWidth * ratio) / 2
+      const imgY = 30
 
-      // Add captured content
-      pdf.addImage(
-        imgData,
-        "PNG",
-        imgX,
-        imgY,
-        imgWidth * ratio,
-        imgHeight * ratio
-      );
-
-      // Add footer text at bottom center
-      pdf.setFontSize(10);
-      pdf.text("www.seating4u.com", pdfWidth / 2, pdfHeight - 10, {
-        align: "center",
-      });
-
-      pdf.save("seat-bookings.pdf");
-    });
-  };
+      pdf.addImage(imgData, "PNG", imgX, imgY, imgWidth * ratio, imgHeight * ratio)
+      pdf.save("seat-bookings.pdf")
+    })
+  }
 
   useImperativeHandle(ref, () => ({
     generatePDF,
-  }));
+  }))
 
   return (
     <div className="hidden">
@@ -80,7 +62,8 @@ export const PDFExport = forwardRef<
         </table>
       </div>
     </div>
-  );
-});
+  )
+})
 
-PDFExport.displayName = "PDFExport";
+PDFExport.displayName = "PDFExport"
+
