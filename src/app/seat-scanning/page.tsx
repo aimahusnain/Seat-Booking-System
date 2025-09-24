@@ -270,26 +270,26 @@ export default function SeatScanning() {
                   <CardContent className="pt-6">
                     <div className="space-y-4">
                       <div className="flex justify-between items-center p-4 rounded-xl bg-violet-50/50 dark:bg-violet-900/20">
-                        <span className="text-sm font-medium text-lime-600 dark:text-violet-400">
+                        <span className="text-lg font-bold text-lime-600 dark:text-violet-400">
                           Name
                         </span>
-                        <span className="font-semibold text-zinc-800 dark:text-zinc-200">
+                        <span className="font-semibold text-2xl text-zinc-800 dark:text-zinc-200">
                           {searchResult.name}
                         </span>
                       </div>
                       <div className="flex justify-between items-center p-4 rounded-xl bg-lime-50/50 dark:bg-lime-900/20">
-                        <span className="text-sm font-medium text-green-600 dark:text-lime-400">
+                        <span className="text-lg font-bold text-green-600 dark:text-lime-400">
                           Table
                         </span>
-                        <span className="font-semibold text-zinc-800 dark:text-zinc-200">
+                        <span className="font-semibold text-2xl text-zinc-800 dark:text-zinc-200">
                           {searchResult.table}
                         </span>
                       </div>
                       <div className="flex justify-between items-center p-4 rounded-xl bg-fuchsia-50/50 dark:bg-fuchsia-900/20">
-                        <span className="text-sm font-medium text-fuchsia-600 dark:text-fuchsia-400">
+                        <span className="text-lg font-bold text-fuchsia-600 dark:text-fuchsia-400">
                           Seat Number
                         </span>
-                        <span className="font-semibold text-zinc-800 dark:text-zinc-200">
+                        <span className="font-semibold text-2xl text-zinc-800 dark:text-zinc-200">
                           {searchResult.seat}
                         </span>
                       </div>
@@ -380,7 +380,7 @@ export default function SeatScanning() {
                         <h3 className="text-lg font-semibold text-zinc-800 dark:text-zinc-200">
                           Seat Not Available
                         </h3>
-                        <p className="text-sm text-zinc-600 dark:text-zinc-400">
+                        <p className="text-sm text-red-700 dark:text-zinc-400">
                           Your seat hasn&apos;t been assigned yet. Please see
                           someone at the front desk for assistance.
                         </p>
