@@ -1104,7 +1104,7 @@ const SeatBooking = () => {
                       </div>
                       <div className="bg-red-50 rounded-lg border border-red-200 p-2 text-center hover:shadow-sm transition-all">
                         <div className="text-xs uppercase tracking-wider text-red-600 mb-1">
-                          Booked
+                          Assigned
                         </div>
                         <div className="text-lg font-bold text-red-800">
                           {tables.reduce(

@@ -377,10 +377,10 @@ export default function SeatScanning() {
                         <HelpCircle className="h-6 w-6 text-amber-600 dark:text-amber-400" />
                       </div>
                       <div className="space-y-2">
-                        <h3 className="text-lg font-semibold text-zinc-800 dark:text-zinc-200">
+                        <h3 className="text-2xl font-semibold text-zinc-800 dark:text-zinc-200">
                           Seat Not Available
                         </h3>
-                        <p className="text-sm text-red-700 dark:text-zinc-400">
+                        <p className="text-lg text-red-700 dark:text-zinc-400">
                           Your seat hasn&apos;t been assigned yet. Please see
                           someone at the front desk for assistance.
                         </p>
