@@ -221,7 +221,7 @@ export default function UserGuide() {
               <ol className="space-y-3 text-zinc-600">
                 <li className="flex">
                   <span className="font-medium text-black mr-2">1.</span>
-                  <span>Click "New Table" button</span>
+                  <span>Click &quot;New Table&quot; button</span>
                 </li>
                 <li className="flex">
                   <span className="font-medium text-black mr-2">2.</span>
@@ -230,13 +230,13 @@ export default function UserGuide() {
                 <li className="flex">
                   <span className="font-medium text-black mr-2">3.</span>
                   <span>
-                    Click "Autofill Seats" to generate seat numbers
+                    Click &quot;Autofill Seats&quot; to generate seat numbers
                     automatically
                   </span>
                 </li>
                 <li className="flex">
                   <span className="font-medium text-black mr-2">4.</span>
-                  <span>Click "Add Table" to complete</span>
+                  <span>Click &quot;Add Table&quot; to complete</span>
                 </li>
               </ol>
             </div>
@@ -297,19 +297,19 @@ export default function UserGuide() {
               <ol className="space-y-3 text-zinc-600">
                 <li className="flex">
                   <span className="font-medium text-black mr-2">1.</span>
-                  <span>Click "New Guest" button</span>
+                  <span>Click &quot;New Guest&quot; button</span>
                 </li>
                 <li className="flex">
                   <span className="font-medium text-black mr-2">2.</span>
-                  <span>Enter guest's first name</span>
+                  <span>Enter guest&apos;s first name</span>
                 </li>
                 <li className="flex">
                   <span className="font-medium text-black mr-2">3.</span>
-                  <span>Enter guest's last name</span>
+                  <span>Enter guest&apos;s last name</span>
                 </li>
                 <li className="flex">
                   <span className="font-medium text-black mr-2">4.</span>
-                  <span>Click "Add Guest" to save</span>
+                  <span>Click &quot;Add Guest&quot; to save</span>
                 </li>
               </ol>
             </div>
@@ -321,15 +321,15 @@ export default function UserGuide() {
               <ol className="space-y-3 text-zinc-600">
                 <li className="flex">
                   <span className="font-medium text-black mr-2">1.</span>
-                  <span>Navigate to "Assigned Seats" section on the right</span>
+                  <span>Navigate to &quot;Assigned Seats&quot; section on the right</span>
                 </li>
                 <li className="flex">
                   <span className="font-medium text-black mr-2">2.</span>
-                  <span>Find the guest's name in the list</span>
+                  <span>Find the guest&apos;s name in the list</span>
                 </li>
                 <li className="flex">
                   <span className="font-medium text-black mr-2">3.</span>
-                  <span>Click the "Delete" button next to their name</span>
+                  <span>Click the &quot;Delete&quot; button next to their name</span>
                 </li>
               </ol>
             </div>
@@ -380,15 +380,15 @@ export default function UserGuide() {
               <ol className="space-y-3 text-zinc-600">
                 <li className="flex">
                   <span className="font-medium text-black mr-2">1.</span>
-                  <span>Go to "Assigned Seats" section on the right</span>
+                  <span>Go to &quot;Assigned Seats&quot; section on the right</span>
                 </li>
                 <li className="flex">
                   <span className="font-medium text-black mr-2">2.</span>
-                  <span>Search for the guest's name</span>
+                  <span>Search for the guest&apos;s name</span>
                 </li>
                 <li className="flex">
                   <span className="font-medium text-black mr-2">3.</span>
-                  <span>Check the "Arrived" box next to their name</span>
+                  <span>Check the &quot;Arrived&quot; box next to their name</span>
                 </li>
                 <li className="flex">
                   <span className="font-medium text-black mr-2">4.</span>
