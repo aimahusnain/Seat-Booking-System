@@ -6,7 +6,7 @@ import {
     DialogHeader,
     DialogTitle
 } from "@/components/ui/dialog"
-import { ExternalLink, HelpCircle, Mail, PhoneCall, Clock } from "lucide-react"
+import { ExternalLink, HelpCircle, Mail, PhoneCall, Clock, BookOpen } from "lucide-react"
 import { useState } from "react"
 
 export function HelpButton() {
@@ -33,6 +33,26 @@ export function HelpButton() {
           </DialogHeader>
           
           <div className="space-y-4 py-4">
+            {/* User Guide */}
+            <div className="flex items-start space-x-4 p-4 rounded-lg bg-primary/5 border border-primary/20 hover:bg-primary/10 transition-colors">
+              <div className="bg-primary/10 p-3 rounded-full">
+                <BookOpen className="h-5 w-5 text-primary" />
+              </div>
+              <div className="flex-1">
+                <h3 className="font-semibold text-lg mb-1">User Guide</h3>
+                <p className="text-sm text-muted-foreground mb-2">
+                  Step-by-step instructions to help you get started
+                </p>
+                <a 
+                  href="/user-guide"
+                  className="text-primary hover:underline font-medium inline-flex items-center gap-1"
+                >
+                  View Complete Guide
+                  <ExternalLink className="h-3 w-3" />
+                </a>
+              </div>
+            </div>
+
             {/* Email Support */}
             <div className="flex items-start space-x-4 p-4 rounded-lg bg-slate-50 hover:bg-slate-100 transition-colors">
               <div className="bg-primary/10 p-3 rounded-full">
