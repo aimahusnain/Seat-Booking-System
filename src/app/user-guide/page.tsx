@@ -1,4 +1,5 @@
 import Image from "next/image";
+import Link from "next/link";
 
 export default function UserGuide() {
   return (
@@ -15,12 +16,12 @@ export default function UserGuide() {
                 Complete instructions for managing your event seating
               </p>
             </div>
-            <a
+            <Link
               href="/"
               className="px-6 py-3 bg-lime-500 text-white font-medium hover:bg-lime-600 transition-colors"
             >
               Try the App
-            </a>
+            </Link>
           </div>
         </div>
       </div>
