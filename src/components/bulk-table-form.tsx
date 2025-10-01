@@ -171,7 +171,7 @@ export function BulkTableForm({ isOpen, onClose, onSuccess }: BulkTableFormProps
                     value={defaultSeats}
                     onChange={(e) => setDefaultSeats(Number(e.target.value))}
                     min="1"
-                    max="10"
+                    max="15"
                   />
                 </div>
               </div>
@@ -200,7 +200,7 @@ export function BulkTableForm({ isOpen, onClose, onSuccess }: BulkTableFormProps
                               value={table.numberOfSeats}
                               onChange={(e) => updateTableSeats(table.tableNumber, Number(e.target.value))}
                               min="1"
-                              max="10"
+                              max="15"
                               className="w-20"
                             />
                           </TableCell>

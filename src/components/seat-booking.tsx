@@ -1156,7 +1156,7 @@ const SeatBooking = () => {
                       </div>
                       <div className="flex items-center space-x-2">
                         <div className="w-3 h-3 rounded-full bg-red-200"></div>
-                        <span className="text-sm text-zinc-600">Booked</span>
+                        <span className="text-sm text-zinc-600">Assigned</span>
                       </div>
                       <div className="flex items-center space-x-2">
                         <div className="w-3 h-3 rounded-full bg-green-200"></div>

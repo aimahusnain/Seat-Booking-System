@@ -165,7 +165,7 @@ export function BookingSidebar({
       <div className="flex flex-col h-full w-full bg-white">
         <div className="p-4 bg-white shadow-sm space-y-4">
           <div className="flex justify-between items-center">
-            <h2 className="text-xl font-bold text-gray-800">Booked Seats</h2>
+            <h2 className="text-xl font-bold text-gray-800">Assigned Seats</h2>
             <div className="flex gap-2">
               {bookedSeats.length > 0 && (
                 <>

@@ -177,7 +177,7 @@ export function AddTableForm({ isOpen, onClose, onSuccess, onTableAdded }: AddTa
                           value={[numberOfSeats]}
                           onValueChange={handleSeatsChange}
                           min={1}
-                          max={10}
+                          max={15}
                           step={1}
                           className="flex-1"
                         />
