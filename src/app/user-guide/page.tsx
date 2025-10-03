@@ -318,11 +318,16 @@ export default function UserGuide() {
 
           {/* Remove Guest */}
           <div className="mb-8">
+            <h3 className="text-lg font-medium text-black mb-4">
+              Need to make changes?
+            </h3>
             <div className="border border-zinc-200 p-6 bg-zinc-50">
               <ol className="space-y-3 text-zinc-600">
                 <li className="flex">
                   <span className="font-medium text-black mr-2">1.</span>
-                  <span>Navigate to &quot;Assigned Seats&quot; section on the right</span>
+                  <span>
+                    Navigate to &quot;Assigned Seats&quot; section on the right
+                  </span>
                 </li>
                 <li className="flex">
                   <span className="font-medium text-black mr-2">2.</span>
@@ -330,7 +335,9 @@ export default function UserGuide() {
                 </li>
                 <li className="flex">
                   <span className="font-medium text-black mr-2">3.</span>
-                  <span>Click the &quot;Delete&quot; button next to their name</span>
+                  <span>
+                    Click the &quot;Delete&quot; button next to their name
+                  </span>
                 </li>
               </ol>
             </div>
@@ -381,7 +388,9 @@ export default function UserGuide() {
               <ol className="space-y-3 text-zinc-600">
                 <li className="flex">
                   <span className="font-medium text-black mr-2">1.</span>
-                  <span>Go to &quot;Assigned Seats&quot; section on the right</span>
+                  <span>
+                    Go to &quot;Assigned Seats&quot; section on the right
+                  </span>
                 </li>
                 <li className="flex">
                   <span className="font-medium text-black mr-2">2.</span>
@@ -389,7 +398,9 @@ export default function UserGuide() {
                 </li>
                 <li className="flex">
                   <span className="font-medium text-black mr-2">3.</span>
-                  <span>Check the &quot;Arrived&quot; box next to their name</span>
+                  <span>
+                    Check the &quot;Arrived&quot; box next to their name
+                  </span>
                 </li>
                 <li className="flex">
                   <span className="font-medium text-black mr-2">4.</span>
