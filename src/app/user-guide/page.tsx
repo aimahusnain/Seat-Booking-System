@@ -246,7 +246,7 @@ export default function UserGuide() {
           {/* Rename Table */}
           <div className="mb-8">
             <h3 className="text-lg font-medium text-black mb-4">
-              Rename Table
+                Edit Table
             </h3>
             <div className="border border-zinc-200 p-6">
               <div className="w-full h-fit bg-[#FAFAFA] mb-4 flex items-center justify-center text-zinc-400">
