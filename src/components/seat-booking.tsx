@@ -39,7 +39,7 @@ import {
   Trash,
   Trash2,
   UserCheck2,
-  Edit3,
+  Settings,
 } from "lucide-react";
 import { signOut, useSession } from "next-auth/react";
 import Image from "next/image";
@@ -61,6 +61,7 @@ import { ImportGuestsforWeb } from "./import-guests-form";
 import Loader from "./loader";
 import { PDFExport } from "./pdf-export";
 import { PersonSelector } from "./person-selector";
+import { EditTableDialog } from "./edit-table-dialog";
 
 const SeatBooking = () => {
   const {
@@ -103,10 +104,12 @@ const SeatBooking = () => {
   const [isAssignGuestsDialogOpen, setIsAssignGuestsDialogOpen] =
     useState(false);
 
-  const [isRenameDialogOpen, setIsRenameDialogOpen] = useState(false);
-  const [tableToRename, setTableToRename] = useState<number | null>(null);
-  const [newTableName, setNewTableName] = useState("");
-  const [isRenaming, setIsRenaming] = useState(false);
+  const [isEditTableDialogOpen, setIsEditTableDialogOpen] = useState(false);
+  const [tableToEdit, setTableToEdit] = useState<{
+    id: string | number;
+    name: string;
+    seats: number;
+  } | null>(null);
 
   console.log(guestsLoading);
   console.log(guestsError);
@@ -473,108 +476,7 @@ const SeatBooking = () => {
       });
     }
   };
-
-  const handleRenameTable = async () => {
-    if (!tableToRename || !newTableName.trim()) {
-      toast.error("Please enter a valid table name");
-      return;
-    }
-
-    setIsRenaming(true);
-
-    try {
-      // Find the table to get its ID - fix the ID comparison logic
-      const tableToUpdate = tables.find((t) => {
-        const currentTableId = t.seats[0]?.table?.id || t.tableNumber;
-        return currentTableId === tableToRename;
-      });
-
-      if (!tableToUpdate) {
-        throw new Error("Table not found in local data");
-      }
-
-      // Get the actual table ID from the database
-      const actualTableId = tableToUpdate.seats[0]?.table?.id;
-
-      if (!actualTableId) {
-        throw new Error("Table ID is missing from database");
-      }
-
-      console.log("Renaming table:", {
-        tableToRename,
-        actualTableId,
-        newName: newTableName.trim(),
-      });
-
-      const response = await fetch(`/api/table-rename`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          tableId: actualTableId, // Use the actual database table ID
-          newName: newTableName.trim(),
-        }),
-      });
-
-      const result = await response.json();
-
-      if (!response.ok) {
-        throw new Error(
-          result.message || `HTTP error! status: ${response.status}`
-        );
-      }
-
-      if (result.success) {
-        toast.success("Table renamed successfully");
-
-        // Update local state
-        setTables((prevTables) =>
-          prevTables.map((table) => {
-            const currentTableId =
-              table.seats[0]?.table?.id || table.tableNumber;
-            return currentTableId === tableToRename
-              ? {
-                  ...table,
-                  seats: table.seats.map((seat) => ({
-                    ...seat,
-                    table: { ...seat.table, name: newTableName.trim() },
-                  })),
-                }
-              : table;
-          })
-        );
-
-        // Update booked seats state
-        const oldTableName =
-          tableToUpdate.seats[0]?.table?.name ||
-          `Table ${tableToUpdate.tableNumber}`;
-        setBookedSeats((prevSeats) =>
-          prevSeats.map((seat) =>
-            seat.table.name === oldTableName
-              ? { ...seat, table: { ...seat.table, name: newTableName.trim() } }
-              : seat
-          )
-        );
-
-        // Reset dialog state
-        setIsRenameDialogOpen(false);
-        setNewTableName("");
-        setTableToRename(null);
-      } else {
-        throw new Error(result.message || "Failed to rename table");
-      }
-    } catch (error) {
-      console.error("Rename table error:", error);
-      toast.error("Failed to rename table", {
-        description:
-          error instanceof Error ? error.message : "Unknown error occurred",
-      });
-    } finally {
-      setIsRenaming(false);
-    }
-  };
-
+  
   const renderCircularTable = (table: TableData, index: number) => {
     const tableId = table.seats[0]?.table?.id || table.tableNumber;
     const tableName = table.seats[0]?.table?.name;
@@ -625,19 +527,21 @@ const SeatBooking = () => {
                         className="rounded-full w-8 h-8 p-0 bg-blue-500 hover:bg-blue-600 text-white"
                         onClick={(e) => {
                           e.stopPropagation();
-                          // Store the correct identifier - use table.seats[0]?.table?.id if available, otherwise use tableId
                           const actualTableId =
                             table.seats[0]?.table?.id || tableId;
-                          setTableToRename(actualTableId);
-                          setNewTableName(displayName);
-                          setIsRenameDialogOpen(true);
+                          setTableToEdit({
+                            id: actualTableId,
+                            name: displayName,
+                            seats: table.seats.length,
+                          });
+                          setIsEditTableDialogOpen(true);
                         }}
                       >
-                        <Edit3 className="h-4 w-4" />
+                        <Settings className="h-4 w-4" />
                       </Button>
                     </TooltipTrigger>
                     <TooltipContent>
-                      <p>Rename {displayName}</p>
+                      <p>Edit {displayName}</p>
                     </TooltipContent>
                   </Tooltip>
 
@@ -735,7 +639,8 @@ const SeatBooking = () => {
                     {seat.isBooked ? (
                       <div className="text-center">
                         <p className="font-semibold">
-                          Booked for {seat.user?.firstname} {seat.user?.lastname}
+                          Booked for {seat.user?.firstname}{" "}
+                          {seat.user?.lastname}
                         </p>
                         <p className="text-xs text-muted-foreground">
                           {seat.table.name}, Seat {seat.seat}
@@ -1362,89 +1267,22 @@ const SeatBooking = () => {
         confirmTextDisplay="Delete All Tables"
       />
 
-      <Dialog
-        open={isRenameDialogOpen}
-        onOpenChange={(open) => {
-          setIsRenameDialogOpen(open);
-          if (!open) {
-            setNewTableName("");
-            setTableToRename(null);
-          }
-        }}
-      >
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle className="text-xl font-bold text-blue-800">
-              Rename Table
-            </DialogTitle>
-            <DialogDescription className="mt-2">
-              <div className="space-y-2">
-                <div className="p-4 bg-blue-50 rounded-lg">
-                  <p className="font-medium text-blue-700">
-                    Rename{" "}
-                    {tables.find(
-                      (t) =>
-                        (t.seats[0]?.table?.id || t.tableNumber) ===
-                        tableToRename
-                    )?.seats[0]?.table?.name ||
-                      `Table ${
-                        tables.find(
-                          (t) =>
-                            (t.seats[0]?.table?.id || t.tableNumber) ===
-                            tableToRename
-                        )?.tableNumber
-                      }`}
-                  </p>
-                  <p className="text-blue-600 text-sm mt-2">
-                    Enter a new name for this table. The change will be applied
-                    immediately.
-                  </p>
-                </div>
-              </div>
-            </DialogDescription>
-          </DialogHeader>
-
-          <div className="space-y-4 py-4">
-            <div className="space-y-2">
-              <label
-                htmlFor="newTableName"
-                className="text-sm font-medium text-gray-700"
-              >
-                New Table Name
-              </label>
-              <Input
-                id="newTableName"
-                value={newTableName}
-                onChange={(e) => setNewTableName(e.target.value)}
-                placeholder="Enter new table name"
-                className="w-full"
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" && !isRenaming && newTableName.trim()) {
-                    handleRenameTable();
-                  }
-                }}
-              />
-            </div>
-          </div>
-
-          <DialogFooter className="flex justify-end gap-2">
-            <Button
-              variant="outline"
-              onClick={() => setIsRenameDialogOpen(false)}
-              disabled={isRenaming}
-            >
-              Cancel
-            </Button>
-            <Button
-              onClick={handleRenameTable}
-              disabled={isRenaming || !newTableName.trim()}
-              className="bg-blue-600 hover:bg-blue-700"
-            >
-              {isRenaming ? "Renaming..." : "Rename Table"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      {tableToEdit && (
+        <EditTableDialog
+          isOpen={isEditTableDialogOpen}
+          onClose={() => {
+            setIsEditTableDialogOpen(false);
+            setTableToEdit(null);
+          }}
+          tableId={tableToEdit.id}
+          currentName={tableToEdit.name}
+          currentSeats={tableToEdit.seats}
+          onSuccess={() => {
+            refreshSeats();
+            setTableToEdit(null);
+          }}
+        />
+      )}
     </div>
   );
 };
