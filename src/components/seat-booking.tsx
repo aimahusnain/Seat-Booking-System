@@ -62,6 +62,7 @@ import Loader from "./loader";
 import { PDFExport } from "./pdf-export";
 import { PersonSelector } from "./person-selector";
 import { EditTableDialog } from "./edit-table-dialog";
+import WashupButton from "./washup";
 
 const SeatBooking = () => {
   const {
@@ -837,6 +838,8 @@ const SeatBooking = () => {
                     </Tooltip>
                   </TooltipProvider>
                 </div>
+
+                <WashupButton />
 
                 {/* Secondary Actions Group */}
                 <div className="flex items-center gap-2">

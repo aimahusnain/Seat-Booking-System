@@ -6,7 +6,7 @@ datasource db {
   provider = "cockroachdb"
   url      = env("DATABASE_URL")
 }
-        
+
 model Seat {
   id         String   @id @default(cuid()) @map("_id")
   tableId    String
@@ -44,4 +44,13 @@ model User {
   name      String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+model Image {
+  id        String   @id @default(cuid()) @map("_id")
+  filename  String
+  data      String
+  mimeType  String // Multipurpose Internet Mail Extensions type
+  size      Int
+  createdAt DateTime @default(now())
 }
