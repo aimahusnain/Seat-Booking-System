@@ -7,10 +7,11 @@ const prisma = new PrismaClient();
 // DELETE - Delete a specific floor map by ID
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = params;
+    // Await the params Promise
+    const { id } = await params;
 
     if (!id) {
       return NextResponse.json(
