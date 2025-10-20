@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useSession } from 'next-auth/react';
 import {
   Dialog,
   DialogContent,
@@ -17,9 +18,18 @@ import { Loader2, Trash2, AlertTriangle } from 'lucide-react';
 import { toast } from 'sonner';
 
 export default function WashupButton() {
+  const { data: session } = useSession();
   const [open, setOpen] = useState(false);
   const [confirmText, setConfirmText] = useState('');
   const [isDeleting, setIsDeleting] = useState(false);
+
+  // Check if user is admin
+  const isAdmin = session?.user?.email === 'admin';
+
+  // Don't render if not admin
+  if (!isAdmin) {
+    return null;
+  }
 
   const handleDelete = async () => {
     if (confirmText !== 'DELETE ALL DATA') {
@@ -54,7 +64,6 @@ export default function WashupButton() {
       toast.error('Error', {
         description: 'Failed to delete data. Please try again.',
       });
-      console.log(error)
     } finally {
       setIsDeleting(false);
     }
@@ -67,7 +76,7 @@ export default function WashupButton() {
       <DialogTrigger asChild>
         <Button variant="destructive" className="gap-2">
           <Trash2 className="h-4 w-4" />
-          Washup
+          Washup Database
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-md">
