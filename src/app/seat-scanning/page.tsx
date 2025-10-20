@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import { AnimatePresence, motion } from "framer-motion";
-import { Check, HelpCircle, QrCode, Search } from "lucide-react";
+import { Check, HelpCircle, QrCode, Search, MapPin, X } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
@@ -28,6 +28,15 @@ interface User {
   }>;
 }
 
+interface FloorMapImage {
+  id: string;
+  filename: string;
+  data: string;
+  mimeType: string;
+  size: number;
+  createdAt: string;
+}
+
 export default function SeatScanning() {
   const [isQrOpen, setIsQrOpen] = useState(false);
   const [searchValue, setSearchValue] = useState("");
@@ -42,6 +51,9 @@ export default function SeatScanning() {
   } | null>(null);
   const [seatIsReceived, setSeatIsReceived] = useState(false);
   const [noSeatFound, setNoSeatFound] = useState(false);
+  const [isFloorMapOpen, setIsFloorMapOpen] = useState(false);
+  const [floorMapImage, setFloorMapImage] = useState<FloorMapImage | null>(null);
+  const [loadingFloorMap, setLoadingFloorMap] = useState(false);
 
   // Fetch all guests when component mounts
   useEffect(() => {
@@ -65,6 +77,27 @@ export default function SeatScanning() {
 
     fetchGuests();
   }, []);
+
+  // Fetch floor map
+  const fetchFloorMap = async () => {
+    setLoadingFloorMap(true);
+    try {
+      const response = await fetch("/api/floor-map");
+      const data = await response.json();
+      
+      if (data.image) {
+        setFloorMapImage(data.image);
+        setIsFloorMapOpen(true);
+      } else {
+        toast.error("No floor map available");
+      }
+    } catch (error) {
+      console.error("Failed to fetch floor map:", error);
+      toast.error("Failed to load floor map");
+    } finally {
+      setLoadingFloorMap(false);
+    }
+  };
 
   // Filter users based on search input
   const filteredUsers = useMemo(() => {
@@ -92,13 +125,19 @@ export default function SeatScanning() {
     if (user.seat && user.seat.length > 0) {
       const seat = user.seat[0]; // Get first seat assignment
 
+      let seatCheckData: any = null;
       try {
         // Check if seat is already received
         const response = await fetch(`/api/get-seat-checkin?seatId=${seat.id}`);
-        const data = await response.json();
+        seatCheckData = await response.json();
 
-        if (data.success) {
-          setSeatIsReceived(data.data.isReceived);
+        if (seatCheckData?.success) {
+          setSeatIsReceived(seatCheckData.data.isReceived);
+
+          // Only show success if already checked in
+          if (seatCheckData.data.isReceived) {
+            toast.success(`Welcome back!`);
+          }
         }
       } catch (error) {
         console.error("Error checking seat status:", error);
@@ -110,7 +149,6 @@ export default function SeatScanning() {
         name: `${user.firstname} ${user.lastname}`,
         seatId: seat.id,
       });
-      toast.success(`Seat found!`);
     } else {
       setSearchResult(null);
       setNoSeatFound(true);
@@ -174,7 +212,7 @@ export default function SeatScanning() {
           >
             <Card className="border-0 shadow-2xl shadow-lime-500/10 bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl">
               <CardHeader>
-                <CardTitle className="text-zinc-800 dark:text-zinc-200">
+                <CardTitle className="text-xl sm:text-2xl text-zinc-800 dark:text-zinc-200">
                   Find Your Seat
                 </CardTitle>
               </CardHeader>
@@ -183,12 +221,12 @@ export default function SeatScanning() {
                   <div className="space-y-2">
                     <Label
                       htmlFor="name"
-                      className="text-zinc-600 dark:text-zinc-400"
+                      className="text-base sm:text-lg text-zinc-600 dark:text-zinc-400"
                     >
                       Search your name
                     </Label>
                     <div className="relative">
-                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-zinc-400" />
+                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-zinc-400" />
                       <Input
                         id="name"
                         placeholder={
@@ -199,7 +237,7 @@ export default function SeatScanning() {
                         value={searchValue}
                         onChange={(e) => setSearchValue(e.target.value)}
                         disabled={isLoading}
-                        className="pl-9 h-12 border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 focus:ring-2 focus:ring-lime-500/20 transition-all rounded-xl"
+                        className="pl-10 h-14 text-base sm:text-lg border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 focus:ring-2 focus:ring-lime-500/20 transition-all rounded-xl"
                       />
                     </div>
 
@@ -214,7 +252,7 @@ export default function SeatScanning() {
                                   key={user.id}
                                   onClick={() => handleUserSelect(user)}
                                   className={cn(
-                                    "w-full flex items-center px-4 py-2 rounded-lg text-left",
+                                    "w-full flex items-center px-4 py-3 rounded-lg text-left text-base sm:text-lg",
                                     "hover:bg-lime-50 dark:hover:bg-lime-900/20",
                                     "transition-colors duration-150",
                                     selectedUser?.id === user.id &&
@@ -223,20 +261,20 @@ export default function SeatScanning() {
                                 >
                                   <Check
                                     className={cn(
-                                      "mr-2 h-4 w-4",
+                                      "mr-3 h-5 w-5",
                                       selectedUser?.id === user.id
                                         ? "opacity-100"
                                         : "opacity-0"
                                     )}
                                   />
-                                  <span className="flex-1">
+                                  <span className="flex-1 font-medium">
                                     {user.firstname} {user.lastname}
                                   </span>
                                 </button>
                               ))}
                             </div>
                           ) : (
-                            <div className="p-4 text-center text-sm text-zinc-500">
+                            <div className="p-4 text-center text-base text-zinc-500">
                               No matching names found
                             </div>
                           )}
@@ -260,62 +298,92 @@ export default function SeatScanning() {
               >
                 <Card className="border-0 shadow-2xl shadow-lime-500/10 bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl overflow-hidden">
                   <CardHeader className="bg-lime-500 pb-8">
-                    <CardTitle className="text-white flex items-center gap-3">
+                    <CardTitle className="text-white text-xl sm:text-2xl flex items-center gap-3">
                       <span className="bg-white/20 p-2 rounded-xl">
-                        <QrCode className="h-5 w-5" />
+                        <QrCode className="h-6 w-6" />
                       </span>
-                      Your Seat Details
+                      {seatIsReceived ? "Welcome!" : "Arrived"}
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="pt-6">
-                    <div className="space-y-4">
-                      <div className="flex justify-between items-center p-4 rounded-xl bg-violet-50/50 dark:bg-violet-900/20">
-                        <span className="text-lg font-bold text-lime-600 dark:text-violet-400">
+                    <div className="space-y-6">
+                      {/* Name Display - Always visible */}
+                      <div className="flex justify-between items-center p-5 rounded-xl bg-violet-50/50 dark:bg-violet-900/20">
+                        <span className="text-lg sm:text-xl font-bold text-violet-600 dark:text-violet-400">
                           Name
                         </span>
-                        <span className="font-semibold text-2xl text-zinc-800 dark:text-zinc-200">
+                        <span className="font-semibold text-xl sm:text-2xl text-zinc-800 dark:text-zinc-200">
                           {searchResult.name}
-                        </span>
-                      </div>
-                      <div className="flex justify-between items-center p-4 rounded-xl bg-lime-50/50 dark:bg-lime-900/20">
-                        <span className="text-lg font-bold text-green-600 dark:text-lime-400">
-                          Table
-                        </span>
-                        <span className="font-semibold text-2xl text-zinc-800 dark:text-zinc-200">
-                          {searchResult.table}
-                        </span>
-                      </div>
-                      <div className="flex justify-between items-center p-4 rounded-xl bg-fuchsia-50/50 dark:bg-fuchsia-900/20">
-                        <span className="text-lg font-bold text-fuchsia-600 dark:text-fuchsia-400">
-                          Seat Number
-                        </span>
-                        <span className="font-semibold text-2xl text-zinc-800 dark:text-zinc-200">
-                          {searchResult.seat}
                         </span>
                       </div>
 
                       {seatIsReceived ? (
-                        // Already arrived card (you already have this block)
-                        <div className="p-6 bg-green-50 dark:bg-green-900/20 rounded-xl text-center space-y-3">
-                          <div className="h-16 w-16 bg-green-100 dark:bg-green-800/30 rounded-full flex items-center justify-center mx-auto">
-                            <Check className="h-8 w-8 text-green-600 dark:text-green-400" />
+                        // Show seat details after check-in
+                        <>
+                          <div className="flex justify-between items-center p-5 rounded-xl bg-lime-50/50 dark:bg-lime-900/20">
+                            <span className="text-lg sm:text-xl font-bold text-green-600 dark:text-lime-400">
+                              Table
+                            </span>
+                            <span className="font-semibold text-3xl sm:text-4xl text-zinc-800 dark:text-zinc-200">
+                              {searchResult.table}
+                            </span>
                           </div>
-                          <h3 className="text-3xl font-semibold text-green-700 dark:text-green-400">
-                            Arrived
-                          </h3>
-                          <p className="text-sm text-green-600 dark:text-green-500">
-                            You have already arrived for this event. Enjoy!
-                          </p>
-                        </div>
+                          <div className="flex justify-between items-center p-5 rounded-xl bg-fuchsia-50/50 dark:bg-fuchsia-900/20">
+                            <span className="text-lg sm:text-xl font-bold text-fuchsia-600 dark:text-fuchsia-400">
+                              Seat Number
+                            </span>
+                            <span className="font-semibold text-3xl sm:text-4xl text-zinc-800 dark:text-zinc-200">
+                              {searchResult.seat}
+                            </span>
+                          </div>
+
+                          {/* Floor Map Button */}
+                          <Button
+                            onClick={fetchFloorMap}
+                            disabled={loadingFloorMap}
+                            className="w-full h-16 text-xl sm:text-2xl rounded-xl bg-blue-600 text-white hover:bg-blue-700 transition-all shadow-lg hover:shadow-xl disabled:opacity-50"
+                          >
+                            {loadingFloorMap ? (
+                              "Loading..."
+                            ) : (
+                              <>
+                                <MapPin className="mr-3 h-6 w-6" />
+                                See Your Table Location
+                              </>
+                            )}
+                          </Button>
+
+                          {/* Already arrived card */}
+                          <div className="p-6 bg-green-50 dark:bg-green-900/20 rounded-xl text-center space-y-3">
+                            <div className="h-20 w-20 bg-green-100 dark:bg-green-800/30 rounded-full flex items-center justify-center mx-auto">
+                              <Check className="h-10 w-10 text-green-600 dark:text-green-400" />
+                            </div>
+                            <h3 className="text-2xl sm:text-3xl font-semibold text-green-700 dark:text-green-400">
+                              Welcome!
+                            </h3>
+                            <p className="text-base sm:text-lg text-green-600 dark:text-green-500">
+                              You have checked in successfully. Enjoy the event!
+                            </p>
+                          </div>
+
+                          {/* QR Code */}
+                          <QRCodeGenerator value={generateQrContent()} />
+                        </>
                       ) : (
-                        <div className="space-y-4">
-                          {/* Mark as Arrived button */}
+                        <div className="space-y-6">
+                          {/* Instruction message */}
+                          <div className="p-5 bg-amber-50 dark:bg-amber-900/20 rounded-xl border-2 border-amber-200 dark:border-amber-800">
+                            <p className="text-base sm:text-lg text-amber-800 dark:text-amber-200 text-center font-medium leading-relaxed">
+                              Please click the <strong>&quot;Arrived&quot;</strong> button below to see your table and seat number
+                            </p>
+                          </div>
+
+                          {/* Check In button */}
                           <Button
                             onClick={async () => {
                               if (!searchResult) return;
                               
                               try {
-                                setSeatIsReceived(false);
                                 setIsLoading(true);
 
                                 const response = await fetch(
@@ -335,28 +403,25 @@ export default function SeatScanning() {
                                 if (data.success) {
                                   setSeatIsReceived(true);
                                   toast.success(
-                                    `${searchResult.name} marked as arrived`
+                                    `Welcome ${searchResult.name}!`
                                   );
                                 } else {
                                   toast.error(
-                                    data.message || "Failed to update"
+                                    data.message || "Failed to check in"
                                   );
                                 }
                               } catch (err) {
                                 console.error(err);
-                                toast.error("Error updating status");
+                                toast.error("Error checking in");
                               } finally {
                                 setIsLoading(false);
                               }
                             }}
                             disabled={isLoading}
-                            className="text-2xl w-full h-12 rounded-xl bg-green-600 text-white hover:bg-green-700 transition-all disabled:opacity-50"
+                            className="w-full h-20 text-2xl sm:text-3xl font-bold rounded-xl bg-green-600 text-white hover:bg-green-700 transition-all shadow-lg hover:shadow-xl disabled:opacity-50"
                           >
                             {isLoading ? "Processing..." : "Arrived"}
                           </Button>
-
-                          {/* QR Code below button */}
-                          <QRCodeGenerator value={generateQrContent()} />
                         </div>
                       )}
                     </div>
@@ -371,23 +436,23 @@ export default function SeatScanning() {
                 transition={{ duration: 0.3 }}
               >
                 <Card className="border-0 shadow-2xl shadow-lime-500/10 bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl">
-                  <CardContent className="p-6">
-                    <div className="flex flex-col items-center text-center space-y-4">
-                      <div className="h-12 w-12 rounded-full bg-amber-100 dark:bg-amber-900/20 flex items-center justify-center">
-                        <HelpCircle className="h-6 w-6 text-amber-600 dark:text-amber-400" />
+                  <CardContent className="p-8">
+                    <div className="flex flex-col items-center text-center space-y-6">
+                      <div className="h-16 w-16 rounded-full bg-amber-100 dark:bg-amber-900/20 flex items-center justify-center">
+                        <HelpCircle className="h-8 w-8 text-amber-600 dark:text-amber-400" />
                       </div>
-                      <div className="space-y-2">
-                        <h3 className="text-2xl font-semibold text-zinc-800 dark:text-zinc-200">
+                      <div className="space-y-3">
+                        <h3 className="text-2xl sm:text-3xl font-semibold text-zinc-800 dark:text-zinc-200">
                           Seat Not Available
                         </h3>
-                        <p className="text-lg text-red-700 dark:text-zinc-400">
+                        <p className="text-lg sm:text-xl text-red-700 dark:text-zinc-400 leading-relaxed">
                           Your seat hasn&apos;t been assigned yet. Please see
                           someone at the front desk for assistance.
                         </p>
                       </div>
                       <Button
                         variant="outline"
-                        className="mt-4 bg-white dark:bg-zinc-900 hover:bg-amber-50 dark:hover:bg-amber-900/20"
+                        className="mt-4 h-14 text-lg px-8 bg-white dark:bg-zinc-900 hover:bg-amber-50 dark:hover:bg-amber-900/20"
                         onClick={() => setNoSeatFound(false)}
                       >
                         Search Again
@@ -401,7 +466,7 @@ export default function SeatScanning() {
         </div>
       </div>
 
-      {/* QR Code Dialog - Responsive */}
+      {/* QR Code Dialog */}
       <Dialog open={isQrOpen} onOpenChange={setIsQrOpen}>
         <DialogContent
           className={cn(
@@ -420,6 +485,45 @@ export default function SeatScanning() {
               height={300}
               width={300}
             />
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Floor Map Dialog */}
+      <Dialog open={isFloorMapOpen} onOpenChange={setIsFloorMapOpen}>
+        <DialogContent className="max-w-[95vw] max-h-[95vh] p-0 bg-white dark:bg-zinc-900 border-0 rounded-2xl overflow-hidden">
+          <div className="relative w-full h-full">
+            {/* Close button */}
+            <Button
+              onClick={() => setIsFloorMapOpen(false)}
+              variant="outline"
+              size="icon"
+              className="absolute top-4 right-4 z-10 h-12 w-12 rounded-full bg-white/90 dark:bg-zinc-900/90 backdrop-blur-sm shadow-lg hover:bg-white dark:hover:bg-zinc-900"
+            >
+              <X className="h-6 w-6" />
+            </Button>
+            
+            {/* Title */}
+            <div className="absolute top-4 left-4 z-10 bg-white/90 dark:bg-zinc-900/90 backdrop-blur-sm rounded-xl px-6 py-3 shadow-lg">
+              <h3 className="text-xl sm:text-2xl font-bold text-zinc-800 dark:text-zinc-200">
+                Venue Floor Plan
+              </h3>
+            </div>
+
+            {/* Floor map image */}
+            <div className="w-full h-[90vh] overflow-auto p-4 pt-24">
+              {floorMapImage ? (
+                <img
+                  src={floorMapImage.data}
+                  alt="Floor Plan"
+                  className="w-full h-auto object-contain"
+                />
+              ) : (
+                <div className="flex items-center justify-center h-full">
+                  <p className="text-lg text-zinc-500">No floor map available</p>
+                </div>
+              )}
+            </div>
           </div>
         </DialogContent>
       </Dialog>

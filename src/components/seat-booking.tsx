@@ -63,6 +63,7 @@ import { PDFExport } from "./pdf-export";
 import { PersonSelector } from "./person-selector";
 import { EditTableDialog } from "./edit-table-dialog";
 import WashupButton from "./washup";
+import { FloorMapUploader } from "./FloorMapUploader";
 
 const SeatBooking = () => {
   const {
@@ -477,29 +478,29 @@ const SeatBooking = () => {
       });
     }
   };
-  
-const renderCircularTable = (table: TableData, index: number) => {
-  const tableId = table.seats[0]?.table?.id || table.tableNumber;
-  const tableName = table.seats[0]?.table?.name;
-  const tableNumber = table.tableNumber;
-  const displayName = tableName || `Table ${tableNumber}`;
-  const tableColor = getTableColor(index);
-  const isHovered = hoveredTable === tableId;
 
-  return (
-    <motion.div
-      key={tableId}
-      className={`relative w-full aspect-square mx-auto ${
-        isFullScreen ? "max-w-[500px]" : "max-w-[300px]"
-      } ${showNames ? "p-8" : ""}`} // Add padding when names are shown
-      onMouseEnter={() => setHoveredTable(tableId)}
-      onMouseLeave={() => setHoveredTable(null)}
-      layout
-      initial={{ opacity: 0, scale: 0.8 }}
-      animate={{ opacity: 1, scale: 1 }}
-      exit={{ opacity: 0, scale: 0.8 }}
-      transition={{ duration: 0.5 }}
-    >
+  const renderCircularTable = (table: TableData, index: number) => {
+    const tableId = table.seats[0]?.table?.id || table.tableNumber;
+    const tableName = table.seats[0]?.table?.name;
+    const tableNumber = table.tableNumber;
+    const displayName = tableName || `Table ${tableNumber}`;
+    const tableColor = getTableColor(index);
+    const isHovered = hoveredTable === tableId;
+
+    return (
+      <motion.div
+        key={tableId}
+        className={`relative w-full aspect-square mx-auto ${
+          isFullScreen ? "max-w-[500px]" : "max-w-[300px]"
+        } ${showNames ? "p-8" : ""}`} // Add padding when names are shown
+        onMouseEnter={() => setHoveredTable(tableId)}
+        onMouseLeave={() => setHoveredTable(null)}
+        layout
+        initial={{ opacity: 0, scale: 0.8 }}
+        animate={{ opacity: 1, scale: 1 }}
+        exit={{ opacity: 0, scale: 0.8 }}
+        transition={{ duration: 0.5 }}
+      >
         {/* Center Table Label */}
         <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-10">
           <div
@@ -658,23 +659,23 @@ const renderCircularTable = (table: TableData, index: number) => {
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
-{showNames && seat.isBooked && (
-  <motion.div
-    initial={{ opacity: 0 }}
-    animate={{ opacity: 1 }}
-    className="absolute whitespace-nowrap pointer-events-none z-20"
-    style={{
-      // Calculate position further out from the seat position
-      left: `${45 + Math.cos(angle) * (radius + 12)}%`,
-      top: `${45 + Math.sin(angle) * (radius + 12)}%`,
-      transform: "translate(-50%, -50%)",
-    }}
-  >
-    <span className="text-[0.60rem] font-medium text-zinc-600 bg-white/90 px-1.5 py-0.5 rounded shadow-sm block">
-      {seat.user?.firstname} {seat.user?.lastname}
-    </span>
-  </motion.div>
-)}
+              {showNames && seat.isBooked && (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  className="absolute whitespace-nowrap pointer-events-none z-20"
+                  style={{
+                    // Calculate position further out from the seat position
+                    left: `${45 + Math.cos(angle) * (radius + 12)}%`,
+                    top: `${45 + Math.sin(angle) * (radius + 12)}%`,
+                    transform: "translate(-50%, -50%)",
+                  }}
+                >
+                  <span className="text-[0.60rem] font-medium text-zinc-600 bg-white/90 px-1.5 py-0.5 rounded shadow-sm block">
+                    {seat.user?.firstname} {seat.user?.lastname}
+                  </span>
+                </motion.div>
+              )}
             </motion.div>
           );
         })}
@@ -788,6 +789,7 @@ const renderCircularTable = (table: TableData, index: number) => {
 
   return (
     <div className={`bg-zinc-50 ${isFullScreen ? "overflow-hidden" : ""}`}>
+
       <AnimatePresence>
         {!isFullScreen && (
           <motion.nav
@@ -844,7 +846,10 @@ const renderCircularTable = (table: TableData, index: number) => {
                   </TooltipProvider>
                 </div>
 
+      <FloorMapUploader />
+              
                 <WashupButton />
+
 
                 {/* Secondary Actions Group */}
                 <div className="flex items-center gap-2">

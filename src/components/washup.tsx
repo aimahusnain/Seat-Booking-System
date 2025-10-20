@@ -64,6 +64,7 @@ export default function WashupButton() {
       toast.error('Error', {
         description: 'Failed to delete data. Please try again.',
       });
+      console.log("Error deleting data:", error);
     } finally {
       setIsDeleting(false);
     }
