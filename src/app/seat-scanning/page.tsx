@@ -348,7 +348,7 @@ export default function SeatScanning() {
                             ) : (
                               <>
                                 <MapPin className="mr-3 h-6 w-6" />
-                                See Your Table Location
+                                View Your Table Location
                               </>
                             )}
                           </Button>
