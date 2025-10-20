@@ -125,7 +125,7 @@ export default function SeatScanning() {
     if (user.seat && user.seat.length > 0) {
       const seat = user.seat[0]; // Get first seat assignment
 
-      let seatCheckData: any = null;
+      let seatCheckData = null;
       try {
         // Check if seat is already received
         const response = await fetch(`/api/get-seat-checkin?seatId=${seat.id}`);
