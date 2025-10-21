@@ -312,7 +312,7 @@ export default function SeatScanning() {
                         <span className="text-lg sm:text-xl font-bold text-violet-600 dark:text-violet-400">
                           Name
                         </span>
-                        <span className="font-semibold text-xl sm:text-2xl text-zinc-800 dark:text-zinc-200">
+                        <span className="font-semibold text-xl sm:text-3xl text-zinc-800 dark:text-zinc-200">
                           {searchResult.name}
                         </span>
                       </div>
