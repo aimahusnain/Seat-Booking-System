@@ -297,14 +297,14 @@ export default function SeatScanning() {
                 transition={{ duration: 0.3 }}
               >
                 <Card className="border-0 shadow-2xl shadow-lime-500/10 bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl overflow-hidden">
-                  <CardHeader className="bg-lime-500 pb-8">
+                  {/* <CardHeader className="bg-lime-500 pb-8">
                     <CardTitle className="text-white text-xl sm:text-2xl flex items-center gap-3">
                       <span className="bg-white/20 p-2 rounded-xl">
                         <QrCode className="h-6 w-6" />
                       </span>
                       {seatIsReceived ? "Welcome!" : "Arrived"}
                     </CardTitle>
-                  </CardHeader>
+                  </CardHeader> */}
                   <CardContent className="pt-6">
                     <div className="space-y-6">
                       {/* Name Display - Always visible */}
@@ -312,7 +312,7 @@ export default function SeatScanning() {
                         <span className="text-lg sm:text-xl font-bold text-violet-600 dark:text-violet-400">
                           Name
                         </span>
-                        <span className="font-semibold text-xl sm:text-3xl text-zinc-800 dark:text-zinc-200">
+                        <span className="font-semibold text-4xl sm:text-4xl text-zinc-800 dark:text-zinc-200">
                           {searchResult.name}
                         </span>
                       </div>
