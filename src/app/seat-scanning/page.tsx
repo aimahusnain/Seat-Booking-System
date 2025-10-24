@@ -52,8 +52,11 @@ export default function SeatScanning() {
   const [seatIsReceived, setSeatIsReceived] = useState(false);
   const [noSeatFound, setNoSeatFound] = useState(false);
   const [isFloorMapOpen, setIsFloorMapOpen] = useState(false);
-  const [floorMapImage, setFloorMapImage] = useState<FloorMapImage | null>(null);
+  const [floorMapImage, setFloorMapImage] = useState<FloorMapImage | null>(
+    null
+  );
   const [loadingFloorMap, setLoadingFloorMap] = useState(false);
+  const [tableNotes, setTableNotes] = useState<string | null>(null);
 
   // Fetch all guests when component mounts
   useEffect(() => {
@@ -84,7 +87,7 @@ export default function SeatScanning() {
     try {
       const response = await fetch("/api/floor-map");
       const data = await response.json();
-      
+
       if (data.image) {
         setFloorMapImage(data.image);
         setIsFloorMapOpen(true);
@@ -121,20 +124,20 @@ export default function SeatScanning() {
     setSearchValue(`${user.firstname} ${user.lastname}`);
     setNoSeatFound(false);
     setSeatIsReceived(false);
+    setTableNotes(null); // Reset notes
 
     if (user.seat && user.seat.length > 0) {
-      const seat = user.seat[0]; // Get first seat assignment
-
+      const seat = user.seat[0];
       let seatCheckData = null;
+
       try {
-        // Check if seat is already received
         const response = await fetch(`/api/get-seat-checkin?seatId=${seat.id}`);
         seatCheckData = await response.json();
 
         if (seatCheckData?.success) {
           setSeatIsReceived(seatCheckData.data.isReceived);
+          setTableNotes(seatCheckData.data.table?.notes || null); // Store notes
 
-          // Only show success if already checked in
           if (seatCheckData.data.isReceived) {
             toast.success(`Welcome back!`);
           }
@@ -317,6 +320,25 @@ export default function SeatScanning() {
                         </span>
                       </div>
 
+                      {/* Table Notes - Show if available */}
+                      {tableNotes && (
+                        <div className="p-4 rounded-xl bg-yellow-50/50 dark:bg-yellow-900/20 border-l-4 border-yellow-400">
+                          <div className="flex items-start gap-2">
+                            <span className="text-yellow-600 dark:text-yellow-400 mt-0.5">
+                              📝
+                            </span>
+                            <div>
+                              <p className="text-sm font-semibold text-yellow-700 dark:text-yellow-400 mb-1">
+                                Table Note:
+                              </p>
+                              <p className="text-base text-yellow-800 dark:text-yellow-300">
+                                {tableNotes}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
                       {seatIsReceived ? (
                         // Show seat details after check-in
                         <>
@@ -374,7 +396,9 @@ export default function SeatScanning() {
                           {/* Instruction message */}
                           <div className="p-5 bg-amber-50 dark:bg-amber-900/20 rounded-xl border-2 border-amber-200 dark:border-amber-800">
                             <p className="text-base sm:text-lg text-amber-800 dark:text-amber-200 text-center font-medium leading-relaxed">
-                              Please click the <strong>&quot;Arrived&quot;</strong> button below to see your table and seat number
+                              Please click the{" "}
+                              <strong>&quot;Arrived&quot;</strong> button below
+                              to see your table and seat number
                             </p>
                           </div>
 
@@ -382,7 +406,7 @@ export default function SeatScanning() {
                           <Button
                             onClick={async () => {
                               if (!searchResult) return;
-                              
+
                               try {
                                 setIsLoading(true);
 
@@ -502,7 +526,7 @@ export default function SeatScanning() {
             >
               <X className="h-6 w-6" />
             </Button>
-            
+
             {/* Title */}
             <div className="absolute top-4 left-4 z-10 bg-white/90 dark:bg-zinc-900/90 backdrop-blur-sm rounded-xl px-6 py-3 shadow-lg">
               <h3 className="text-xl sm:text-2xl font-bold text-zinc-800 dark:text-zinc-200">
@@ -520,7 +544,9 @@ export default function SeatScanning() {
                 />
               ) : (
                 <div className="flex items-center justify-center h-full">
-                  <p className="text-lg text-zinc-500">No floor map available</p>
+                  <p className="text-lg text-zinc-500">
+                    No floor map available
+                  </p>
                 </div>
               )}
             </div>

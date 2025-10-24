@@ -64,6 +64,7 @@ import { PersonSelector } from "./person-selector";
 import { EditTableDialog } from "./edit-table-dialog";
 import WashupButton from "./washup";
 import { FloorMapUploader } from "./FloorMapUploader";
+import TableNotes from "./TableNotes";
 
 const SeatBooking = () => {
   const {
@@ -502,7 +503,7 @@ const SeatBooking = () => {
         transition={{ duration: 0.5 }}
       >
         {/* Center Table Label */}
-        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-10">
+        <div className="absolute items-center flex flex-col gap-2 top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-10">
           <div
             className={`relative ${tableColor} rounded-full px-4 py-2 transition-all duration-200 ease-in-out mt-5 ml-5`}
           >
@@ -570,6 +571,10 @@ const SeatBooking = () => {
               </motion.div>
             )}
           </div>
+          <TableNotes
+            tableId={String(table.seats[0]?.table?.id || tableId)}
+            initialNotes={table.seats[0]?.table?.notes}
+          />
         </div>
 
         {/* Circular Seats */}
@@ -789,7 +794,6 @@ const SeatBooking = () => {
 
   return (
     <div className={`bg-zinc-50 ${isFullScreen ? "overflow-hidden" : ""}`}>
-
       <AnimatePresence>
         {!isFullScreen && (
           <motion.nav
@@ -846,10 +850,9 @@ const SeatBooking = () => {
                   </TooltipProvider>
                 </div>
 
-      <FloorMapUploader />
-              
-                <WashupButton />
+                <FloorMapUploader />
 
+                <WashupButton />
 
                 {/* Secondary Actions Group */}
                 <div className="flex items-center gap-2">

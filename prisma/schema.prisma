@@ -30,6 +30,7 @@ model Table {
   id        String   @id @default(cuid()) @map("_id")
   name      String
   Seat      Seat[]
+  notes     String?
 }
 
 model Password {

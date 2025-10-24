@@ -2,6 +2,7 @@
 export interface Table {
   id: number
   name: string
+  notes: string
   Seat: Seat[]
 }
 

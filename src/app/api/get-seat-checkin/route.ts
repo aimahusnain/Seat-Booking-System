@@ -1,3 +1,4 @@
+// app/api/get-seat-checkin/route.ts
 import { db } from "@/lib/db"
 import { type NextRequest, NextResponse } from "next/server"
 
@@ -14,17 +15,21 @@ export async function GET(req: NextRequest) {
         { status: 400 },
       )
     }
-
     const seat = await db.seat.findUnique({
       where: {
         id: seatId,
       },
       include: {
-        table: true,
+        table: {
+          select: {
+            id: true,
+            name: true,
+            notes: true, // Add this line
+          }
+        },
         user: true,
       },
     })
-
     if (!seat) {
       return NextResponse.json(
         {
@@ -34,7 +39,6 @@ export async function GET(req: NextRequest) {
         { status: 404 },
       )
     }
-
     return NextResponse.json({
       success: true,
       data: seat,
