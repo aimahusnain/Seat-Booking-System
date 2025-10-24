@@ -3,10 +3,11 @@ import { db } from "@/lib/db";
 
 export async function PATCH(
   request: NextRequest,
-  context: { params: { id: string } }
+  context: { params: Promise<{ id: string }> } // 👈 note: sometimes params is a Promise
 ) {
+  const { id } = await context.params; // 👈 must await it if it's a Promise
+
   try {
-    const { id } = context.params;
     const body = await request.json();
     const { notes } = body;
 
@@ -15,10 +16,7 @@ export async function PATCH(
       data: { notes },
     });
 
-    return NextResponse.json({
-      success: true,
-      data: updatedTable,
-    });
+    return NextResponse.json({ success: true, data: updatedTable });
   } catch (error) {
     console.error("Error updating table notes:", error);
     return NextResponse.json(
