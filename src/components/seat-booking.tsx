@@ -107,11 +107,16 @@ const SeatBooking = () => {
   const [isAssignGuestsDialogOpen, setIsAssignGuestsDialogOpen] =
     useState(false);
 
-  const [isEditTableDialogOpen, setIsEditTableDialogOpen] = useState(false);
+const [isEditTableDialogOpen, setIsEditTableDialogOpen] = useState(false);
   const [tableToEdit, setTableToEdit] = useState<{
     id: string | number;
     name: string;
     seats: number;
+  } | null>(null);
+  const [isTableGuestsDialogOpen, setIsTableGuestsDialogOpen] = useState(false);
+  const [selectedTableGuests, setSelectedTableGuests] = useState<{
+    tableName: string;
+    guests: Seat[];
   } | null>(null);
 
   console.log(guestsLoading);
@@ -480,7 +485,7 @@ const SeatBooking = () => {
     }
   };
 
-  const renderCircularTable = (table: TableData, index: number) => {
+const renderCircularTable = (table: TableData, index: number) => {
     const tableId = table.seats[0]?.table?.id || table.tableNumber;
     const tableName = table.seats[0]?.table?.name;
     const tableNumber = table.tableNumber;
@@ -488,6 +493,14 @@ const SeatBooking = () => {
     const tableColor = getTableColor(index);
     const isHovered = hoveredTable === tableId;
 
+    const handleTableClick = () => {
+      const bookedGuests = table.seats.filter(seat => seat.isBooked);
+      setSelectedTableGuests({
+        tableName: displayName,
+        guests: bookedGuests
+      });
+      setIsTableGuestsDialogOpen(true);
+    };
     return (
       <motion.div
         key={tableId}
@@ -505,7 +518,8 @@ const SeatBooking = () => {
         {/* Center Table Label */}
         <div className="absolute items-center flex flex-col gap-2 top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-10">
           <div
-            className={`relative ${tableColor} rounded-full px-4 py-2 transition-all duration-200 ease-in-out mt-5 ml-5`}
+            className={`relative ${tableColor} rounded-full px-4 py-2 transition-all duration-200 ease-in-out mt-5 ml-5 cursor-pointer hover:shadow-lg`}
+            onClick={handleTableClick}
           >
             <span className="flex items-center justify-center">
               <span className={`font-semibold text-lg text-center`}>
@@ -1142,6 +1156,8 @@ const SeatBooking = () => {
         </div>
       )}
 
+      
+
       <PersonSelector
         isOpen={isPersonSelectorOpen}
         onClose={() => setIsPersonSelectorOpen(false)}
@@ -1299,6 +1315,65 @@ const SeatBooking = () => {
           }}
         />
       )}
+      {/* Table Guests Dialog */}
+      <Dialog open={isTableGuestsDialogOpen} onOpenChange={setIsTableGuestsDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-bold text-zinc-800">
+              {selectedTableGuests?.tableName}
+            </DialogTitle>
+            <DialogDescription className="mt-2">
+              {selectedTableGuests?.guests.length === 0 ? (
+                <p className="text-zinc-600">No guests assigned to this table yet.</p>
+              ) : (
+                <p className="text-zinc-600">
+                  {selectedTableGuests?.guests.length} guest(s) assigned to this table
+                </p>
+              )}
+            </DialogDescription>
+          </DialogHeader>
+          <ScrollArea className="max-h-[400px] mt-4">
+            <div className="space-y-2">
+              {selectedTableGuests?.guests.map((seat) => (
+                <div
+                  key={seat.id}
+                  className="flex items-center justify-between p-3 bg-zinc-50 rounded-lg hover:bg-zinc-100 transition-colors"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
+                      seat.isReceived 
+                        ? "bg-green-200 text-green-700" 
+                        : "bg-red-200 text-red-700"
+                    }`}>
+                      {seat.seat}
+                    </div>
+                    <div>
+                      <p className="font-medium text-zinc-800">
+                        {seat.user?.firstname} {seat.user?.lastname}
+                      </p>
+                      <p className="text-xs text-zinc-500">
+                        Seat {seat.seat} • {seat.isReceived ? "Arrived" : "Not Arrived"}
+                      </p>
+                    </div>
+                  </div>
+                  {seat.isReceived && (
+                    <Check className="h-5 w-5 text-green-600" />
+                  )}
+                </div>
+              ))}
+            </div>
+          </ScrollArea>
+          <DialogFooter className="mt-4">
+            <Button 
+              variant="destructive" 
+              onClick={() => setIsTableGuestsDialogOpen(false)}
+              className="w-full"
+            >
+              Close
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
