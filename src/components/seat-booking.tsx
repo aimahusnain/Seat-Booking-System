@@ -114,9 +114,10 @@ const [isEditTableDialogOpen, setIsEditTableDialogOpen] = useState(false);
     seats: number;
   } | null>(null);
   const [isTableGuestsDialogOpen, setIsTableGuestsDialogOpen] = useState(false);
-  const [selectedTableGuests, setSelectedTableGuests] = useState<{
+const [selectedTableGuests, setSelectedTableGuests] = useState<{
     tableName: string;
     guests: Seat[];
+    notes?: string;
   } | null>(null);
 
   console.log(guestsLoading);
@@ -493,14 +494,16 @@ const renderCircularTable = (table: TableData, index: number) => {
     const tableColor = getTableColor(index);
     const isHovered = hoveredTable === tableId;
 
-    const handleTableClick = () => {
+const handleTableClick = () => {
       const bookedGuests = table.seats.filter(seat => seat.isBooked);
       setSelectedTableGuests({
         tableName: displayName,
-        guests: bookedGuests
+        guests: bookedGuests,
+        notes: table.seats[0]?.table?.notes
       });
       setIsTableGuestsDialogOpen(true);
     };
+
     return (
       <motion.div
         key={tableId}
@@ -1299,6 +1302,7 @@ const renderCircularTable = (table: TableData, index: number) => {
         confirmTextDisplay="Delete All Tables"
       />
 
+      {/* Edit Table Dialog */}
       {tableToEdit && (
         <EditTableDialog
           isOpen={isEditTableDialogOpen}
@@ -1315,14 +1319,15 @@ const renderCircularTable = (table: TableData, index: number) => {
           }}
         />
       )}
-      {/* Table Guests Dialog */}
+
+{/* Table Guests Dialog - Shows list of guests assigned to clicked table */}
       <Dialog open={isTableGuestsDialogOpen} onOpenChange={setIsTableGuestsDialogOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle className="text-xl font-bold text-zinc-800">
               {selectedTableGuests?.tableName}
             </DialogTitle>
-            <DialogDescription className="mt-2">
+            <DialogDescription className="mt-2 space-y-2">
               {selectedTableGuests?.guests.length === 0 ? (
                 <p className="text-zinc-600">No guests assigned to this table yet.</p>
               ) : (
@@ -1330,34 +1335,56 @@ const renderCircularTable = (table: TableData, index: number) => {
                   {selectedTableGuests?.guests.length} guest(s) assigned to this table
                 </p>
               )}
+              {selectedTableGuests?.notes && (
+                <div className="mt-3 p-3 text-center bg-amber-50 border border-amber-200 rounded-lg">
+                  <p className="text-xs font-semibold text-amber-800 mb-1">Table Notes:</p>
+                  <p className="text-sm text-amber-900 whitespace-pre-wrap">
+                    {selectedTableGuests.notes}
+                  </p>
+                </div>
+              )}
             </DialogDescription>
           </DialogHeader>
+          {/* Scrollable list of guests */}
           <ScrollArea className="max-h-[400px] mt-4">
             <div className="space-y-2">
               {selectedTableGuests?.guests.map((seat) => (
                 <div
                   key={seat.id}
-                  className="flex items-center justify-between p-3 bg-zinc-50 rounded-lg hover:bg-zinc-100 transition-colors"
+                  className={`flex items-center justify-between p-3 rounded-lg transition-all ${
+                    seat.isReceived 
+                      ? "bg-green-50 border-2 border-green-300 shadow-sm" 
+                      : "bg-zinc-50 border border-zinc-200"
+                  }`}
                 >
                   <div className="flex items-center gap-3">
-                    <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
+                    {/* Seat number badge - green for arrived, red for not arrived */}
+                    <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${
                       seat.isReceived 
-                        ? "bg-green-200 text-green-700" 
+                        ? "bg-green-500 text-white shadow-md" 
                         : "bg-red-200 text-red-700"
                     }`}>
                       {seat.seat}
                     </div>
+                    {/* Guest information */}
                     <div>
-                      <p className="font-medium text-zinc-800">
+                      <p className={`font-medium ${
+                        seat.isReceived ? "text-green-800" : "text-zinc-800"
+                      }`}>
                         {seat.user?.firstname} {seat.user?.lastname}
                       </p>
-                      <p className="text-xs text-zinc-500">
-                        Seat {seat.seat} • {seat.isReceived ? "Arrived" : "Not Arrived"}
+                      <p className={`text-xs ${
+                        seat.isReceived ? "text-green-600 font-medium" : "text-zinc-500"
+                      }`}>
+                        Seat {seat.seat} • {seat.isReceived ? "✓ Arrived" : "Not Arrived"}
                       </p>
                     </div>
                   </div>
+                  {/* Check icon for arrived guests */}
                   {seat.isReceived && (
-                    <Check className="h-5 w-5 text-green-600" />
+                    <div className="bg-green-500 rounded-full p-1">
+                      <Check className="h-4 w-4 text-white" />
+                    </div>
                   )}
                 </div>
               ))}
@@ -1365,7 +1392,7 @@ const renderCircularTable = (table: TableData, index: number) => {
           </ScrollArea>
           <DialogFooter className="mt-4">
             <Button 
-              variant="destructive" 
+              variant="outline" 
               onClick={() => setIsTableGuestsDialogOpen(false)}
               className="w-full"
             >
