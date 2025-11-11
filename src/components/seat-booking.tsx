@@ -1337,8 +1337,8 @@ const handleTableClick = () => {
               )}
               {selectedTableGuests?.notes && (
                 <div className="mt-3 p-3 text-center bg-amber-50 border border-amber-200 rounded-lg">
-                  <p className="text-xs font-semibold text-amber-800 mb-1">Table Notes:</p>
-                  <p className="text-sm text-amber-900 whitespace-pre-wrap">
+                  <p className="text-lg font-semibold text-amber-800 mb-1">Table Notes:</p>
+                  <p className="text-xl text-amber-900 whitespace-pre-wrap">
                     {selectedTableGuests.notes}
                   </p>
                 </div>
