@@ -342,22 +342,22 @@ export default function SeatScanning() {
                       {seatIsReceived ? (
                         // Show seat details after check-in
                         <>
-                          <div className="flex justify-between items-center p-5 rounded-xl bg-lime-50/50 dark:bg-lime-900/20">
+                          <div className="flex justify-center items-center gap-2 flex-col">
                             <span className="text-lg sm:text-xl font-bold text-green-600 dark:text-lime-400">
                               Table
                             </span>
-                            <span className="font-semibold text-3xl sm:text-4xl text-zinc-800 dark:text-zinc-200">
+                            <span className="font-semibold text-4xl sm:text-5xl text-zinc-800 dark:text-zinc-200">
                               {searchResult.table}
                             </span>
                           </div>
-                          <div className="flex justify-between items-center p-5 rounded-xl bg-fuchsia-50/50 dark:bg-fuchsia-900/20">
+                          {/* <div className="flex justify-between items-center p-5 rounded-xl bg-fuchsia-50/50 dark:bg-fuchsia-900/20">
                             <span className="text-lg sm:text-xl font-bold text-fuchsia-600 dark:text-fuchsia-400">
                               Seat Number
                             </span>
                             <span className="font-semibold text-3xl sm:text-4xl text-zinc-800 dark:text-zinc-200">
                               {searchResult.seat}
                             </span>
-                          </div>
+                          </div> */}
 
                           {/* Floor Map Button */}
                           <Button
