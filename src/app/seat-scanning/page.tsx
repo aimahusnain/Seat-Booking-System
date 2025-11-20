@@ -336,7 +336,7 @@ export default function SeatScanning() {
         <>
           <div className="flex justify-center items-center gap-3 flex-col py-4">
             <span className="text-3xl sm:text-4xl font-bold text-green-600 dark:text-lime-400">
-              You're on
+              You&apos;re on
             </span>
             <span className="font-bold text-6xl sm:text-7xl text-zinc-800 dark:text-zinc-200">
               {searchResult.table}
