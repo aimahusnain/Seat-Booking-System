@@ -299,158 +299,139 @@ export default function SeatScanning() {
                 exit={{ opacity: 0, y: -20 }}
                 transition={{ duration: 0.3 }}
               >
-                <Card className="border-0 shadow-2xl shadow-lime-500/10 bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl overflow-hidden">
-                  {/* <CardHeader className="bg-lime-500 pb-8">
-                    <CardTitle className="text-white text-xl sm:text-2xl flex items-center gap-3">
-                      <span className="bg-white/20 p-2 rounded-xl">
-                        <QrCode className="h-6 w-6" />
-                      </span>
-                      {seatIsReceived ? "Welcome!" : "Arrived"}
-                    </CardTitle>
-                  </CardHeader> */}
-                  <CardContent className="pt-6">
-                    <div className="space-y-6">
-                      {/* Name Display - Always visible */}
-                      <div className="flex justify-between items-center p-5 rounded-xl bg-violet-50/50 dark:bg-violet-900/20">
-                        <span className="text-lg sm:text-xl font-bold text-violet-600 dark:text-violet-400">
-                          Name
-                        </span>
-                        <span className="font-semibold text-4xl sm:text-4xl text-zinc-800 dark:text-zinc-200">
-                          {searchResult.name}
-                        </span>
-                      </div>
-
-                      {/* Table Notes - Show if available */}
-                      {tableNotes && (
-                        <div className="p-4 rounded-xl bg-yellow-50/50 dark:bg-yellow-900/20 border-l-4 border-yellow-400">
-                          <div className="flex items-start gap-2">
-                            <span className="text-yellow-600 dark:text-yellow-400 mt-0.5">
-                              📝
-                            </span>
-                            <div>
-                              <p className="text-sm font-semibold text-yellow-700 dark:text-yellow-400 mb-1">
-                                Table Note:
-                              </p>
-                              <p className="text-base text-yellow-800 dark:text-yellow-300">
-                                {tableNotes}
-                              </p>
-                            </div>
-                          </div>
-                        </div>
-                      )}
-
-                      {seatIsReceived ? (
-                        // Show seat details after check-in
-                        <>
-                          <div className="flex justify-center items-center gap-2 flex-col">
-                            <span className="text-lg sm:text-xl font-bold text-green-600 dark:text-lime-400">
-                              Table
-                            </span>
-                            <span className="font-semibold text-4xl sm:text-5xl text-zinc-800 dark:text-zinc-200">
-                              {searchResult.table}
-                            </span>
-                          </div>
-                          {/* <div className="flex justify-between items-center p-5 rounded-xl bg-fuchsia-50/50 dark:bg-fuchsia-900/20">
-                            <span className="text-lg sm:text-xl font-bold text-fuchsia-600 dark:text-fuchsia-400">
-                              Seat Number
-                            </span>
-                            <span className="font-semibold text-3xl sm:text-4xl text-zinc-800 dark:text-zinc-200">
-                              {searchResult.seat}
-                            </span>
-                          </div> */}
-
-                          {/* Floor Map Button */}
-                          <Button
-                            onClick={fetchFloorMap}
-                            disabled={loadingFloorMap}
-                            className="w-full h-16 text-xl sm:text-2xl rounded-xl bg-blue-600 text-white hover:bg-blue-700 transition-all shadow-lg hover:shadow-xl disabled:opacity-50"
-                          >
-                            {loadingFloorMap ? (
-                              "Loading..."
-                            ) : (
-                              <>
-                                <MapPin className="mr-3 h-6 w-6" />
-                                View Your Table Location
-                              </>
-                            )}
-                          </Button>
-
-                          {/* Already arrived card */}
-                          <div className="p-6 bg-green-50 dark:bg-green-900/20 rounded-xl text-center space-y-3">
-                            <div className="h-20 w-20 bg-green-100 dark:bg-green-800/30 rounded-full flex items-center justify-center mx-auto">
-                              <Check className="h-10 w-10 text-green-600 dark:text-green-400" />
-                            </div>
-                            <h3 className="text-2xl sm:text-3xl font-semibold text-green-700 dark:text-green-400">
-                              Welcome!
-                            </h3>
-                            <p className="text-base sm:text-lg text-green-600 dark:text-green-500">
-                              You have checked in successfully. Enjoy the event!
-                            </p>
-                          </div>
-
-                          {/* QR Code */}
-                          <QRCodeGenerator value={generateQrContent()} />
-                        </>
-                      ) : (
-                        <div className="space-y-6">
-                          {/* Instruction message */}
-                          <div className="p-5 bg-amber-50 dark:bg-amber-900/20 rounded-xl border-2 border-amber-200 dark:border-amber-800">
-                            <p className="text-base sm:text-lg text-amber-800 dark:text-amber-200 text-center font-medium leading-relaxed">
-                              Please click the{" "}
-                              <strong>&quot;Arrived&quot;</strong> button below
-                              to see your table and seat number
-                            </p>
-                          </div>
-
-                          {/* Check In button */}
-                          <Button
-                            onClick={async () => {
-                              if (!searchResult) return;
-
-                              try {
-                                setIsLoading(true);
-
-                                const response = await fetch(
-                                  "/api/seat-checkin",
-                                  {
-                                    method: "POST",
-                                    headers: {
-                                      "Content-Type": "application/json",
-                                    },
-                                    body: JSON.stringify({
-                                      seatId: searchResult.seatId,
-                                    }),
-                                  }
-                                );
-
-                                const data = await response.json();
-                                if (data.success) {
-                                  setSeatIsReceived(true);
-                                  toast.success(
-                                    `Welcome ${searchResult.name}!`
-                                  );
-                                } else {
-                                  toast.error(
-                                    data.message || "Failed to check in"
-                                  );
-                                }
-                              } catch (err) {
-                                console.error(err);
-                                toast.error("Error checking in");
-                              } finally {
-                                setIsLoading(false);
-                              }
-                            }}
-                            disabled={isLoading}
-                            className="w-full h-20 text-2xl sm:text-3xl font-bold rounded-xl bg-green-600 text-white hover:bg-green-700 transition-all shadow-lg hover:shadow-xl disabled:opacity-50"
-                          >
-                            {isLoading ? "Processing..." : "Arrived"}
-                          </Button>
-                        </div>
-                      )}
-                    </div>
-                  </CardContent>
-                </Card>
+<Card className="border-0 shadow-2xl shadow-lime-500/10 bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl overflow-hidden">
+  <CardContent className="pt-6">
+    <div className="space-y-6">
+      {/* Name Display - Always visible */}
+      <div className="flex justify-between items-center p-5 rounded-xl bg-violet-50/50 dark:bg-violet-900/20">
+        <span className="text-lg sm:text-xl font-bold text-violet-600 dark:text-violet-400">
+          Name
+        </span>
+        <span className="font-semibold text-4xl sm:text-4xl text-zinc-800 dark:text-zinc-200">
+          {searchResult.name}
+        </span>
+      </div>
+      
+      {/* Table Notes - Show if available */}
+      {tableNotes && (
+        <div className="p-4 rounded-xl bg-yellow-50/50 dark:bg-yellow-900/20 border-l-4 border-yellow-400">
+          <div className="flex items-start gap-2">
+            <span className="text-yellow-600 dark:text-yellow-400 mt-0.5">
+              📝
+            </span>
+            <div>
+              <p className="text-sm font-semibold text-yellow-700 dark:text-yellow-400 mb-1">
+                Table Note:
+              </p>
+              <p className="text-base text-yellow-800 dark:text-yellow-300">
+                {tableNotes}
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+      
+      {seatIsReceived ? (
+        // Show seat details after check-in
+        <>
+          <div className="flex justify-center items-center gap-3 flex-col py-4">
+            <span className="text-3xl sm:text-4xl font-bold text-green-600 dark:text-lime-400">
+              You're on
+            </span>
+            <span className="font-bold text-6xl sm:text-7xl text-zinc-800 dark:text-zinc-200">
+              {searchResult.table}
+            </span>
+          </div>
+          
+          {/* Floor Map Button */}
+          <Button
+            onClick={fetchFloorMap}
+            disabled={loadingFloorMap}
+            className="w-full h-16 text-xl sm:text-2xl rounded-xl bg-blue-600 text-white hover:bg-blue-700 transition-all shadow-lg hover:shadow-xl disabled:opacity-50"
+          >
+            {loadingFloorMap ? (
+              "Loading..."
+            ) : (
+              <>
+                <MapPin className="mr-3 h-6 w-6" />
+                View Your Table Location
+              </>
+            )}
+          </Button>
+          
+          {/* Already arrived card */}
+          <div className="p-6 bg-green-50 dark:bg-green-900/20 rounded-xl text-center space-y-3">
+            <div className="h-20 w-20 bg-green-100 dark:bg-green-800/30 rounded-full flex items-center justify-center mx-auto">
+              <Check className="h-10 w-10 text-green-600 dark:text-green-400" />
+            </div>
+            <h3 className="text-2xl sm:text-3xl font-semibold text-green-700 dark:text-green-400">
+              Welcome!
+            </h3>
+            <p className="text-base sm:text-lg text-green-600 dark:text-green-500">
+              You have checked in successfully. Enjoy the event!
+            </p>
+          </div>
+          
+          {/* QR Code */}
+          <QRCodeGenerator value={generateQrContent()} />
+        </>
+      ) : (
+        <div className="space-y-6">
+          {/* Instruction message */}
+          <div className="p-5 bg-amber-50 dark:bg-amber-900/20 rounded-xl border-2 border-amber-200 dark:border-amber-800">
+            <p className="text-base sm:text-lg text-amber-800 dark:text-amber-200 text-center font-medium leading-relaxed">
+              Please click the{" "}
+              <strong>&quot;Arrived&quot;</strong> button below
+              to see your table and seat number
+            </p>
+          </div>
+          
+          {/* Check In button */}
+          <Button
+            onClick={async () => {
+              if (!searchResult) return;
+              try {
+                setIsLoading(true);
+                const response = await fetch(
+                  "/api/seat-checkin",
+                  {
+                    method: "POST",
+                    headers: {
+                      "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({
+                      seatId: searchResult.seatId,
+                    }),
+                  }
+                );
+                const data = await response.json();
+                if (data.success) {
+                  setSeatIsReceived(true);
+                  toast.success(
+                    `Welcome ${searchResult.name}!`
+                  );
+                } else {
+                  toast.error(
+                    data.message || "Failed to check in"
+                  );
+                }
+              } catch (err) {
+                console.error(err);
+                toast.error("Error checking in");
+              } finally {
+                setIsLoading(false);
+              }
+            }}
+            disabled={isLoading}
+            className="w-full h-20 text-2xl sm:text-3xl font-bold rounded-xl bg-green-600 text-white hover:bg-green-700 transition-all shadow-lg hover:shadow-xl disabled:opacity-50"
+          >
+            {isLoading ? "Processing..." : "Arrived"}
+          </Button>
+        </div>
+      )}
+    </div>
+  </CardContent>
+</Card>
               </motion.div>
             ) : noSeatFound ? (
               <motion.div
